@@ -15,7 +15,8 @@ const Layout = ({ children, }: { children: any }) => {
                         backgroundColor: blueGrey[500],
                         "&:hover": {
                             backgroundColor: blueGrey[500]
-                        }
+                        },
+                        fontWeight: 900
                     }
 
                 }
@@ -25,6 +26,16 @@ const Layout = ({ children, }: { children: any }) => {
                     root: {
                         color: blueGrey[500],
                         backgroundColor: grey[200]
+                    }
+                }
+            },
+            MuiButtonBase: {
+                styleOverrides: {
+                    root: {
+                        fill: grey[200],
+                        "&:checked": {
+                            fill: grey[200]
+                        }
                     }
                 }
             }

@@ -8,4 +8,5 @@
     flex-direction: column;
     justify-content: space-between;
     padding: 8px;
+    gap: 20px;
 }

@@ -118,6 +118,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Paper square={false} elevation={3} sx={{
+        flexGrow: "0.5",
         paddingTop: "24px", paddingBottom: "24px", display: "flex", justifyContent: "center", flexDirection: "column",
         alignItems: "center", gap: "20px"
       }}>
@@ -159,6 +160,7 @@ export default function Home() {
       </Paper>
 
       <Paper square={false} elevation={3} sx={{
+        flexGrow: "0.5",
         paddingTop: "24px", paddingBottom: "24px", display: "flex", justifyContent: "center", flexDirection: "column",
         alignItems: "center", gap: "20px"
       }}>
@@ -178,10 +180,12 @@ export default function Home() {
         </Typography>
         <Box sx={{ width: '100%', padding: "15px" }}>
           <Stepper nonLinear activeStep={activeStep}
-           sx={{ '.Mui-active': { color: '#607d8b' }, flexDirection: { xs: 'column', sm: 'row' },
-           gap: "8px", justifyContent: "center", alignItems: { xs: 'flex-start', sm: 'center' }}}>
+            sx={{
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: "8px", justifyContent: "center", alignItems: { xs: 'flex-start', sm: 'center' }
+            }}>
             {steps.map((label, index) => (
-              <Step key={label} completed={completed[index]}>
+              <Step key={label} completed={completed[index]} sx={{ '.Mui-active': { color: '#607d8b' } }}>
                 <StepButton color="inherit" onClick={handleStep(index)}>
                   {label}
                 </StepButton>

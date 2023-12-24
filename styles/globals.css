@@ -1,8 +1,11 @@
+@import 'fonts.css';
+
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  font-family: monospace !important;
+  font-family: 'Willson', sans-serif !important;
+  color: #909090 !important;
 }
 
 html,
@@ -11,5 +14,8 @@ body {
   min-width: 100dvw;
   min-height: 100dvh;
   overflow-x: hidden;
-  background-color: #f5f5f5;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

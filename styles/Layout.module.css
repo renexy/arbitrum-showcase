@@ -1,12 +1,9 @@
 .parent {
-    max-width: 100dvw;
-    min-width: 100dvw;
-    max-height: 100dvh;
+    max-width: 2164px;
     min-height: 100dvh;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     padding: 8px;
-    gap: 20px;
+    gap: 34px;
 }

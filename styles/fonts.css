@@ -1,0 +1,24 @@
+@font-face {
+    font-family: 'Willson';
+    src: url('/fonts/willson.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Calton';
+    src: url('/fonts/Calton.otf') format('truetype');
+    font-style: normal;
+}
+
+.caltonBoldGlowWhite {
+    font-family: 'Calton', sans-serif !important;
+    font-weight: bold;
+    color: #fefefe !important;
+    text-shadow: -1px -4px 24px rgba(254,254,254,0.75);
+}
+
+.caltonRegular {
+    font-family: 'Calton', sans-serif !important;
+    font-weight: normal;
+}

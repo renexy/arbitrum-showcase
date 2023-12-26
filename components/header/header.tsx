@@ -3,6 +3,7 @@ import { AppBar, Avatar, Box, Button, Container, IconButton, Menu, MenuItem, Too
 import MenuIcon from '@mui/icons-material/Menu';
 import AdbIcon from '@mui/icons-material/Adb';
 import { useState } from 'react';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const pages = ['Products', 'Pricing', 'Blog'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -85,20 +86,7 @@ const Header = () => {
                     ))} */}
             </Box>
 
-            <Button variant="contained">
-                <Typography
-                    variant="h6"
-                    noWrap
-                    component="a"
-                    sx={{
-                        fontFamily: 'monospace',
-                        fontWeight: 900,
-                        textDecoration: 'none',
-                    }}
-                >
-                    Connect
-                </Typography>
-            </Button>
+            <ConnectButton />
         </Toolbar>
     </AppBar>
     )

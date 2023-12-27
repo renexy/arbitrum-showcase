@@ -12,7 +12,7 @@ export default function Pool() {
   };
 
   return (
-    <Box sx={{ width: '100%', gap: '18px', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ width: '100%', gap: '18px', display: 'flex', flexDirection: 'column', flex: 1 }}>
       <Tabs
         value={value}
         onChange={handleChange}

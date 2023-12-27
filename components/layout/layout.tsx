@@ -1,12 +1,16 @@
 import styles from '@/styles/Layout.module.css'
 import { AppBar, Button, IconButton, ThemeProvider, Toolbar, Typography, createTheme } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu';
-import Header from '../header/header';
 import { blueGrey, grey } from '@mui/material/colors';
-import Footer from '../footer/footer';
+import Container from '../container/container';
 
 const Layout = ({ children, }: { children: any }) => {
     const theme = createTheme({
+        palette: {
+            secondary: {
+                main: '#607d8b'
+            }
+        },
         components: {
             MuiButton: {
                 styleOverrides: {
@@ -44,9 +48,7 @@ const Layout = ({ children, }: { children: any }) => {
     return (
         <div className={styles.parent}>
             <ThemeProvider theme={theme}>
-                <Header></Header>
-                {children}
-                <Footer></Footer>
+                <Container />
             </ThemeProvider>
         </div>
     )

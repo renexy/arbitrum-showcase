@@ -1,23 +1,33 @@
+import { useContext } from "react";
 import GlobalContext from "../context/ContextAggregator";
 import { CreateProfileArgs } from "@allo-team/allo-v2-sdk/dist/Registry/types";
 import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
-import React from "react";
 
-// Write Functions of Registry.sol
+// Custom hook for retrieving registry and signer from context
+const useRegistry = () => {
+  return useContext(GlobalContext);
+};
 
-// To retrieve the Allo Owner
-export const createProfile = async (args: CreateProfileArgs) => {
-  const { registry, signer } = React.useContext(GlobalContext)
-  if (!registry) {
+// Custom hook to create profile
+const useCreateProfile = () => {
+  const { registry, signer } = useRegistry();
+
+  const createProfile = async (args: CreateProfileArgs) => {
+    if (!registry) {
       throw new Error('Registry is not initialized');
-  }
+    }
 
-  const txData: TransactionData = registry.createProfile(args);
+    const txData: TransactionData = registry.createProfile(args);
 
-  const hash = await signer?.sendTransaction({
-    data: txData.data,
-    value: BigInt(txData.value),
-  });
+    const hash = await signer?.sendTransaction({
+      data: txData.data,
+      value: BigInt(txData.value),
+    });
 
-  return hash;
-}
+    return hash;
+  };
+
+  return createProfile;
+};
+
+export default useCreateProfile;

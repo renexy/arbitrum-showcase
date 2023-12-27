@@ -1,7 +1,6 @@
 import Container from '@/components/container/container';
 import Head from 'next/head'
 import React from 'react';
-import { registry } from '@/hooks/registry/useReadRegistry';
 
 export default function Home() {
   return (

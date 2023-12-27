@@ -13,7 +13,8 @@ import {
 } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import ProfileContext, { ProfileContextProvider } from '@/store/profileContext';
+import { ProfileContextProvider } from '@/store/profileContext';
+import { GlobalContextProvider } from '@/hooks/context/ContextAggregator';
 
 export default function App({ Component, pageProps }: AppProps) {
 
@@ -40,11 +41,13 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={chains}>
-        <ProfileContextProvider>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        </ProfileContextProvider>
+        <GlobalContextProvider>
+          <ProfileContextProvider>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </ProfileContextProvider>
+        </GlobalContextProvider>
       </RainbowKitProvider>
     </WagmiConfig>
   )

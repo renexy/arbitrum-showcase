@@ -28,7 +28,7 @@ import Pool from '../pool/pool';
 import { Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import ProfileContext from '@/store/profileContext';
 import AddProfileDialog from '../addProfileDialog/addProfileDialog';
-import { createProfile } from '@/hooks/registry/useWriteRegistry.tsx';
+import { createProfileTest } from '@/hooks/registry/useWriteRegistry.tsx';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 
 const drawerWidth = 240;
@@ -237,7 +237,7 @@ export default function Container() {
 
             <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
                 <DrawerHeader />
-                <button onClick={() => {createProfile(createProfileArgs)}}>Create profile</button>
+                <button onClick={() => {createProfileTest(createProfileArgs)}}>Create profile</button>
                 {!menuSelected && <Typography paragraph sx={{ flex: 1 }}>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
                     tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus non

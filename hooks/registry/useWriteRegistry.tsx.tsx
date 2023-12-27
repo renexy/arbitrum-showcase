@@ -6,7 +6,7 @@ import React from "react";
 // Write Functions of Registry.sol
 
 // To retrieve the Allo Owner
-export const createProfile = async (args: CreateProfileArgs) => {
+export const createProfileTest = async (args: CreateProfileArgs) => {
   const { registry, signer } = React.useContext(GlobalContext)
   if (!registry) {
       throw new Error('Registry is not initialized');

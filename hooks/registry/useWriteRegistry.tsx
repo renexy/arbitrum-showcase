@@ -21,13 +21,30 @@ const useCreateProfile = () => {
 
     const hash = await signer?.sendTransaction({
       data: txData.data,
+      to: txData.to,
       value: BigInt(txData.value),
     });
 
     return hash;
   };
 
-  return createProfile;
+  const acceptOwnership = async (args: CreateProfileArgs) => {
+    if (!registry) {
+      throw new Error('Registry is not initialized');
+    }
+
+    const txData: TransactionData = registry.createProfile(args);
+
+    const hash = await signer?.sendTransaction({
+      data: txData.data,
+      to: txData.to,
+      value: BigInt(txData.value),
+    });
+
+    return hash;
+  };
+
+  return { createProfile, acceptOwnership };
 };
 
 export default useCreateProfile;

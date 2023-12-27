@@ -48,15 +48,16 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   useEffect(() => {
 
     if (chainId) {
-      setRegistry(new Registry({ chain: chainId }));
-      setAllo(new Allo({ chain: chainId }));
-      setMicroStrategy(new MicroGrantsStrategy({ chain: chainId }));
+      setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
+      setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
+      setMicroStrategy(new MicroGrantsStrategy({ chain: chainId, rpc: window.ethereum }));
     } else {
       console.log("ChainId undefined");
     }
 
     if (window.ethereum) {
-      const provider = new ethers.providers.JsonRpcProvider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      console.log("provider", provider)
       const signer = provider.getSigner();
 
       setProvider(provider);

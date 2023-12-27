@@ -28,7 +28,7 @@ import Pool from '../pool/pool';
 import { Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import ProfileContext from '@/store/profileContext';
 import AddProfileDialog from '../addProfileDialog/addProfileDialog';
-import { createProfileTest } from '@/hooks/registry/useWriteRegistry.tsx';
+import useCreateProfile from '@/hooks/registry/useWriteRegistry';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 
 const drawerWidth = 240;
@@ -108,6 +108,8 @@ export default function Container() {
     const [menuSelected, setMenuSelected] = React.useState("")
     const { profiles, profile, changeProfile } = React.useContext(ProfileContext)
 
+    const { createProfile } = useCreateProfile();
+
     const createProfileArgs: CreateProfileArgs = {
       nonce: 3,
       name: "Module Test 1",
@@ -115,10 +117,9 @@ export default function Container() {
         protocol: BigInt(1),
         pointer: "bafybeia4khbew3r2mkflyn7nzlvfzcb3qpfeftz5ivpzfwn77ollj47gqi",
       },
-      owner: "0x368731AE2E23e72751C432A935A2CF686Bb72AAC",
+      owner: "0xD424FA141a6B75AA8F64be6c924aA2b314B927B3",
       members: [
         "0xBfd2F7c5f11fB8a84DAd4F45FefBEf3E1Af63059",
-        "0xD424FA141a6B75AA8F64be6c924aA2b314B927B3",
       ],
     };
       
@@ -237,7 +238,7 @@ export default function Container() {
 
             <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
                 <DrawerHeader />
-                <button onClick={() => {createProfileTest(createProfileArgs)}}>Create profile</button>
+                <button onClick={() => {createProfile(createProfileArgs)}}>Create profile</button>
                 {!menuSelected && <Typography paragraph sx={{ flex: 1 }}>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
                     tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus non

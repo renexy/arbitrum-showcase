@@ -9,7 +9,7 @@ import {
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   arbitrum,
-  arbitrumGoerli,
+  goerli,
 } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
@@ -19,7 +19,7 @@ import { GlobalContextProvider } from '@/hooks/context/ContextAggregator';
 export default function App({ Component, pageProps }: AppProps) {
 
   const { chains, publicClient } = configureChains(
-    [arbitrum, arbitrumGoerli],
+    [arbitrum, goerli],
     [
       alchemyProvider({ apiKey: process.env.ALCHEMY_KEY || "" }),
       publicProvider()

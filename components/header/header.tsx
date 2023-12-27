@@ -85,7 +85,8 @@ const Header = () => {
                         </Button>
                     ))} */}
             </Box>
-
+            
+            {/*Rainbowkit Connect Button*/}
             <ConnectButton />
         </Toolbar>
     </AppBar>

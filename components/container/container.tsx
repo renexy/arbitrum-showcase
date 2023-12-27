@@ -22,8 +22,12 @@ import FolderIcon from '@mui/icons-material/Folder';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { blueGrey } from '@mui/material/colors';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import FormControl from '@mui/material/FormControl';
 import Profile from '../profile/profile';
 import Pool from '../pool/pool';
+import { Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import ProfileContext from '@/store/profileContext';
+import AddProfileDialog from '../addProfileDialog/addProfileDialog';
 
 const drawerWidth = 240;
 
@@ -98,8 +102,9 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function Container() {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = React.useState(true);
     const [menuSelected, setMenuSelected] = React.useState("")
+    const { profiles, profile, changeProfile } = React.useContext(ProfileContext)
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -108,9 +113,14 @@ export default function Container() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
-    
+
+    const handleChange = (event: SelectChangeEvent) => {
+        console.log(event.target.value)
+        changeProfile(event.target.value as string);
+    };
+
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', height: '100dvh' }}>
             <CssBaseline />
             <AppBar position="fixed" open={open} sx={{
                 backgroundColor: "#eeeeee", color: 'rgba(0, 0, 0, 0.54)',
@@ -137,6 +147,20 @@ export default function Container() {
             </AppBar>
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
+                    <FormControl sx={{ flex: 1 }}>
+                        <Select
+                            sx={{ border: 'none' }}
+                            value={profile}
+                            color="secondary"
+                            onChange={handleChange}
+                            displayEmpty
+                            inputProps={{ 'aria-label': 'Without label' }}
+                        >
+                            {profiles.map((item) => {
+                                return <MenuItem key={item} value={item ? item : profile}>{item ? item : profile}</MenuItem>
+                            })}
+                        </Select>
+                    </FormControl>
                     <IconButton onClick={handleDrawerClose}>
                         {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                     </IconButton>
@@ -194,9 +218,9 @@ export default function Container() {
                 </List>
             </Drawer>
 
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
                 <DrawerHeader />
-                {!menuSelected && <Typography paragraph>
+                {!menuSelected && <Typography paragraph sx={{ flex: 1 }}>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
                     tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus non
                     enim praesent elementum facilisis leo vel. Risus at ultrices mi tempus
@@ -212,7 +236,9 @@ export default function Container() {
                 </Typography>
                 }
                 {menuSelected === 'Profile' && <Profile />}
-                {menuSelected === 'Pool' && <Pool/>}
+                {menuSelected === 'Pool' && <Pool />}
+
+                <AddProfileDialog></AddProfileDialog>
             </Box>
         </Box>
     );

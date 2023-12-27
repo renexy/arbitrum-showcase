@@ -7,12 +7,12 @@ import { ProfileMetadataArgs } from "@allo-team/allo-v2-sdk/dist/Registry/types"
 import { ProfileNameArgs } from "@allo-team/allo-v2-sdk/dist/Registry/types";
 import { ProfileAndAddressArgs } from "@allo-team/allo-v2-sdk/dist/Registry/types";
 
-// Custom hook for retrieving registry and signer from context
+// Custom hook for retrieving registry, provider and signer from context
 const useRegistry = () => {
   return useContext(GlobalContext);
 };
 
-// Custom hook to create profile
+// Custom hook to retrieve registry write functions
 const useCreateProfile = () => {
   const { registry, signer } = useRegistry();
 

@@ -13,7 +13,6 @@ import {
 } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import { ProfileContextProvider } from '@/store/profileContext';
 import { GlobalContextProvider } from '@/hooks/context/ContextAggregator';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -42,11 +41,9 @@ export default function App({ Component, pageProps }: AppProps) {
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={chains}>
         <GlobalContextProvider>
-          <ProfileContextProvider>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </ProfileContextProvider>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
         </GlobalContextProvider>
       </RainbowKitProvider>
     </WagmiConfig>

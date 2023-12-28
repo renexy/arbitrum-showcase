@@ -23,7 +23,3 @@ body {
 .selected span {
   color: #607d8b;
 }
-
-fieldset {
-  border: none !important
-}

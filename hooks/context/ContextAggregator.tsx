@@ -14,6 +14,8 @@ interface GlobalContextState {
   microStrategy: MicroGrantsStrategy | undefined;
   provider: ethers.providers.JsonRpcProvider | undefined;
   signer: ethers.providers.JsonRpcSigner | undefined;
+  userProfiles: TransformedProfile[];
+  hasProfiles: boolean;
   fetchProfiles: (address: string) => void;
 }
 
@@ -23,7 +25,9 @@ const GlobalContext = createContext<GlobalContextState>({
   microStrategy: undefined,
   provider: undefined,
   signer: undefined,
-  fetchProfiles: (address: string) => {},
+  userProfiles: [],
+  hasProfiles: false,
+  fetchProfiles: (address: string) => { },
 });
 
 interface GlobalProviderProps {
@@ -38,7 +42,7 @@ declare global {
 
 export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   const { chain } = useNetwork();
-  const {address, isConnected} = useAccount();
+  const { address, isConnected } = useAccount();
   const chainId = chain?.id;
 
   const [registry, setRegistry] = useState<Registry | undefined>();
@@ -48,15 +52,15 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [provider, setProvider] = useState<ethers.providers.JsonRpcProvider | undefined>();
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | undefined>();
 
-  const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>()
-  const { loading, error, profiles } = useUserProfiles("0xD424FA141a6B75AA8F64be6c924aA2b314B927B3");
+  const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
+  const { loading, error, profiles, hasProfiles } = useUserProfiles("0x5052936d3c98d2d045da4995d37b0dae80c6f07f");
 
   const fetchProfiles = async () => {
-    setUserProfiles(profiles);
+    if (profiles)
+      setUserProfiles(profiles);
   }
 
   useEffect(() => {
-
     if (chainId) {
       setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
       setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
@@ -75,13 +79,13 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     } else {
       console.log("Ethereum object doesn't exist on window. You should consider installing MetaMask!");
     }
-  }, [chainId, chain, address, isConnected]);
+  }, [chainId, chain, address, isConnected, hasProfiles]);
 
   useEffect(() => {
   }, []);
 
   return (
-    <GlobalContext.Provider value={{ registry, allo, microStrategy, provider, signer, fetchProfiles }}>
+    <GlobalContext.Provider value={{ registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles, fetchProfiles }}>
       {children}
     </GlobalContext.Provider>
   )

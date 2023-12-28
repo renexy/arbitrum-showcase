@@ -30,6 +30,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import BaseDialog from '../baseDialog/baseDialog';
 import CreateProfile from '../createProfile/createProfile';
+import GlobalContext from '@/hooks/context/ContextAggregator';
 
 const drawerWidth = 240;
 
@@ -102,33 +103,34 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     }),
 );
 
-const profiles: string[] = []
-
 export default function Container() {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const [menuSelected, setMenuSelected] = React.useState("")
-    const [profile, changeProfile] = React.useState(/*profiles && profiles.length > 0 ? profiles[0] : ''*/'')
+    const [profile, changeProfile] = React.useState<string | undefined>('')
+    const { userProfiles, hasProfiles } = React.useContext(GlobalContext)
 
-    const createProfileArgs: CreateProfileArgs = {
-        nonce: 3,
-        name: "Module Test 1",
-        metadata: {
-            protocol: BigInt(1),
-            pointer: "bafybeia4khbew3r2mkflyn7nzlvfzcb3qpfeftz5ivpzfwn77ollj47gqi",
-        },
-        owner: "0xD424FA141a6B75AA8F64be6c924aA2b314B927B3",
-        members: [
-            "0xBfd2F7c5f11fB8a84DAd4F45FefBEf3E1Af63059",
-        ],
-    };
+    // const createProfileArgs: CreateProfileArgs = {
+    //     nonce: 3,
+    //     name: "Module Test 1",
+    //     metadata: {
+    //         protocol: BigInt(1),
+    //         pointer: "bafybeia4khbew3r2mkflyn7nzlvfzcb3qpfeftz5ivpzfwn77ollj47gqi",
+    //     },
+    //     owner: "0xD424FA141a6B75AA8F64be6c924aA2b314B927B3",
+    //     members: [
+    //         "0xBfd2F7c5f11fB8a84DAd4F45FefBEf3E1Af63059",
+    //     ],
+    // };
 
-    // initial load
     React.useEffect(() => {
-        if (profile) {
-            setMenuSelected('Profile')
+        if (hasProfiles && userProfiles && userProfiles.length > 0) {
+            if (!profile) {
+                changeProfile(userProfiles[0].anchor)
+                setMenuSelected('Profile')
+            }
         }
-    }, [])
+    }, [userProfiles, hasProfiles])
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -140,6 +142,7 @@ export default function Container() {
 
     const handleChange = (event: SelectChangeEvent) => {
         const selectedValue = event.target.value;
+        console.log(selectedValue, "lol")
         if (selectedValue === 'Create') {
             setMenuSelected('Create')
         } else {
@@ -175,7 +178,7 @@ export default function Container() {
             </AppBar>
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
-                    {profiles && profiles.length > 0 ? <FormControl sx={{ flex: 1 }}>
+                    {userProfiles && userProfiles.length > 0 ? <FormControl sx={{ flex: 1 }}>
 
                         <Select disableUnderline
                             sx={{ '.MuiOutlinedInput-notchedOutline': { border: 'none' }, color: grey[600] }}
@@ -185,9 +188,9 @@ export default function Container() {
                             displayEmpty
                             inputProps={{ 'aria-label': 'Without label' }}
                         >
-                            {/*{profiles.map((item) => {
-                                return <MenuItem key={item} value={item ? item : profile}>{item ? item : profile}</MenuItem>
-                            })}*/}
+                            {userProfiles.map((item) => {
+                                return <MenuItem key={item.anchor} value={item.anchor}>{item.name}</MenuItem>
+                            })}
                             <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>
                                 <Fab size="small" color="secondary" aria-label="add" sx={{ alignSelf: 'flex-end', height: '25px', width: '25px', minHeight: '20px' }}>
                                     <AddIcon sx={{ fill: 'white' }} />

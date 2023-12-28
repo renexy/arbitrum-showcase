@@ -20,8 +20,8 @@ const GET_PROFILES_BY_USER_ADDRESS = gql`
 export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
   const { loading, error, data } = useQuery(GET_PROFILES_BY_USER_ADDRESS, {
     variables: { userAddress },
-    onCompleted: (data) => console.log("Query completed:", data),
-    onError: (error) => console.error("Query error:", error),
+    onCompleted: (data: any) => console.log("Query completed:", data),
+    onError: (error: any) => console.error("Query error:", error),
   });
 
   const transformProfileData = (profiles: any[]): TransformedProfile[] => 
@@ -42,7 +42,7 @@ export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
   return {
     loading,
     error,
-    profiles: data ? transformProfileData(data.profiles) : undefined,
+    profiles: data ? transformProfileData(data.profiles) : [],
     hasProfiles, // Indicates if profiles are available
   };
 }

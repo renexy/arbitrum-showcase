@@ -25,21 +25,24 @@ export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
   });
 
   const transformProfileData = (profiles: any[]): TransformedProfile[] => 
-    profiles.map(profile => ({
+    profiles ? profiles.map(profile => ({
       anchor: profile.anchor,
       id: profile.id,
-      protocol: profile.metadata.protocol === "1" ? "IPFS" : profile.metadata.protocol,
+      protocol: profile.metadata.protocol === 1 ? "IPFS" : profile.metadata.protocol.toString(),
       pointer: profile.metadata.pointer,
       name: profile.name,
       owner: profile.owner.id,
-    })
-  );
+    })) : [];
 
-  console.log("Profiles:", transformProfileData(data?.profiles))
+  // Determine if profiles are available
+  const hasProfiles = data?.profiles && data.profiles.length > 0;
+
+  console.log("Profiles:", transformProfileData(data?.profiles));
 
   return {
     loading,
     error,
     profiles: data ? transformProfileData(data.profiles) : undefined,
+    hasProfiles, // Indicates if profiles are available
   };
 }

@@ -30,4 +30,5 @@ type UseUserProfilesReturn = {
   loading: boolean;
   error?: ApolloError;
   profiles?: TransformedProfile[];
+  hasProfiles: boolean;
 };

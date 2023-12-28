@@ -24,30 +24,32 @@ export interface SimpleDialogProps {
 function TransactionDialog(props: SimpleDialogProps) {
     const { onClose, selectedValue, open } = props;
 
-    const [confirmTranscation, setConfirmTransaction] = React.useState(false)
+    const [transactionStatus, setTransactionStatus] = React.useState<'confirm' | 'pending' | 'finished'>('confirm')
 
     const handleClose = () => {
+        // todoburger: stop all metamask stuff here since dialog is closed
         onClose(selectedValue);
+        setTransactionStatus('confirm')
     };
 
     // TODO: DELETE THIS
     React.useEffect(() => {
-        if (confirmTranscation) {
+        if (transactionStatus === 'pending') {
             setTimeout(() => {
-                setConfirmTransaction(!confirmTranscation)
+                setTransactionStatus('finished')
             }, 3000)
         }
-    }, [confirmTranscation])
+    }, [transactionStatus])
 
     return (
         <>
-            {!confirmTranscation && <Dialog onClose={handleClose} open={open}>
+            {transactionStatus === 'confirm' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
                     <DialogTitle>Confirm transaction</DialogTitle>
-                    <Button size="small" variant="contained" color="secondary" onClick={() => { setConfirmTransaction(true) }}>Confirm</Button>
+                    <Button size="small" variant="contained" color="secondary" onClick={() => { setTransactionStatus('pending') }}>Confirm</Button>
                 </div>
             </Dialog>}
-            {confirmTranscation && <Backdrop
+            {transactionStatus === 'pending' && <Backdrop
                 sx={{ color: '#fff', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={open}
                 onClick={handleClose}
@@ -55,6 +57,12 @@ function TransactionDialog(props: SimpleDialogProps) {
                 <CircularProgress sx={{ color: '#f5f5f5' }} />
                 <Typography variant="h6" color={'#f5f5f5'}>Transaction confirmed</Typography>
             </Backdrop>}
+            {transactionStatus === 'finished' && <Dialog onClose={handleClose} open={open}>
+                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                    <DialogTitle>Transaction failed/succeeded</DialogTitle>
+                    <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
+                </div>
+            </Dialog>}
         </>
     )
 }

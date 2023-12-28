@@ -4,7 +4,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { Paper, Typography } from '@mui/material';
 
-export default function Profile() {
+export default function Pool() {
     const [value, setValue] = React.useState('one');
 
     const handleChange = (event: React.SyntheticEvent, newValue: string) => {

@@ -13,7 +13,6 @@ import {
 } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
-import { ProfileContextProvider } from '@/store/profileContext';
 import { GlobalContextProvider } from '@/hooks/context/ContextAggregator';
 import { ApolloProvider } from '@apollo/client';
 import client from '../apollo/apolloClient';
@@ -44,13 +43,9 @@ export default function App({ Component, pageProps }: AppProps) {
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={chains}>
         <GlobalContextProvider>
-          <ApolloProvider client={client}>
-            <ProfileContextProvider>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </ProfileContextProvider>
-          </ApolloProvider>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
         </GlobalContextProvider>
       </RainbowKitProvider>
     </WagmiConfig>

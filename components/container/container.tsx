@@ -20,16 +20,17 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import FolderIcon from '@mui/icons-material/Folder';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import { blueGrey } from '@mui/material/colors';
+import { blueGrey, grey } from '@mui/material/colors';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import FormControl from '@mui/material/FormControl';
 import Profile from '../profile/profile';
 import Pool from '../pool/pool';
-import { Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
-import ProfileContext from '@/store/profileContext';
-import AddProfileDialog from '../addProfileDialog/addProfileDialog';
-import useWriteRegistry from '@/hooks/registry/useWriteRegistry';
+import { Button, Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import useCreateProfile from '@/hooks/registry/useWriteRegistry';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
+import BaseDialog from '../baseDialog/baseDialog';
+import CreateProfile from '../createProfile/createProfile';
 
 const drawerWidth = 240;
 
@@ -102,27 +103,33 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     }),
 );
 
+const profiles: string[] = []
+
 export default function Container() {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(true);
+    const [open, setOpen] = React.useState(false);
     const [menuSelected, setMenuSelected] = React.useState("")
-    const { profiles, profile, changeProfile } = React.useContext(ProfileContext)
-
-    const { createProfile } = useWriteRegistry();
+    const [profile, changeProfile] = React.useState(profiles && profiles.length > 0 ? profiles[0] : '')
 
     const createProfileArgs: CreateProfileArgs = {
-      nonce: 3,
-      name: "Module Test 1",
-      metadata: {
-        protocol: BigInt(1),
-        pointer: "bafybeia4khbew3r2mkflyn7nzlvfzcb3qpfeftz5ivpzfwn77ollj47gqi",
-      },
-      owner: "0xD424FA141a6B75AA8F64be6c924aA2b314B927B3",
-      members: [
-        "0xBfd2F7c5f11fB8a84DAd4F45FefBEf3E1Af63059",
-      ],
+        nonce: 3,
+        name: "Module Test 1",
+        metadata: {
+            protocol: BigInt(1),
+            pointer: "bafybeia4khbew3r2mkflyn7nzlvfzcb3qpfeftz5ivpzfwn77ollj47gqi",
+        },
+        owner: "0xD424FA141a6B75AA8F64be6c924aA2b314B927B3",
+        members: [
+            "0xBfd2F7c5f11fB8a84DAd4F45FefBEf3E1Af63059",
+        ],
     };
-      
+
+    // initial load
+    React.useEffect(() => {
+        if (profile) {
+            setMenuSelected('Profile')
+        }
+    }, [])
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -133,8 +140,12 @@ export default function Container() {
     };
 
     const handleChange = (event: SelectChangeEvent) => {
-        console.log(event.target.value)
-        changeProfile(event.target.value as string);
+        const selectedValue = event.target.value;
+        if (selectedValue === 'Create') {
+            setMenuSelected('Create')
+        } else {
+            changeProfile(selectedValue);
+        }
     };
 
     return (
@@ -165,9 +176,10 @@ export default function Container() {
             </AppBar>
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
-                    <FormControl sx={{ flex: 1 }}>
-                        <Select
-                            sx={{ border: 'none' }}
+                    {profiles && profiles.length > 0 ? <FormControl sx={{ flex: 1 }}>
+
+                        <Select disableUnderline
+                            sx={{ '.MuiOutlinedInput-notchedOutline': { border: 'none' }, color: grey[600] }}
                             value={profile}
                             color="secondary"
                             onChange={handleChange}
@@ -177,8 +189,13 @@ export default function Container() {
                             {profiles.map((item) => {
                                 return <MenuItem key={item} value={item ? item : profile}>{item ? item : profile}</MenuItem>
                             })}
+                            <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>
+                                <Fab size="small" color="secondary" aria-label="add" sx={{ alignSelf: 'flex-end', height: '25px', width: '25px', minHeight: '20px' }}>
+                                    <AddIcon sx={{ fill: 'white' }} />
+                                </Fab>Create profile</MenuItem>
                         </Select>
-                    </FormControl>
+                    </FormControl> : <Button sx={{ flex: 1 }} variant="outlined" color="secondary" onClick={() => { setMenuSelected('Create') }}>Create profile</Button>
+                    }
                     <IconButton onClick={handleDrawerClose}>
                         {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                     </IconButton>
@@ -186,8 +203,8 @@ export default function Container() {
                 <Divider />
                 <List>
                     {['Profile', 'Pool'].map((text, index) => (
-                        <ListItem key={text} disablePadding sx={{ display: 'block' }} onClick={() => { setMenuSelected(text) }}>
-                            <ListItemButton
+                        <ListItem key={text} disablePadding sx={{ display: 'block' }} onClick={() => { if (profile) { setMenuSelected(text) } }}>
+                            <ListItemButton disabled={!profile}
                                 sx={{
                                     minHeight: 48,
                                     justifyContent: open ? 'initial' : 'center',
@@ -201,7 +218,8 @@ export default function Container() {
                                         justifyContent: 'center',
                                     }}
                                 >
-                                    {text === 'Profile' ? <AccountBoxIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> : <FolderIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} />}
+                                    {text === 'Profile' ? <AccountBoxIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> :
+                                        <FolderIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} />}
                                 </ListItemIcon>
                                 <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} className={`${text === menuSelected ? 'selected' : ''}`} />
                             </ListItemButton>
@@ -236,28 +254,18 @@ export default function Container() {
                 </List>
             </Drawer>
 
-            <Box component="main" sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
+            <Box component="main" sx={{
+                flexGrow: 1, flex: 1, p: 3, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', textAlign: 'center'
+            }}>
                 <DrawerHeader />
-                <button onClick={() => {createProfile(createProfileArgs)}}>Create profile</button>
-                {!menuSelected && <Typography paragraph sx={{ flex: 1 }}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus non
-                    enim praesent elementum facilisis leo vel. Risus at ultrices mi tempus
-                    imperdiet. Semper risus in hendrerit gravida rutrum quisque non tellus.
-                    Convallis convallis tellus id interdum velit laoreet id donec ultrices.
-                    Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl suscipit
-                    adipiscing bibendum est ultricies integer quis. Cursus euismod quis viverra
-                    nibh cras. Metus vulputate eu scelerisque felis imperdiet proin fermentum
-                    leo. Mauris commodo quis imperdiet massa tincidunt. Cras tincidunt lobortis
-                    feugiat vivamus at augue. At augue eget arcu dictum varius duis at
-                    consectetur lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa
-                    sapien faucibus et molestie ac.
+                {!menuSelected && !profile && <Typography variant="h5" paragraph sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                    You don&apos;t have any profiles. Click &apos;Create profile&apos; in top left corner to start.
                 </Typography>
                 }
                 {menuSelected === 'Profile' && <Profile />}
                 {menuSelected === 'Pool' && <Pool />}
-
-                <AddProfileDialog></AddProfileDialog>
+                {menuSelected === 'Create' && <CreateProfile></CreateProfile>}
             </Box>
         </Box>
     );

@@ -48,12 +48,11 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [provider, setProvider] = useState<ethers.providers.JsonRpcProvider | undefined>();
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | undefined>();
 
-  const [userProfiles, setUserProfiles] = useState<Profile[]>()
+  const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>()
   const { loading, error, profiles } = useUserProfiles("0x5052936d3c98d2d045da4995d37b0dae80c6f07f");
 
-  const fetchProfiles = async (address: string) => {
-    console.log("profiles", profiles);
-    setUserProfiles("context", profiles);
+  const fetchProfiles = async () => {
+    setUserProfiles(profiles);
   }
 
   useEffect(() => {
@@ -62,14 +61,13 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
       setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
       setMicroStrategy(new MicroGrantsStrategy({ chain: chainId, rpc: window.ethereum }));
-      fetchProfiles("0x5052936d3c98d2d045da4995d37b0dae80c6f07f")
+      fetchProfiles()
     } else {
       console.log("ChainId undefined");
     }
 
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      console.log("provider", provider)
       const signer = provider.getSigner();
 
       setProvider(provider);

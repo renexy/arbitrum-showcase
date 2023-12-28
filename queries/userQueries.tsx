@@ -10,7 +10,8 @@ const GET_PROFILES_BY_USER_ADDRESS = gql`
       }
       anchor
       metadata {
-        id
+        protocol
+        pointer
       }
     }
   }
@@ -23,9 +24,22 @@ export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
     onError: (error) => console.error("Query error:", error),
   });
 
+  const transformProfileData = (profiles: any[]): TransformedProfile[] => 
+    profiles.map(profile => ({
+      anchor: profile.anchor,
+      id: profile.id,
+      protocol: profile.metadata.protocol === "1" ? "IPFS" : profile.metadata.protocol,
+      pointer: profile.metadata.pointer,
+      name: profile.name,
+      owner: profile.owner.id,
+    })
+  );
+
+  console.log("Profiles:", transformProfileData(data?.profiles))
+
   return {
     loading,
     error,
-    profiles: data?.profiles,
+    profiles: data ? transformProfileData(data.profiles) : undefined,
   };
 }

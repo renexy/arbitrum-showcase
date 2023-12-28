@@ -108,7 +108,7 @@ export default function Container() {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const [menuSelected, setMenuSelected] = React.useState("")
-    const [profile, changeProfile] = React.useState(profiles && profiles.length > 0 ? profiles[0] : '')
+    const [profile, changeProfile] = React.useState(/*profiles && profiles.length > 0 ? profiles[0] : ''*/'')
 
     const createProfileArgs: CreateProfileArgs = {
         nonce: 3,
@@ -185,9 +185,9 @@ export default function Container() {
                             displayEmpty
                             inputProps={{ 'aria-label': 'Without label' }}
                         >
-                            {profiles.map((item) => {
+                            {/*{profiles.map((item) => {
                                 return <MenuItem key={item} value={item ? item : profile}>{item ? item : profile}</MenuItem>
-                            })}
+                            })}*/}
                             <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>
                                 <Fab size="small" color="secondary" aria-label="add" sx={{ alignSelf: 'flex-end', height: '25px', width: '25px', minHeight: '20px' }}>
                                     <AddIcon sx={{ fill: 'white' }} />

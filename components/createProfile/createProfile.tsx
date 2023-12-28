@@ -34,7 +34,7 @@ export default function CreateProfile() {
     return (
         <Box sx={{
             width: 'auto', minWidth: '50%', gap: '18px', justifyContent: 'flex-start',
-            display: 'flex', flexDirection: 'column', flex: 1, padding: '100px 20px 20px 20px'
+            display: 'flex', flexDirection: 'column', flex: 1, padding: '40px 20px 20px 20px'
         }}>
             <Typography variant="h5">Create profile</Typography>
             <TextField required label="Profile name" onChange={(e) => { setProfileName(e.target.value) }}

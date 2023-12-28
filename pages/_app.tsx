@@ -40,14 +40,16 @@ export default function App({ Component, pageProps }: AppProps) {
   })
 
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>
-        <GlobalContextProvider>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        </GlobalContextProvider>
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <ApolloProvider client={client}>
+      <WagmiConfig config={wagmiConfig}>
+        <RainbowKitProvider chains={chains}>
+          <GlobalContextProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+          </GlobalContextProvider>
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </ApolloProvider>
   )
 }

@@ -27,7 +27,6 @@ import Profile from '../profile/profile';
 import Pool from '../pool/pool';
 import { Button, Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import useCreateProfile from '@/hooks/registry/useWriteRegistry';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import BaseDialog from '../baseDialog/baseDialog';
 import CreateProfile from '../createProfile/createProfile';

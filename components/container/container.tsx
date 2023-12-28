@@ -28,7 +28,7 @@ import Pool from '../pool/pool';
 import { Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import ProfileContext from '@/store/profileContext';
 import AddProfileDialog from '../addProfileDialog/addProfileDialog';
-import useCreateProfile from '@/hooks/registry/useWriteRegistry';
+import useWriteRegistry from '@/hooks/registry/useWriteRegistry';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 
 const drawerWidth = 240;
@@ -108,7 +108,7 @@ export default function Container() {
     const [menuSelected, setMenuSelected] = React.useState("")
     const { profiles, profile, changeProfile } = React.useContext(ProfileContext)
 
-    const { createProfile } = useCreateProfile();
+    const { createProfile } = useWriteRegistry();
 
     const createProfileArgs: CreateProfileArgs = {
       nonce: 3,

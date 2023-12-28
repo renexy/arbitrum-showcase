@@ -13,7 +13,7 @@ const useRegistry = () => {
 };
 
 // Custom hook to retrieve registry write functions
-const useCreateProfile = () => {
+const useWriteRegistry = () => {
   const { registry, signer } = useRegistry();
 
   // To create a new profile using the createProfile function
@@ -135,7 +135,15 @@ const useCreateProfile = () => {
     return hash;
   };
 
-  return { createProfile, acceptOwnership };
+  return {
+    createProfile,
+    acceptOwnership,
+    addProfileMembers,
+    removeProfileMembers,
+    updateProfileMetadata,
+    updateProfileName,
+    updateProfilePendingOwner
+  };
 };
 
-export default useCreateProfile;
+export default useWriteRegistry;

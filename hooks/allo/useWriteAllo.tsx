@@ -10,7 +10,7 @@ const useRegistry = () => {
 };
 
 // Custom hook to retrieve allo write functions
-const useCreateProfile = () => {
+const useWriteAllo = () => {
   const { allo, signer } = useRegistry();
 
   // To create a new pool with a custom strategy
@@ -341,4 +341,4 @@ const useCreateProfile = () => {
   };
 };
 
-export default useCreateProfile;
+export default useWriteAllo;

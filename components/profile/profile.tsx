@@ -27,6 +27,7 @@ export default function Profile() {
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     const [showSnackbar, setShowsnackbar] = useState(false)
     const [showSnackbarCopied, setShowsnackbarCopied] = useState(false)
+    const [showSnackbarMemberExists, setShowSnackbarMemberExists] = useState(false)
     const [singleMember, setSingleMember] = useState('')
     const [editMode, setEditMode] = useState(false)
 
@@ -40,8 +41,8 @@ export default function Profile() {
         setSelectedProfile(userProfiles?.find(x => x.anchor === selectedProfileHash))
         setNewProfileName(userProfiles?.find(x => x.anchor === selectedProfileHash)?.name || '')
         setNewProfileMetadata(userProfiles?.find(x => x.anchor === selectedProfileHash)?.pointer || '')
-        // setNewProfileMembers(userProfiles?.find(x => x.anchor === selectedProfileHash)?.members || [])
-        setNewProfileMembers([])
+        setNewProfileMembers(userProfiles?.find(x => x.anchor === selectedProfileHash)?.members || [])
+
         setSingleMember('')
     }
 
@@ -67,6 +68,18 @@ export default function Profile() {
             return;
         }
 
+        // we don't want to add the members that exist in selectProfile
+        // so we have to take those out!
+        var newMembersToAdd = selectedProfile?.members
+        // this array holds the new addresses
+        var newAddresses = newProfileMembers
+        // this var holds the new name
+        var newProfileNameAdd = newProfileName
+        // this var holds the new metadata
+        var newProfileMetadataAdd = newProfileMetadata
+
+        // we don't want to make any changes if any of the data matches selectedProfile
+
         const memberArgs: MemberArgs = {
             profileId: selectedProfile?.id || '',
             members: newProfileMembers.map(member => member.address),
@@ -74,7 +87,7 @@ export default function Profile() {
 
         console.log(memberArgs)
         console.log(selectedProfile?.id)
-        console.log(newProfileMembers.map(member => member.address), "Necro niga")
+        console.log(newProfileMembers.map(member => member.address))
 
         try {
             setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
@@ -133,10 +146,8 @@ export default function Profile() {
         setItemsChanged(profileNameChanged || profileMetadataChanged || membersChanged);
     }, [newProfileName, newProfileMetadata, newProfileMembers, selectedProfile]);
 
-
-
     const handleDelete = (memberName: Account) => {
-        const updatedMembers = newProfileMembers.filter((member) => member !== memberName);
+        const updatedMembers = newProfileMembers.filter((member) => member.address !== memberName.address);
         setNewProfileMembers(updatedMembers);
     };
 
@@ -239,7 +250,8 @@ export default function Profile() {
                                         <ContentCopyIcon sx={{ cursor: 'pointer' }}
                                             onClick={() => {
                                                 copyToClipboard(selectedProfile.owner);
-                                                setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
+                                                setShowsnackbarCopied(true);
+                                                setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
                                             }} />
                                     </InputAdornment>)
                                 }}
@@ -276,7 +288,15 @@ export default function Profile() {
                                     <InputAdornment position="end">
                                         <IconButton onClick={() => {
                                             if (singleMember.length > 0) {
-                                                setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }]); setSingleMember('')
+                                                if (!(newProfileMembers.find(x => x.address === singleMember))) {
+                                                    setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }]);
+                                                } else {
+                                                    setShowSnackbarMemberExists(true)
+                                                    setTimeout(() => {
+                                                        setShowSnackbarMemberExists(false);
+                                                    }, 3000);
+                                                }
+                                                setSingleMember('')
                                             }
                                         }} edge="end">
                                             <AddIcon sx={{ fill: blueGrey[500] }} />
@@ -290,7 +310,8 @@ export default function Profile() {
                             <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
                                 {newProfileMembers.map((member, index) => (
                                     <ListItem key={index}>
-                                        <ListItemText primary={shortenEthAddress(member.address)} />
+                                        {/* <ListItemText primary={shortenEthAddress(member.address)} /> */}
+                                        <ListItemText primary={member.address} />
                                         {editMode && <IconButton edge="end" aria-label="delete"
                                             onClick={() => handleDelete(member)}>
                                             <DeleteIcon />
@@ -318,6 +339,15 @@ export default function Profile() {
                     >
                         <Alert severity="success" sx={{ width: '100%' }}>
                             Copied to clipboard!
+                        </Alert>
+                    </Snackbar>
+                    <Snackbar
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        open={showSnackbarMemberExists}
+                        color="secondary"
+                    >
+                        <Alert severity="warning" sx={{ width: '100%' }}>
+                            Member already exists!
                         </Alert>
                     </Snackbar>
                 </Box>

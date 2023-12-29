@@ -61,7 +61,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
   const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
-  const { loading, error, profiles, hasProfiles } = useUserProfiles('0x5052936d3c98d2d045da4995d37b0dae80c6f07f' || '');
+  const { loading, error, profiles, hasProfiles } = useUserProfiles(address || '');
 
   const changeSelectedProfileHash = (hash: string) => {
     setSelectedProfileHash(hash)
@@ -86,6 +86,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     console.log('yo')
     if (chainId) {
       setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
+      console.log("CHAINID", chainId)
       setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
       setMicroStrategy(new MicroGrantsStrategy({ chain: chainId, rpc: window.ethereum }));
       fetchProfiles()
@@ -103,9 +104,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       console.log("Ethereum object doesn't exist on window. You should consider installing MetaMask!");
     }
   }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash]);
-
-  useEffect(() => {
-  }, []);
 
   return (
     <GlobalContext.Provider value={{

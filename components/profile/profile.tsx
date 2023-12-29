@@ -2,7 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { Alert, Button, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Skeleton, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import GlobalContext from '@/hooks/context/ContextAggregator';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BaseDialog from '../baseDialog/baseDialog';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,6 +11,8 @@ import shortenEthAddress from '@/global/functions';
 import EditIcon from '@mui/icons-material/Edit';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EditOffIcon from '@mui/icons-material/EditOff';
+import { MemberArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
+import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
 
 const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -43,17 +45,69 @@ export default function Profile() {
         setSingleMember('')
     }
 
-    useEffect(() => {
-        if (!hasProfiles) return
-        if (!selectedProfileHash) return
-        setInitialValues()
-    }, [userProfiles, hasProfiles, selectedProfileHash])
+    const { fetchProfiles } = useContext(GlobalContext)
 
     useEffect(() => {
         if (editMode) return
         setInitialValues()
         setItemsChanged(false)
     }, [editMode])
+
+    const handleAddMembers = async (args?: any) => {
+        if (args && args === 'restore') {
+            setCreateProfileTransactionStatus('confirm')
+            return;
+        }
+
+        if (!registry || !signer) {
+            setShowsnackbar(true)
+            setTimeout(() => {
+                setShowsnackbar(false)
+            }, 5000)
+            return;
+        }
+
+        const memberArgs: MemberArgs = {
+            profileId: selectedProfile?.id || '',
+            members: newProfileMembers.map(member => member.address),
+        };
+
+        console.log(memberArgs)
+        console.log(selectedProfile?.id)
+        console.log(newProfileMembers.map(member => member.address), "Necro niga")
+
+        try {
+            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+            const txData: TransactionData = registry.addMembers(memberArgs);
+
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+            });
+
+            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+            // Listening to the transaction
+            try {
+                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+                if (receipt.status === 1) {
+                    setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                    fetchProfiles();
+                } else {
+                    setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+                }
+            } catch (error) {
+                console.error(error);
+                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+            }
+
+        } catch (error) {
+            console.log("user rejected"); // User rejected the signature
+            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+        }
+    }
 
 
     useEffect(() => {

@@ -32,12 +32,14 @@ export default function Profile() {
     const [newProfileName, setNewProfileName] = useState('')
     const [newProfileMetadata, setNewProfileMetadata] = useState('')
     const [newProfileMembers, setNewProfileMembers] = useState<Account[]>([])
+    const [itemsChanged, setItemsChanged] = useState(false)
 
     const setInitialValues = () => {
         setSelectedProfile(userProfiles?.find(x => x.anchor === selectedProfileHash))
         setNewProfileName(userProfiles?.find(x => x.anchor === selectedProfileHash)?.name || '')
         setNewProfileMetadata(userProfiles?.find(x => x.anchor === selectedProfileHash)?.pointer || '')
-        setNewProfileMembers(userProfiles?.find(x => x.anchor === selectedProfileHash)?.members || [])
+        // setNewProfileMembers(userProfiles?.find(x => x.anchor === selectedProfileHash)?.members || [])
+        setNewProfileMembers([])
         setSingleMember('')
     }
 
@@ -50,13 +52,39 @@ export default function Profile() {
     useEffect(() => {
         if (editMode) return
         setInitialValues()
+        setItemsChanged(false)
     }, [editMode])
+
+
+    useEffect(() => {
+        if (!selectedProfile) return;
+
+        const profileNameChanged = newProfileName !== selectedProfile.name;
+        const profileMetadataChanged = newProfileMetadata !== selectedProfile.pointer;
+
+        let membersChanged = false;
+        if (selectedProfile.members.length !== newProfileMembers.length) {
+            membersChanged = true;
+        } else if (selectedProfile.members.length > 0) {
+            for (let i = 0; i < newProfileMembers.length; i++) {
+                if (newProfileMembers[i]?.address !== selectedProfile.members[i]?.address) {
+                    membersChanged = true;
+                    break;
+                }
+            }
+        } else if (newProfileMembers.length > 0) {
+            membersChanged = true;
+        }
+
+        setItemsChanged(profileNameChanged || profileMetadataChanged || membersChanged);
+    }, [newProfileName, newProfileMetadata, newProfileMembers, selectedProfile]);
+
+
 
     const handleDelete = (memberName: Account) => {
         const updatedMembers = newProfileMembers.filter((member) => member !== memberName);
         setNewProfileMembers(updatedMembers);
     };
-
 
     return (
         <Box sx={{
@@ -242,7 +270,7 @@ export default function Profile() {
             </>}
             {editMode && <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-end' }}>
                 <Button color="secondary" onClick={() => { setEditMode(false) }}>Reset</Button>
-                <Button color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
+                <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
             </Box>
             }
         </Box >

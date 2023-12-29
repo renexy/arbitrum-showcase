@@ -56,7 +56,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
   const [nonce, setNonce] = useState<number>(0)
-  const { loading, error, profiles, hasProfiles } = useUserProfiles(address || '');
+  const { loading, error, profiles, hasProfiles } = useUserProfiles('0x5052936d3c98d2d045da4995d37b0dae80c6f07f' || '');
 
   const fetchProfiles = async () => {
     if (!profiles) {

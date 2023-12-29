@@ -13,6 +13,11 @@ const GET_PROFILES_BY_USER_ADDRESS = gql`
         protocol
         pointer
       }
+      memberRole {
+        accounts {
+          id
+        }
+      }
     }
   }
 `;
@@ -24,15 +29,25 @@ export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
     onError: (error: any) => console.error("Query error:", error),
   });
 
-  const transformProfileData = (profiles: any[]): TransformedProfile[] => 
-    profiles ? profiles.map(profile => ({
+  const transformProfileData = (profiles: Profile[]): TransformedProfile[] => 
+  profiles ? profiles.map(profile => {
+    // Transform each member in the memberRole.accounts array
+    const transformedMembers = profile.memberRole.accounts.map((account: RawAccount) => {
+      const [id, address] = account.id.split("-");
+      return { id, address };
+    });
+
+    // Transform the profile data
+    return {
       anchor: profile.anchor,
       id: profile.id,
-      protocol: profile.metadata.protocol === 1 ? "IPFS" : profile.metadata.protocol.toString(),
+      protocol: profile.metadata.protocol === '1' ? "IPFS" : profile.metadata.protocol.toString(),
       pointer: profile.metadata.pointer,
       name: profile.name,
       owner: profile.owner.id,
-    })) : [];
+      members: transformedMembers,
+    };
+  }) : [];
 
   // Determine if profiles are available
   const hasProfiles = data?.profiles && data.profiles.length > 0;

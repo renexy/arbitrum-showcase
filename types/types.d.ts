@@ -3,6 +3,19 @@ type Metadata = {
   pointer: string;
 };
 
+interface MemberRole {
+  accounts: RawAccount[];
+}
+
+interface RawAccount {
+  id: string;
+}
+
+interface Account {
+  id: string;
+  address: string;
+}
+
 type Owner = {
   id: string;
 };
@@ -15,6 +28,7 @@ type Profile = {
   };
   anchor: string;
   metadata: Metadata;
+  memberRole: MemberRole;
 };
 
 type TransformedProfile = {
@@ -24,6 +38,7 @@ type TransformedProfile = {
   pointer: string;
   name: string;
   owner: string;
+  members: Account[];
 };
 
 type UseUserProfilesReturn = {

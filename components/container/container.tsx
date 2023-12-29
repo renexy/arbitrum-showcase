@@ -105,23 +105,10 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function Container() {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = React.useState(true);
     const [menuSelected, setMenuSelected] = React.useState("")
     const [profile, changeProfile] = React.useState<string | undefined>('')
     const { userProfiles, hasProfiles } = React.useContext(GlobalContext)
-
-    // const createProfileArgs: CreateProfileArgs = {
-    //     nonce: 3,
-    //     name: "Module Test 1",
-    //     metadata: {
-    //         protocol: BigInt(1),
-    //         pointer: "bafybeia4khbew3r2mkflyn7nzlvfzcb3qpfeftz5ivpzfwn77ollj47gqi",
-    //     },
-    //     owner: "0xD424FA141a6B75AA8F64be6c924aA2b314B927B3",
-    //     members: [
-    //         "0xBfd2F7c5f11fB8a84DAd4F45FefBEf3E1Af63059",
-    //     ],
-    // };
 
     React.useEffect(() => {
         if (hasProfiles && userProfiles && userProfiles.length > 0) {

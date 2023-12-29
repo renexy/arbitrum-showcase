@@ -51,6 +51,7 @@ export default function CreateProfile() {
             setCreateProfileTransactionStatus('confirm')
             return;
         }
+				
         if (!registry || !signer) {
             setShowsnackbar(true)
             setTimeout(() => {
@@ -58,13 +59,6 @@ export default function CreateProfile() {
             }, 5000)
             return;
         }
-
-        console.log("nonce:", nonce)
-        console.log("profileName:", profileName)
-        console.log("protocol:", BigInt(protocol))
-        console.log("ipfsHash:", ipfsHash)
-        console.log("owner:", owner)
-        console.log("members:", members)
 
         const createProfileArgs = {
             nonce: nonce,

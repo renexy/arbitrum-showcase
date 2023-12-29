@@ -53,7 +53,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | undefined>();
 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
-  const { loading, error, profiles, hasProfiles } = useUserProfiles("0x5052936d3c98d2d045da4995d37b0dae80c6f07f");
+  const { loading, error, profiles, hasProfiles } = useUserProfiles(address || '');
 
   const fetchProfiles = async () => {
     if (profiles)

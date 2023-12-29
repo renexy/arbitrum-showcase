@@ -24,7 +24,7 @@ export interface SimpleDialogProps {
 function TransactionDialog(props: SimpleDialogProps) {
     const { onClose, selectedValue, open } = props;
 
-    const [transactionStatus, setTransactionStatus] = React.useState<'confirm' | 'pending' | 'finished'>('confirm')
+    const [transactionStatus, setTransactionStatus] = React.useState<'confirm' | 'pending' | 'successful' | 'failed'>('confirm')
 
     const handleClose = () => {
         // todoburger: stop all metamask stuff here since dialog is closed
@@ -36,7 +36,7 @@ function TransactionDialog(props: SimpleDialogProps) {
     React.useEffect(() => {
         if (transactionStatus === 'pending') {
             setTimeout(() => {
-                setTransactionStatus('finished')
+                setTransactionStatus('successful')
             }, 3000)
         }
     }, [transactionStatus])
@@ -57,7 +57,7 @@ function TransactionDialog(props: SimpleDialogProps) {
                 <CircularProgress sx={{ color: '#f5f5f5' }} />
                 <Typography variant="h6" color={'#f5f5f5'}>Transaction confirmed</Typography>
             </Backdrop>}
-            {transactionStatus === 'finished' && <Dialog onClose={handleClose} open={open}>
+            {transactionStatus === 'successful' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
                     <DialogTitle>Transaction failed/succeeded</DialogTitle>
                     <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>

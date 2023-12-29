@@ -31,6 +31,11 @@ export default function CreateProfile() {
         }
     }, [profileName, metaData, owner])
 
+    const handleCreateProfile = async() => {
+        // create profile
+        console.log("create profile")
+    }
+
     return (
         <Box sx={{
             width: 'auto', minWidth: '50%', gap: '18px', justifyContent: 'flex-start',

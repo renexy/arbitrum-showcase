@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
 
 const httpLink = new HttpLink({
-  uri: 'https://api.thegraph.com/subgraphs/name/allo-protocol/allo-v2-goerli',
+  uri: 'https://api.thegraph.com/subgraphs/name/heisenburgirs/allo-v2-subgraph',
 });
 
 const client = new ApolloClient({

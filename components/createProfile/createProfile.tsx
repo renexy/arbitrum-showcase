@@ -57,7 +57,7 @@ export default function CreateProfile() {
             return;
         }
 
-        const createProfileArgs = {
+        const createProfileArgs: CreateProfileArgs = {
             nonce: nonce,
             name: profileName,
             metadata: {
@@ -71,7 +71,7 @@ export default function CreateProfile() {
         try {
             setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
 
-            const txData = registry.createProfile(createProfileArgs);
+            const txData: TransactionData = registry.createProfile(createProfileArgs);
             const hash = await signer.sendTransaction({
                 data: txData.data,
                 to: txData.to,
@@ -99,7 +99,6 @@ export default function CreateProfile() {
             setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
     }
-
 
     return (
         <Box sx={{

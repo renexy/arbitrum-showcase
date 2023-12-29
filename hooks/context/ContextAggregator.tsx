@@ -17,7 +17,7 @@ interface GlobalContextState {
   userProfiles: TransformedProfile[];
   nonce: number;
   hasProfiles: boolean;
-  fetchProfiles: (address: string) => void;
+  fetchProfiles: () => void;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -29,7 +29,7 @@ const GlobalContext = createContext<GlobalContextState>({
   userProfiles: [],
   nonce: 0,
   hasProfiles: false,
-  fetchProfiles: (address: string) => { },
+  fetchProfiles: () => { },
 });
 
 interface GlobalProviderProps {
@@ -65,7 +65,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     }
 
     if (profiles.length === 0) {
-      setNonce(profiles.length + 3)
+      setNonce(profiles.length)
     } else {
       setNonce(profiles.length + 1)
     }

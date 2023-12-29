@@ -29,7 +29,7 @@ export default function CreateProfile() {
 			return useContext(GlobalContext);
 		};
 
-		const { registry, signer, nonce } = useGlobalContext();
+		const { registry, signer, nonce, fetchProfiles } = useGlobalContext();
 
     const handleDelete = (memberName: string) => {
         const updatedMembers = members.filter((member) => member !== memberName);
@@ -74,6 +74,7 @@ export default function CreateProfile() {
 					const txData = registry.createProfile(createProfileArgs);
 					const hash = await signer.sendTransaction({
 							data: txData.data,
+							to: txData.to,
 							value: BigInt(txData.value),
 					});
 	
@@ -84,7 +85,8 @@ export default function CreateProfile() {
 							const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
 							if (receipt.status === 1) {
 									setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-									setTimeout(() => {setCreateProfileTransactionStatus('confirm')}, 5000);
+									setTimeout(() => {setCreateProfileTransactionStatus('confirm')}, 15000);
+									fetchProfiles();
 							} else {
 									setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
 							}

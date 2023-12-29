@@ -5,37 +5,100 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { blueGrey } from '@mui/material/colors';
 import BaseDialog from '../baseDialog/baseDialog';
+import { useState, useEffect } from 'react'
+import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
+import { useContext } from "react";
+import GlobalContext from '../../hooks/context/ContextAggregator';
+import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 
 export default function CreateProfile() {
-    const [value, setValue] = React.useState('one');
+    const [value, setValue] = useState('one');
 
     // formcontrol
-    const [profileName, setProfileName] = React.useState('')
-    const [metaData, setMetaData] = React.useState('')
-    const [owner, setOwner] = React.useState('')
-    const [singleMember, setSingleMember] = React.useState('')
-    const [members, setMembers] = React.useState<string[]>([])
-    const [disabledContinue, setDisabledContinue] = React.useState(true)
-    const [dialogOpen, setDialogOpen] = React.useState(false)
-    const [createProfileTransactionStatus, setCreateProfileTransactionStatus] = React.useState<'confirm' | 'pending' | 'finished'>('confirm')
+    const [profileName, setProfileName] = useState('')
+    const [protocol, setProtocol] = useState(1)
+    const [ipfsHash, setIpfsHash] = useState('')
+    const [owner, setOwner] = useState('')
+    const [singleMember, setSingleMember] = useState('')
+    const [members, setMembers] = useState<string[]>([])
+    const [disabledContinue, setDisabledContinue] = useState(true)
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [createProfileTransactionStatus, setCreateProfileTransactionStatus] = useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+
+		const useGlobalContext = () => {
+			return useContext(GlobalContext);
+		};
+
+		const { registry, signer, nonce } = useGlobalContext();
 
     const handleDelete = (memberName: string) => {
         const updatedMembers = members.filter((member) => member !== memberName);
         setMembers(updatedMembers);
     };
 
-    React.useEffect(() => {
-        if (profileName.length > 0 && metaData.length > 0 && owner.length > 0) {
+    useEffect(() => {
+        if (profileName.length > 0 && ipfsHash.length > 0 && owner.length > 0) {
             setDisabledContinue(false)
         } else {
             setDisabledContinue(true)
         }
-    }, [profileName, metaData, owner])
+    }, [profileName, ipfsHash, owner])
 
     const handleCreateProfile = async() => {
-        // create profile
-        console.log("create profile")
-    }
+			if (!registry || !signer) {
+					console.log("registry or signer not initialized");
+					return;
+			}
+
+			console.log("nonce:", nonce)
+			console.log("profileName:", profileName)
+			console.log("protocol:", BigInt(protocol))
+			console.log("ipfsHash:", ipfsHash)
+			console.log("owner:", owner)
+			console.log("members:", members)
+	
+			const createProfileArgs = {
+					nonce: nonce,
+					name: profileName,
+					metadata: {
+							protocol: BigInt(protocol),
+							pointer: ipfsHash,
+					},
+					owner: owner,
+					members: members,
+			};
+	
+			try {
+					setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+	
+					const txData = registry.createProfile(createProfileArgs);
+					const hash = await signer.sendTransaction({
+							data: txData.data,
+							value: BigInt(txData.value),
+					});
+	
+					setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+	
+					// Listening to the transaction
+					try {
+							const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+							if (receipt.status === 1) {
+									setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+									setTimeout(() => {setCreateProfileTransactionStatus('confirm')}, 5000);
+							} else {
+									setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+							}
+					} catch (error) {
+							console.error(error);
+							setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+					}
+	
+			} catch (error) {
+					console.log("user rejected"); // User rejected the signature
+					setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+			}
+	}
+	
 
     return (
         <Box sx={{
@@ -55,14 +118,14 @@ export default function CreateProfile() {
                         id: 'uncontrolled-native',
                     }}
                 >
-                    <option value={1}>IPFS</option>
+                    <option value={protocol}>IPFS</option>
                 </Select>
                 <TextField
                     required
                     color="secondary"
                     id="outlined-textarea"
                     label="Metadata"
-                    onChange={(e) => { setMetaData(e.target.value) }}
+                    onChange={(e) => { setIpfsHash(e.target.value) }}
                     placeholder="Metadata"
                     sx={{ 'fieldSet': { border: '1px solid grey' }, flex: 1 }}
                 />
@@ -107,7 +170,7 @@ export default function CreateProfile() {
                 onClick={() => { if (!disabledContinue) { setDialogOpen(!dialogOpen) } }}>Continue</Button>
 
             <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }}
-                dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={() => { console.log('works') }}></BaseDialog>
+                dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={() => { handleCreateProfile() }}></BaseDialog>
         </Box >
     );
 }

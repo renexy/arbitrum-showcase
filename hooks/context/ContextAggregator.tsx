@@ -15,6 +15,7 @@ interface GlobalContextState {
   provider: ethers.providers.JsonRpcProvider | undefined;
   signer: ethers.providers.JsonRpcSigner | undefined;
   userProfiles: TransformedProfile[];
+  nonce: number;
   hasProfiles: boolean;
   fetchProfiles: (address: string) => void;
 }
@@ -26,6 +27,7 @@ const GlobalContext = createContext<GlobalContextState>({
   provider: undefined,
   signer: undefined,
   userProfiles: [],
+  nonce: 0,
   hasProfiles: false,
   fetchProfiles: (address: string) => { },
 });
@@ -53,11 +55,22 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | undefined>();
 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
+  const [nonce, setNonce] = useState<number>(0)
   const { loading, error, profiles, hasProfiles } = useUserProfiles(address || '');
 
   const fetchProfiles = async () => {
-    if (profiles)
-      setUserProfiles(profiles);
+    if (!profiles) {
+      console.log("No profiles found")
+      return;
+    }
+
+    if (profiles.length === 0) {
+      setNonce(profiles.length + 3)
+    } else {
+      setNonce(profiles.length + 1)
+    }
+
+    setUserProfiles(profiles);
   }
 
   useEffect(() => {
@@ -85,7 +98,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   }, []);
 
   return (
-    <GlobalContext.Provider value={{ registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles, fetchProfiles }}>
+    <GlobalContext.Provider value={{ registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles, nonce, fetchProfiles }}>
       {children}
     </GlobalContext.Provider>
   )

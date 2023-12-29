@@ -8,13 +8,13 @@ import { ProfileNameArgs } from "@allo-team/allo-v2-sdk/dist/Registry/types";
 import { ProfileAndAddressArgs } from "@allo-team/allo-v2-sdk/dist/Registry/types";
 
 // Custom hook for retrieving registry, provider and signer from context
-const useRegistry = () => {
+const useGlobalContext = () => {
   return useContext(GlobalContext);
 };
 
 // Custom hook to retrieve registry write functions
 const useWriteRegistry = () => {
-  const { registry, signer } = useRegistry();
+  const { registry, signer } = useGlobalContext();
 
   // To create a new profile using the createProfile function
   const createProfile = async (args: CreateProfileArgs) => {

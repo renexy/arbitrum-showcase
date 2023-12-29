@@ -17,7 +17,7 @@ export interface TransactionDialogProps {
     open: boolean;
     selectedValue: string;
     onClose: (value: string) => void;
-    status: 'confirm' | 'pending' | 'finished';
+    status: 'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed';
     callbackFn?: (args?: any) => void;
 }
 
@@ -25,9 +25,11 @@ function TransactionDialog(props: TransactionDialogProps) {
     const { onClose, selectedValue, open, status, callbackFn } = props;
 
     const handleClose = () => {
-        if (status === 'pending') return
+        if (status === 'signature' || status === 'transaction') return
         onClose(selectedValue);
     };
+
+    React.useEffect(() => { console.log(status)}, [status]) 
 
     return (
         <>
@@ -37,17 +39,31 @@ function TransactionDialog(props: TransactionDialogProps) {
                     <Button size="small" variant="contained" color="secondary" onClick={() => { callbackFn!() }}>Confirm</Button>
                 </div>
             </Dialog>}
-            {status === 'pending' && <Backdrop
+            {status === 'signature' && <Backdrop
                 sx={{ color: '#fff', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={open}
                 onClick={handleClose}
             >
                 <CircularProgress sx={{ color: '#f5f5f5' }} />
-                <Typography variant="h6" color={'#f5f5f5'}>Transaction confirmed</Typography>
+                <Typography variant="h6" color={'#f5f5f5'}>Confirm Transaction</Typography>
             </Backdrop>}
-            {status === 'finished' && <Dialog onClose={handleClose} open={open}>
+            {status === 'transaction' && <Backdrop
+                sx={{ color: '#fff', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={open}
+                onClick={handleClose}
+            >
+                <CircularProgress sx={{ color: '#f5f5f5' }} />
+                <Typography variant="h6" color={'#f5f5f5'}>Transaction Sent</Typography>
+            </Backdrop>}
+            {status === 'succeeded' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
-                    <DialogTitle>Transaction failed/succeeded</DialogTitle>
+                    <DialogTitle>{status === 'succeeded' && "Profile Created Successfully"}</DialogTitle>
+                    <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
+                </div>
+            </Dialog>}
+            {status === 'failed' && <Dialog onClose={handleClose} open={open}>
+                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                    <DialogTitle>{status === 'failed' && "Failed to Create Profile"}</DialogTitle>
                     <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
                 </div>
             </Dialog>}

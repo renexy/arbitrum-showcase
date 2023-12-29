@@ -100,90 +100,100 @@ export default function Profile() {
             {selectedProfile && <>
                 <Box sx={{
                     width: '100%', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
-                    display: 'flex', flexDirection: 'column', flex: 1, padding: '10px'
+                    display: 'flex', flex: 1, flexDirection: { xs: 'column', sm: 'row' }
                 }}>
-                    <TextField
-                        id="standard-read-only-input"
-                        label="Anchor"
-                        color='secondary'
-                        value={selectedProfile.anchor}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        variant="standard"
-                    />
-                    <TextField
-                        id="standard-read-only-input"
-                        label="Name"
-                        color='secondary'
-                        value={selectedProfile.name}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        variant="standard"
-                    />
-                    <TextField
-                        id="standard-read-only-input"
-                        label="Owner"
-                        color='secondary'
-                        value={selectedProfile.owner}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        variant="standard"
-                    />
-                    <TextField
-                        id="standard-read-only-input"
-                        label="Protocol"
-                        color='secondary'
-                        value={selectedProfile?.protocol}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        variant="standard"
-                    />
-                    <TextField
-                        id="standard-read-only-input"
-                        label="Pointer"
-                        color='secondary'
-                        value={selectedProfile?.pointer}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        variant="standard"
-                    />
-                    <TextField
-                        id="outlined-adornment-password"
-                        label="Add members"
-                        variant="outlined"
-                        value={singleMember}
-                        color="secondary"
-                        onChange={(e) => { setSingleMember(e.target.value) }}
-                        sx={{ 'fieldSet': { border: '1px solid grey' } }}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton onClick={() => { setDialogOpenAdd(!dialogOpenAdd) }}
-                                        edge="end">
-                                        <AddIcon sx={{ fill: blueGrey[500] }} />
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                    <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing members</Typography>
-                    {selectedProfile?.members?.length > 0 && (
-                        <List dense sx={{ border: '1px solid grey', borderRadius: '4px' }}>
-                            {selectedProfile?.members.map((member, index) => (
-                                <ListItem key={index}>
-                                    <ListItemText primary={`${member.address.substring(0, 3)}...${member.address.substring(member.address.length - 3)}`} />
-                                    <IconButton edge="end" aria-label="delete" onClick={() => { setDialogOpenDelete(!dialogOpenDelete) }}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </ListItem>
-                            ))}
-                        </List>
-                    )}
+                    <Box sx={{
+                        flexDirection: 'column', gap: '18px', justifyContent: 'flex-start',
+                        display: 'flex', flex: { xs: 1, sm: 0.5 }
+                    }}>
+                        <TextField
+                            id="standard-read-only-input"
+                            label="Anchor"
+                            color='secondary'
+                            value={selectedProfile.anchor}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            variant="standard"
+                        />
+                        <TextField
+                            id="standard-read-only-input"
+                            label="Name"
+                            color='secondary'
+                            value={selectedProfile.name}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            variant="standard"
+                        />
+                        <TextField
+                            id="standard-read-only-input"
+                            label="Owner"
+                            color='secondary'
+                            value={selectedProfile.owner}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            variant="standard"
+                        />
+                        <TextField
+                            id="standard-read-only-input"
+                            label="Protocol"
+                            color='secondary'
+                            value={selectedProfile?.protocol}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            variant="standard"
+                        />
+                        <TextField
+                            id="standard-read-only-input"
+                            label="Pointer"
+                            color='secondary'
+                            value={selectedProfile?.pointer}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            variant="standard"
+                        />
+                        <TextField
+                            id="outlined-adornment-password"
+                            label="Add members"
+                            variant="outlined"
+                            value={singleMember}
+                            color="secondary"
+                            onChange={(e) => { setSingleMember(e.target.value) }}
+                            sx={{ 'fieldSet': { border: '1px solid grey' } }}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={() => { setDialogOpenAdd(!dialogOpenAdd) }}
+                                            edge="end">
+                                            <AddIcon sx={{ fill: blueGrey[500] }} />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </Box>
+                    <Box sx={{
+                        flexDirection: 'column', gap: '18px', justifyContent: 'flex-start',
+                        display: 'flex', flex: { xs: 1, sm: 0.5 }
+                    }}>
+                        <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing members</Typography>
+                        {selectedProfile?.members?.length > 0 && (
+                            <List dense sx={{ border: '1px solid grey', borderRadius: '4px' }}>
+                                {selectedProfile?.members.map((member, index) => (
+                                    <ListItem key={index}>
+                                        <ListItemText primary={`${member.address.substring(0, 3)}...${member.address.substring(member.address.length - 3)}`} />
+                                        <IconButton edge="end" aria-label="delete" onClick={() => { setDialogOpenDelete(!dialogOpenDelete) }}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        )}
+                    </Box>
                     <BaseDialog open={dialogOpenDelete} onClose={() => { setDialogOpenDelete(!dialogOpenDelete) }}
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleDeleteMember(e) }}></BaseDialog>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}

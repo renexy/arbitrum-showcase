@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import { Button, IconButton, InputAdornment, InputLabel, List, ListItem, ListItemText, Paper, Select, TextField, Typography } from '@mui/material';
+import { Alert, Button, IconButton, InputAdornment, InputLabel, List, ListItem, ListItemText, Paper, Select, Snackbar, TextField, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { blueGrey } from '@mui/material/colors';
@@ -23,13 +23,15 @@ export default function CreateProfile() {
     const [members, setMembers] = useState<string[]>([])
     const [disabledContinue, setDisabledContinue] = useState(true)
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [createProfileTransactionStatus, setCreateProfileTransactionStatus] = useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+    const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
+        useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+    const [showSnackbar, setShowsnackbar] = useState(false)
 
-		const useGlobalContext = () => {
-			return useContext(GlobalContext);
-		};
+    const useGlobalContext = () => {
+        return useContext(GlobalContext);
+    };
 
-		const { registry, signer, nonce, fetchProfiles } = useGlobalContext();
+    const { registry, signer, nonce, fetchProfiles } = useGlobalContext();
 
     const handleDelete = (memberName: string) => {
         const updatedMembers = members.filter((member) => member !== memberName);
@@ -44,63 +46,69 @@ export default function CreateProfile() {
         }
     }, [profileName, ipfsHash, owner])
 
-    const handleCreateProfile = async() => {
-			if (!registry || !signer) {
-					console.log("registry or signer not initialized");
-					return;
-			}
+    const handleCreateProfile = async (args?: any) => {
+        if (args && args === 'restore') {
+            setCreateProfileTransactionStatus('confirm')
+            return;
+        }
+        if (!registry || !signer) {
+            setShowsnackbar(true)
+            setTimeout(() => {
+                setShowsnackbar(false)
+            }, 5000)
+            return;
+        }
 
-			console.log("nonce:", nonce)
-			console.log("profileName:", profileName)
-			console.log("protocol:", BigInt(protocol))
-			console.log("ipfsHash:", ipfsHash)
-			console.log("owner:", owner)
-			console.log("members:", members)
-	
-			const createProfileArgs = {
-					nonce: nonce,
-					name: profileName,
-					metadata: {
-							protocol: BigInt(protocol),
-							pointer: ipfsHash,
-					},
-					owner: owner,
-					members: members,
-			};
-	
-			try {
-					setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
-	
-					const txData = registry.createProfile(createProfileArgs);
-					const hash = await signer.sendTransaction({
-							data: txData.data,
-							to: txData.to,
-							value: BigInt(txData.value),
-					});
-	
-					setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
-	
-					// Listening to the transaction
-					try {
-							const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
-							if (receipt.status === 1) {
-									setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-									setTimeout(() => {setCreateProfileTransactionStatus('confirm')}, 15000);
-									fetchProfiles();
-							} else {
-									setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
-							}
-					} catch (error) {
-							console.error(error);
-							setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
-					}
-	
-			} catch (error) {
-					console.log("user rejected"); // User rejected the signature
-					setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
-			}
-	}
-	
+        console.log("nonce:", nonce)
+        console.log("profileName:", profileName)
+        console.log("protocol:", BigInt(protocol))
+        console.log("ipfsHash:", ipfsHash)
+        console.log("owner:", owner)
+        console.log("members:", members)
+
+        const createProfileArgs = {
+            nonce: nonce,
+            name: profileName,
+            metadata: {
+                protocol: BigInt(protocol),
+                pointer: ipfsHash,
+            },
+            owner: owner,
+            members: members,
+        };
+
+        try {
+            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+            const txData = registry.createProfile(createProfileArgs);
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+            });
+
+            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+            // Listening to the transaction
+            try {
+                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+                if (receipt.status === 1) {
+                    setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                    fetchProfiles();
+                } else {
+                    setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+                }
+            } catch (error) {
+                console.error(error);
+                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+            }
+
+        } catch (error) {
+            console.log("user rejected"); // User rejected the signature
+            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+        }
+    }
+
 
     return (
         <Box sx={{
@@ -171,8 +179,17 @@ export default function CreateProfile() {
             <Button variant="contained" color="secondary" disabled={disabledContinue}
                 onClick={() => { if (!disabledContinue) { setDialogOpen(!dialogOpen) } }}>Continue</Button>
 
+            <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                open={showSnackbar}
+                color="primary"
+            >
+                <Alert severity="error" sx={{ width: '100%' }}>
+                    Please sign in to Metamask!
+                </Alert>
+            </Snackbar>
             <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }}
-                dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={() => { handleCreateProfile() }}></BaseDialog>
+                dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleCreateProfile(e) }}></BaseDialog>
         </Box >
     );
 }

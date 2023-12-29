@@ -26,10 +26,9 @@ function TransactionDialog(props: TransactionDialogProps) {
 
     const handleClose = () => {
         if (status === 'signature' || status === 'transaction') return
+        if (status === 'failed' || status === 'succeeded') callbackFn!('restore')
         onClose(selectedValue);
     };
-
-    React.useEffect(() => { console.log(status)}, [status]) 
 
     return (
         <>
@@ -72,7 +71,7 @@ function TransactionDialog(props: TransactionDialogProps) {
 }
 
 export default function BaseDialog({ open, onClose, dialogVariant, status, callback }:
-    { open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: () => void }) {
+    { open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: (args?: any) => void }) {
     const handleClose = (value: string) => {
         onClose()
     };
@@ -84,7 +83,7 @@ export default function BaseDialog({ open, onClose, dialogVariant, status, callb
                 open={open}
                 onClose={handleClose}
                 status={status}
-                callbackFn={callback}
+                callbackFn={(e) => callback!(e)}
             />
             }
         </>

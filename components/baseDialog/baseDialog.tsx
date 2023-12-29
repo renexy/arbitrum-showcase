@@ -13,43 +13,31 @@ import { blue, blueGrey } from '@mui/material/colors';
 import AddIcon from '@mui/icons-material/Add';
 import { Backdrop, CircularProgress, Fab, Typography } from '@mui/material';
 
-const emails = ['username@gmail.com', 'user02@gmail.com'];
-
-export interface SimpleDialogProps {
+export interface TransactionDialogProps {
     open: boolean;
     selectedValue: string;
     onClose: (value: string) => void;
+    status: 'confirm' | 'pending' | 'finished';
+    callbackFn?: (args?: any) => void;
 }
 
-function TransactionDialog(props: SimpleDialogProps) {
-    const { onClose, selectedValue, open } = props;
-
-    const [transactionStatus, setTransactionStatus] = React.useState<'confirm' | 'pending' | 'successful' | 'failed'>('confirm')
+function TransactionDialog(props: TransactionDialogProps) {
+    const { onClose, selectedValue, open, status, callbackFn } = props;
 
     const handleClose = () => {
-        // todoburger: stop all metamask stuff here since dialog is closed
+        if (status === 'pending') return
         onClose(selectedValue);
-        setTransactionStatus('confirm')
     };
-
-    // TODO: DELETE THIS
-    React.useEffect(() => {
-        if (transactionStatus === 'pending') {
-            setTimeout(() => {
-                setTransactionStatus('successful')
-            }, 3000)
-        }
-    }, [transactionStatus])
 
     return (
         <>
-            {transactionStatus === 'confirm' && <Dialog onClose={handleClose} open={open}>
+            {status === 'confirm' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
                     <DialogTitle>Confirm transaction</DialogTitle>
-                    <Button size="small" variant="contained" color="secondary" onClick={() => { setTransactionStatus('pending') }}>Confirm</Button>
+                    <Button size="small" variant="contained" color="secondary" onClick={() => { callbackFn!() }}>Confirm</Button>
                 </div>
             </Dialog>}
-            {transactionStatus === 'pending' && <Backdrop
+            {status === 'pending' && <Backdrop
                 sx={{ color: '#fff', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={open}
                 onClick={handleClose}
@@ -57,7 +45,7 @@ function TransactionDialog(props: SimpleDialogProps) {
                 <CircularProgress sx={{ color: '#f5f5f5' }} />
                 <Typography variant="h6" color={'#f5f5f5'}>Transaction confirmed</Typography>
             </Backdrop>}
-            {transactionStatus === 'successful' && <Dialog onClose={handleClose} open={open}>
+            {status === 'finished' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
                     <DialogTitle>Transaction failed/succeeded</DialogTitle>
                     <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
@@ -67,7 +55,8 @@ function TransactionDialog(props: SimpleDialogProps) {
     )
 }
 
-export default function BaseDialog({ open, onClose, dialogVariant }: any) {
+export default function BaseDialog({ open, onClose, dialogVariant, status, callback }:
+    { open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: () => void }) {
     const handleClose = (value: string) => {
         onClose()
     };
@@ -78,6 +67,8 @@ export default function BaseDialog({ open, onClose, dialogVariant }: any) {
                 selectedValue={''}
                 open={open}
                 onClose={handleClose}
+                status={status}
+                callbackFn={callback}
             />
             }
         </>

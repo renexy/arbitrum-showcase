@@ -17,6 +17,7 @@ export default function CreateProfile() {
     const [members, setMembers] = React.useState<string[]>([])
     const [disabledContinue, setDisabledContinue] = React.useState(true)
     const [dialogOpen, setDialogOpen] = React.useState(false)
+    const [createProfileTransactionStatus, setCreateProfileTransactionStatus] = React.useState<'confirm' | 'pending' | 'finished'>('confirm')
 
     const handleDelete = (memberName: string) => {
         const updatedMembers = members.filter((member) => member !== memberName);
@@ -105,7 +106,8 @@ export default function CreateProfile() {
             <Button variant="contained" color="secondary" disabled={disabledContinue}
                 onClick={() => { if (!disabledContinue) { setDialogOpen(!dialogOpen) } }}>Continue</Button>
 
-            <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }} dialogVariant={'transaction'}></BaseDialog>
-        </Box>
+            <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }}
+                dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={() => { console.log('works') }}></BaseDialog>
+        </Box >
     );
 }

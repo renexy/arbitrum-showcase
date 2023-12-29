@@ -154,7 +154,7 @@ export default function Profile() {
                     />
                     <TextField
                         id="outlined-adornment-password"
-                        label="Members"
+                        label="Add members"
                         variant="outlined"
                         value={singleMember}
                         color="secondary"
@@ -171,6 +171,7 @@ export default function Profile() {
                             ),
                         }}
                     />
+                    <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing members</Typography>
                     {selectedProfile?.members?.length > 0 && (
                         <List dense sx={{ border: '1px solid grey', borderRadius: '4px' }}>
                             {selectedProfile?.members.map((member, index) => (

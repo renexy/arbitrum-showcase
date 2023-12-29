@@ -18,6 +18,8 @@ interface GlobalContextState {
   nonce: number;
   hasProfiles: boolean;
   fetchProfiles: () => void;
+  selectedProfileHash: string | undefined;
+  changeSelectedProfileHash: (hash: string) => void;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -30,6 +32,8 @@ const GlobalContext = createContext<GlobalContextState>({
   nonce: 0,
   hasProfiles: false,
   fetchProfiles: () => { },
+  selectedProfileHash: '',
+  changeSelectedProfileHash: (hash) => { }
 });
 
 interface GlobalProviderProps {
@@ -55,8 +59,13 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | undefined>();
 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
+  const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
   const { loading, error, profiles, hasProfiles } = useUserProfiles('0x5052936d3c98d2d045da4995d37b0dae80c6f07f' || '');
+
+  const changeSelectedProfileHash = (hash: string) => {
+    setSelectedProfileHash(hash)
+  }
 
   const fetchProfiles = async () => {
     if (!profiles) {
@@ -92,13 +101,16 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     } else {
       console.log("Ethereum object doesn't exist on window. You should consider installing MetaMask!");
     }
-  }, [chainId, chain, address, isConnected, hasProfiles]);
+  }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash, changeSelectedProfileHash]);
 
   useEffect(() => {
   }, []);
 
   return (
-    <GlobalContext.Provider value={{ registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles, nonce, fetchProfiles }}>
+    <GlobalContext.Provider value={{
+      registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles,
+      nonce, fetchProfiles, selectedProfileHash, changeSelectedProfileHash
+    }}>
       {children}
     </GlobalContext.Provider>
   )

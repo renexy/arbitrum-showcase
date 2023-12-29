@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import { Alert, Button, IconButton, InputAdornment, InputLabel, List, ListItem, ListItemText, Paper, Select, Snackbar, TextField, Typography } from '@mui/material';
+import { Alert, Button, IconButton, InputAdornment, InputLabel, List, ListItem, ListItemText, MenuItem, Paper, Select, Snackbar, TextField, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { blueGrey } from '@mui/material/colors';
@@ -12,9 +12,6 @@ import GlobalContext from '../../hooks/context/ContextAggregator';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 
 export default function CreateProfile() {
-    const [value, setValue] = useState('one');
-
-    // formcontrol
     const [profileName, setProfileName] = useState('')
     const [protocol, setProtocol] = useState(1)
     const [ipfsHash, setIpfsHash] = useState('')
@@ -51,7 +48,7 @@ export default function CreateProfile() {
             setCreateProfileTransactionStatus('confirm')
             return;
         }
-				
+
         if (!registry || !signer) {
             setShowsnackbar(true)
             setTimeout(() => {
@@ -114,15 +111,15 @@ export default function CreateProfile() {
                 id="outlined-basic" variant="outlined" color="secondary" sx={{ 'fieldSet': { border: '1px solid grey' } }} />
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', width: '100%' }}>
                 <Select
-                    defaultValue={1}
                     sx={{ 'fieldSet': { border: '1px solid grey' } }}
                     color="secondary"
+                    value={protocol}
                     inputProps={{
                         name: 'Metadata',
                         id: 'uncontrolled-native',
                     }}
                 >
-                    <option value={protocol}>IPFS</option>
+                    <MenuItem value={1} selected>IPFS</MenuItem>
                 </Select>
                 <TextField
                     required

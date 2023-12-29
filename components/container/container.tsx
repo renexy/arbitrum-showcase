@@ -105,19 +105,18 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function Container() {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(true);
+    const [open, setOpen] = React.useState(false);
     const [menuSelected, setMenuSelected] = React.useState("")
-    const [profile, changeProfile] = React.useState<string | undefined>('')
-    const { userProfiles, hasProfiles } = React.useContext(GlobalContext)
+    const { userProfiles, hasProfiles, selectedProfileHash, changeSelectedProfileHash } = React.useContext(GlobalContext)
 
     React.useEffect(() => {
         if (hasProfiles && userProfiles && userProfiles.length > 0) {
-            if (!profile) {
-                changeProfile(userProfiles[0].anchor)
+            if (!selectedProfileHash) {
+                changeSelectedProfileHash(userProfiles[0].anchor)
                 setMenuSelected('Profile')
             }
         }
-    }, [userProfiles, hasProfiles])
+    }, [userProfiles, hasProfiles, selectedProfileHash, changeSelectedProfileHash])
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -129,11 +128,10 @@ export default function Container() {
 
     const handleChange = (event: SelectChangeEvent) => {
         const selectedValue = event.target.value;
-        console.log(selectedValue, "lol")
         if (selectedValue === 'Create') {
             setMenuSelected('Create')
         } else {
-            changeProfile(selectedValue);
+            changeSelectedProfileHash(selectedValue);
         }
     };
 
@@ -166,10 +164,9 @@ export default function Container() {
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
                     {userProfiles && userProfiles.length > 0 ? <FormControl sx={{ flex: 1 }}>
-
-                        <Select disableUnderline
+                        <Select
                             sx={{ '.MuiOutlinedInput-notchedOutline': { border: 'none' }, color: grey[600] }}
-                            value={profile}
+                            value={selectedProfileHash || ''}
                             color="secondary"
                             onChange={handleChange}
                             displayEmpty
@@ -192,8 +189,8 @@ export default function Container() {
                 <Divider />
                 <List>
                     {['Profile', 'Pool'].map((text, index) => (
-                        <ListItem key={text} disablePadding sx={{ display: 'block' }} onClick={() => { if (profile) { setMenuSelected(text) } }}>
-                            <ListItemButton disabled={!profile}
+                        <ListItem key={text} disablePadding sx={{ display: 'block' }} onClick={() => { if (selectedProfileHash) { setMenuSelected(text) } }}>
+                            <ListItemButton disabled={!selectedProfileHash}
                                 sx={{
                                     minHeight: 48,
                                     justifyContent: open ? 'initial' : 'center',
@@ -248,7 +245,7 @@ export default function Container() {
                 alignItems: 'center', justifyContent: 'center', textAlign: 'center'
             }}>
                 <DrawerHeader />
-                {!menuSelected && !profile && <Typography variant="h5" paragraph sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                {!menuSelected && !selectedProfileHash && <Typography variant="h5" paragraph sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                     You don&apos;t have any profiles. Click &apos;Create profile&apos; in top left corner to start.
                 </Typography>
                 }

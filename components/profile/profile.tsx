@@ -1,12 +1,20 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import { Alert, Button, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Skeleton, Snackbar, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Skeleton, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import { useEffect, useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BaseDialog from '../baseDialog/baseDialog';
 import AddIcon from '@mui/icons-material/Add';
 import { blueGrey } from '@mui/material/colors';
+import shortenEthAddress from '@/global/functions';
+import EditIcon from '@mui/icons-material/Edit';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import EditOffIcon from '@mui/icons-material/EditOff';
+
+const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+};
 
 export default function Profile() {
     const [selectedProfile, setSelectedProfile] = useState<TransformedProfile | undefined>(undefined)
@@ -16,75 +24,44 @@ export default function Profile() {
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     const [showSnackbar, setShowsnackbar] = useState(false)
+    const [showSnackbarCopied, setShowsnackbarCopied] = useState(false)
     const [singleMember, setSingleMember] = useState('')
+    const [editMode, setEditMode] = useState(false)
+
+    //form
+    const [newProfileName, setNewProfileName] = useState('')
+    const [newProfileMetadata, setNewProfileMetadata] = useState('')
+    const [newProfileMembers, setNewProfileMembers] = useState<Account[]>([])
+
+    const setInitialValues = () => {
+        setSelectedProfile(userProfiles?.find(x => x.anchor === selectedProfileHash))
+        setNewProfileName(userProfiles?.find(x => x.anchor === selectedProfileHash)?.name || '')
+        setNewProfileMetadata(userProfiles?.find(x => x.anchor === selectedProfileHash)?.pointer || '')
+        setNewProfileMembers(userProfiles?.find(x => x.anchor === selectedProfileHash)?.members || [])
+        setSingleMember('')
+    }
 
     useEffect(() => {
         if (!hasProfiles) return
         if (!selectedProfileHash) return
-        setSelectedProfile(userProfiles?.find(x => x.anchor === selectedProfileHash))
+        setInitialValues()
     }, [userProfiles, hasProfiles, selectedProfileHash])
 
-    const handleDeleteMember = async (args?: any) => {
-        if (args && args === 'restore') {
-            setCreateProfileTransactionStatus('confirm')
-            return;
-        }
+    useEffect(() => {
+        if (editMode) return
+        setInitialValues()
+    }, [editMode])
 
-        if (!registry || !signer) {
-            setShowsnackbar(true)
-            setTimeout(() => {
-                setShowsnackbar(false)
-            }, 5000)
-            return;
-        }
+    const handleDelete = (memberName: Account) => {
+        const updatedMembers = newProfileMembers.filter((member) => member !== memberName);
+        setNewProfileMembers(updatedMembers);
+    };
 
-        // const createProfileArgs = {
-        //     nonce: nonce,
-        //     name: profileName,
-        //     metadata: {
-        //         protocol: BigInt(protocol),
-        //         pointer: ipfsHash,
-        //     },
-        //     owner: owner,
-        //     members: members,
-        // };
-
-        try {
-            setCreateProfileTransactionStatus('signature');
-
-            // const txData = registry.createProfile(createProfileArgs);
-            // const hash = await signer.sendTransaction({
-            //     data: txData.data,
-            //     to: txData.to,
-            //     value: BigInt(txData.value),
-            // });
-
-            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
-
-            // Listening to the transaction
-            try {
-                // const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
-                // if (receipt.status === 1) {
-                //     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                //     fetchProfiles();
-                // } else {
-                //     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
-                // }
-            } catch (error) {
-                console.error(error);
-                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
-            }
-
-        } catch (error) {
-            console.log("user rejected"); // User rejected the signature
-            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
-        }
-    }
 
     return (
         <Box sx={{
             width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
-            display: 'flex', flexDirection: 'column', flex: 1, padding: '40px 20px 20px 20px'
+            display: 'flex', flexDirection: 'column', flex: 1, padding: '12px'
         }}>
             {!selectedProfile && <Stack spacing={1}>
                 <Skeleton variant="rectangular" width={210} height={60} />
@@ -99,63 +76,110 @@ export default function Profile() {
             }
             {selectedProfile && <>
                 <Box sx={{
+                    width: '100%', minWidth: '100%', display: 'flex', alignItems: 'center',
+                    paddingBottom: '16px'
+                }}>
+                    <TextField
+                        id="standard-read-only-input"
+                        color='secondary'
+                        sx={{ textAlign: 'left', flex: 1 }}
+                        value={newProfileName}
+                        onChange={(e) => { setNewProfileName(e.target.value) }}
+                        InputProps={{
+                            readOnly: !editMode,
+                            disableUnderline: true,
+                            sx: {
+                                fontSize: '1.5rem',
+                                color: 'rgba(0, 0, 0, 0.6)'
+                            }
+                        }}
+                        variant="standard"
+                    />
+                    {!editMode && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
+                    {editMode && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
+                </Box>
+                <Box sx={{
                     width: '100%', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
                     display: 'flex', flex: 1, flexDirection: { xs: 'column', sm: 'row' }
                 }}>
                     <Box sx={{
                         flexDirection: 'column', gap: '18px', justifyContent: 'flex-start',
-                        display: 'flex', flex: { xs: 1, sm: 0.5 }
+                        display: 'flex', flex: { xs: 0.2, sm: 0.5 }
                     }}>
+                        <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', width: '100%' }}>
+                            <TextField
+                                id="standard-read-only-input"
+                                label="Id"
+                                color='secondary'
+                                sx={{ flex: '1 0 auto', minWidth: '200px' }}
+                                value={shortenEthAddress(selectedProfile.id)}
+                                InputProps={{
+                                    readOnly: true,
+                                    endAdornment: (<InputAdornment position="end">
+                                        <ContentCopyIcon sx={{ cursor: 'pointer' }}
+                                            onClick={() => {
+                                                copyToClipboard(selectedProfile.anchor);
+                                                setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
+                                            }} />
+                                    </InputAdornment>)
+                                }}
+                                variant="standard"
+                            >
+                            </TextField>
+                            <TextField
+                                id="standard-read-only-input"
+                                label="Anchor"
+                                color='secondary'
+                                sx={{ flex: '1 0 auto', minWidth: '200px' }}
+                                value={shortenEthAddress(selectedProfile.anchor)}
+                                InputProps={{
+                                    readOnly: true,
+                                    endAdornment: (<InputAdornment position="end">
+                                        <ContentCopyIcon sx={{ cursor: 'pointer' }}
+                                            onClick={() => {
+                                                copyToClipboard(selectedProfile.anchor);
+                                                setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
+                                            }} />
+                                    </InputAdornment>)
+                                }}
+                                variant="standard"
+                            >
+                            </TextField>
+                            <TextField
+                                id="standard-read-only-input"
+                                label="Owner"
+                                color='secondary'
+                                sx={{ flex: '1 0 auto', minWidth: '200px' }}
+                                value={shortenEthAddress(selectedProfile.owner)}
+                                InputProps={{
+                                    readOnly: true,
+                                    endAdornment: (<InputAdornment position="end">
+                                        <ContentCopyIcon sx={{ cursor: 'pointer' }}
+                                            onClick={() => {
+                                                copyToClipboard(selectedProfile.owner);
+                                                setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
+                                            }} />
+                                    </InputAdornment>)
+                                }}
+                                variant="standard"
+                            />
+                        </div>
                         <TextField
                             id="standard-read-only-input"
-                            label="Anchor"
+                            label="IPFS"
                             color='secondary'
-                            value={selectedProfile.anchor}
+                            value={newProfileMetadata}
+                            onChange={(e) => { setNewProfileMetadata(e.target.value) }}
                             InputProps={{
-                                readOnly: true,
+                                readOnly: !editMode,
                             }}
                             variant="standard"
                         />
-                        <TextField
-                            id="standard-read-only-input"
-                            label="Name"
-                            color='secondary'
-                            value={selectedProfile.name}
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            variant="standard"
-                        />
-                        <TextField
-                            id="standard-read-only-input"
-                            label="Owner"
-                            color='secondary'
-                            value={selectedProfile.owner}
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            variant="standard"
-                        />
-                        <TextField
-                            id="standard-read-only-input"
-                            label="Protocol"
-                            color='secondary'
-                            value={selectedProfile?.protocol}
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            variant="standard"
-                        />
-                        <TextField
-                            id="standard-read-only-input"
-                            label="Pointer"
-                            color='secondary'
-                            value={selectedProfile?.pointer}
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            variant="standard"
-                        />
+                    </Box>
+                    <Box sx={{
+                        flexDirection: 'column', gap: '18px', justifyContent: 'flex-start',
+                        display: 'flex', flex: { xs: 0.5, sm: 0.5 }
+                    }}>
                         <TextField
                             id="outlined-adornment-password"
                             label="Add members"
@@ -165,39 +189,37 @@ export default function Profile() {
                             onChange={(e) => { setSingleMember(e.target.value) }}
                             sx={{ 'fieldSet': { border: '1px solid grey' } }}
                             InputProps={{
+                                readOnly: !editMode,
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton onClick={() => { setDialogOpenAdd(!dialogOpenAdd) }}
-                                            edge="end">
+                                        <IconButton onClick={() => {
+                                            if (singleMember.length > 0) {
+                                                setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }]); setSingleMember('')
+                                            }
+                                        }} edge="end">
                                             <AddIcon sx={{ fill: blueGrey[500] }} />
                                         </IconButton>
                                     </InputAdornment>
                                 ),
                             }}
                         />
-                    </Box>
-                    <Box sx={{
-                        flexDirection: 'column', gap: '18px', justifyContent: 'flex-start',
-                        display: 'flex', flex: { xs: 1, sm: 0.5 }
-                    }}>
                         <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing members</Typography>
-                        {selectedProfile?.members?.length > 0 && (
-                            <List dense sx={{ border: '1px solid grey', borderRadius: '4px' }}>
-                                {selectedProfile?.members.map((member, index) => (
+                        {newProfileMembers && newProfileMembers.length > 0 && (
+                            <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
+                                {newProfileMembers.map((member, index) => (
                                     <ListItem key={index}>
-                                        <ListItemText primary={`${member.address.substring(0, 3)}...${member.address.substring(member.address.length - 3)}`} />
-                                        <IconButton edge="end" aria-label="delete" onClick={() => { setDialogOpenDelete(!dialogOpenDelete) }}>
+                                        <ListItemText primary={shortenEthAddress(member.address)} />
+                                        {editMode && <IconButton edge="end" aria-label="delete"
+                                            onClick={() => handleDelete(member)}>
                                             <DeleteIcon />
-                                        </IconButton>
+                                        </IconButton>}
                                     </ListItem>
                                 ))}
                             </List>
                         )}
                     </Box>
-                    <BaseDialog open={dialogOpenDelete} onClose={() => { setDialogOpenDelete(!dialogOpenDelete) }}
-                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleDeleteMember(e) }}></BaseDialog>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
-                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleDeleteMember(e) }}></BaseDialog>
+                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { alert(e) }}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                         open={showSnackbar}
@@ -207,8 +229,22 @@ export default function Profile() {
                             Please sign in to Metamask!
                         </Alert>
                     </Snackbar>
+                    <Snackbar
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        open={showSnackbarCopied}
+                        color="secondary"
+                    >
+                        <Alert severity="success" sx={{ width: '100%' }}>
+                            Copied to clipboard!
+                        </Alert>
+                    </Snackbar>
                 </Box>
             </>}
+            {editMode && <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-end' }}>
+                <Button color="secondary" onClick={() => { setEditMode(false) }}>Reset</Button>
+                <Button color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
+            </Box>
+            }
         </Box >
     );
 }

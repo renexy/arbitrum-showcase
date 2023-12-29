@@ -83,6 +83,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   }
 
   useEffect(() => {
+    console.log('yo')
     if (chainId) {
       setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
       setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
@@ -101,7 +102,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     } else {
       console.log("Ethereum object doesn't exist on window. You should consider installing MetaMask!");
     }
-  }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash, changeSelectedProfileHash]);
+  }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash]);
 
   useEffect(() => {
   }, []);

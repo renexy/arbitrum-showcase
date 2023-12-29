@@ -155,7 +155,7 @@ export default function CreateProfile() {
                 }}
             />
             {members.length > 0 && (
-                <List dense sx={{ border: '1px solid grey', borderRadius: '4px' }}>
+                <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
                     {members.map((member, index) => (
                         <ListItem key={index}>
                             <ListItemText primary={`${member.substring(0, 3)}...${member.substring(member.length - 3)}`} />

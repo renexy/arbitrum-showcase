@@ -301,7 +301,7 @@ export default function Profile() {
                         )}
                     </Box>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
-                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { alert(e) }}></BaseDialog>
+                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleAddMembers(e) }}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                         open={showSnackbar}

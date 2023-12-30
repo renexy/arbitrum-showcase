@@ -11,7 +11,7 @@ import shortenEthAddress from '@/global/functions';
 import EditIcon from '@mui/icons-material/Edit';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EditOffIcon from '@mui/icons-material/EditOff';
-import { MemberArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
+import { MemberArgs, ProfileMetadataArgs, ProfileNameArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
 
 const copyToClipboard = (text: string) => {
@@ -58,7 +58,160 @@ export default function Profile() {
         setItemsChanged(false)
     }, [editMode])
 
-    const handleAddMembers = async (args?: any) => {
+    const handleNameUpdate = async (registry: any, signer: any) => {
+      // this var holds the new name
+      var newProfileNameAdd = newProfileName
+
+      if (newProfileNameAdd === selectedProfile?.name) {
+        console.log("WHAT?")
+        return;
+      }
+      console.log("newProfileNameAdd", newProfileNameAdd)
+      console.log("selectedProfile", selectedProfile?.name)
+
+      const nameArgs: ProfileNameArgs = {
+          profileId: selectedProfile?.id || '',
+          name: newProfileNameAdd,
+      };
+
+      try {
+        setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+        const txData: TransactionData = registry.updateProfileName(nameArgs);
+
+        const hash = await signer.sendTransaction({
+            data: txData.data,
+            to: txData.to,
+            value: BigInt(txData.value),
+        });
+
+        setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+        // Listening to the transaction
+        try {
+            const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+            if (receipt.status === 1) {
+                setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                refetchProfiles();
+            } else {
+                setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+            }
+        } catch (error) {
+            console.error(error);
+            setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+        }
+      } catch (error) {
+          console.log("user rejected"); // User rejected the signature
+          setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+      }
+    }
+
+    const handleMetadataUpdate = async (registry: any, signer: any) => {
+      // this var holds the new metadata
+      var newProfileMetadataAdd = newProfileMetadata
+
+      if (newProfileMetadataAdd === selectedProfile?.pointer) {
+        return;
+      }
+
+      const metadataArgs: ProfileMetadataArgs  = {
+          profileId: selectedProfile?.id || '',
+          metadata: {
+              protocol: BigInt(Number(selectedProfile?.protocol)),
+              pointer: newProfileMetadataAdd,
+          },
+      };
+
+      try {
+        setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+        const txData: TransactionData = registry.updateProfileMetadata(metadataArgs);
+
+        const hash = await signer.sendTransaction({
+            data: txData.data,
+            to: txData.to,
+            value: BigInt(txData.value),
+        });
+
+        setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+        // Listening to the transaction
+        try {
+            const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+            if (receipt.status === 1) {
+                setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                refetchProfiles();
+            } else {
+                setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+            }
+        } catch (error) {
+            console.error(error);
+            setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+        }
+      } catch (error) {
+          console.log("user rejected"); // User rejected the signature
+          setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+      }
+    }
+
+    const handleMembersUpdate = async (registry: any, signer: any) => {
+      if (newAddresses.length === 0) {
+        return;
+      }
+
+      // we don't want to add the members that exist in selectProfile
+      // so we have to take those out!
+      var newMembersToAdd = selectedProfile?.members
+      // this array holds the new addresses
+      var newAddresses = newProfileMembers
+
+      // we don't want to make any changes if any of the data matches selectedProfile
+
+      const filteredMembers = newAddresses?.filter((member) => { return !newMembersToAdd?.find(x => x.address === member.address) })
+
+      const memberArgs: MemberArgs = {
+          profileId: selectedProfile?.id || '',
+          members: filteredMembers.map(member => member.address),
+      };
+
+      console.log(memberArgs)
+      console.log(selectedProfile?.id)
+      console.log(newProfileMembers.map(member => member.address))
+
+      try {
+          setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+          const txData: TransactionData = registry.addMembers(memberArgs);
+
+          const hash = await signer.sendTransaction({
+              data: txData.data,
+              to: txData.to,
+              value: BigInt(txData.value),
+          });
+
+          setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+          // Listening to the transaction
+          try {
+              const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+              if (receipt.status === 1) {
+                  setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                  refetchProfiles();
+              } else {
+                  setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+              }
+          } catch (error) {
+              console.error(error);
+              setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+          }
+
+      } catch (error) {
+          console.log("user rejected"); // User rejected the signature
+          setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+      }
+    }
+
+    const handleUpdate = async (args?: any) => {
         if (args && args === 'restore') {
             setCreateProfileTransactionStatus('confirm')
             return;
@@ -72,60 +225,12 @@ export default function Profile() {
             return;
         }
 
-        // we don't want to add the members that exist in selectProfile
-        // so we have to take those out!
-        var newMembersToAdd = selectedProfile?.members
-        // this array holds the new addresses
-        var newAddresses = newProfileMembers
-        // this var holds the new name
-        var newProfileNameAdd = newProfileName
-        // this var holds the new metadata
-        var newProfileMetadataAdd = newProfileMetadata
+        handleMembersUpdate(registry, signer)
 
-        // we don't want to make any changes if any of the data matches selectedProfile
+        handleNameUpdate(registry, signer)
 
-        const memberArgs: MemberArgs = {
-            profileId: selectedProfile?.id || '',
-            members: newProfileMembers.map(member => member.address),
-        };
-
-        console.log(memberArgs)
-        console.log(selectedProfile?.id)
-        console.log(newProfileMembers.map(member => member.address))
-
-        try {
-            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
-
-            const txData: TransactionData = registry.addMembers(memberArgs);
-
-            const hash = await signer.sendTransaction({
-                data: txData.data,
-                to: txData.to,
-                value: BigInt(txData.value),
-            });
-
-            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
-
-            // Listening to the transaction
-            try {
-                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
-                if (receipt.status === 1) {
-                    setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    refetchProfiles();
-                } else {
-                    setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
-                }
-            } catch (error) {
-                console.error(error);
-                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
-            }
-
-        } catch (error) {
-            console.log("user rejected"); // User rejected the signature
-            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
-        }
+        handleMetadataUpdate(registry, signer)
     }
-
 
     useEffect(() => {
         if (!selectedProfile) return;
@@ -215,7 +320,7 @@ export default function Profile() {
                                     endAdornment: (<InputAdornment position="end">
                                         <ContentCopyIcon sx={{ cursor: 'pointer' }}
                                             onClick={() => {
-                                                copyToClipboard(selectedProfile.anchor);
+                                                copyToClipboard(selectedProfile.id);
                                                 setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
                                             }} />
                                     </InputAdornment>)
@@ -314,8 +419,7 @@ export default function Profile() {
                             <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
                                 {newProfileMembers.map((member, index) => (
                                     <ListItem key={index}>
-                                        {/* <ListItemText primary={shortenEthAddress(member.address)} /> */}
-                                        <ListItemText primary={member.address} />
+                                        <ListItemText primary={shortenEthAddress(member.address)} />
                                         {editMode && <IconButton edge="end" aria-label="delete"
                                             onClick={() => handleDelete(member)}>
                                             <DeleteIcon />
@@ -326,7 +430,7 @@ export default function Profile() {
                         )}
                     </Box>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
-                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleAddMembers(e) }}></BaseDialog>
+                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                         open={showSnackbar}

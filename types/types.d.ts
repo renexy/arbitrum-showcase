@@ -46,4 +46,5 @@ type UseUserProfilesReturn = {
   error?: ApolloError;
   profiles?: TransformedProfile[];
   hasProfiles: boolean;
+  refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
 };

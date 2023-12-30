@@ -17,7 +17,7 @@ interface GlobalContextState {
   userProfiles: TransformedProfile[];
   nonce: number;
   hasProfiles: boolean;
-  fetchProfiles: () => void;
+  refetchProfiles: () => void;
   selectedProfileHash: string | undefined;
   changeSelectedProfileHash: (hash: string) => void;
 }
@@ -31,7 +31,7 @@ const GlobalContext = createContext<GlobalContextState>({
   userProfiles: [],
   nonce: 0,
   hasProfiles: false,
-  fetchProfiles: () => { },
+  refetchProfiles: () => { },
   selectedProfileHash: '',
   changeSelectedProfileHash: (hash) => { }
 });
@@ -61,25 +61,15 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
   const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
-  const { loading, error, profiles, hasProfiles } = useUserProfiles(address || '');
+  const { loading, error, profiles, hasProfiles, refetch } = useUserProfiles(address || '');
 
   const changeSelectedProfileHash = (hash: string) => {
     setSelectedProfileHash(hash)
   }
 
-  const fetchProfiles = async () => {
-    if (!profiles) {
-      console.log("No profiles found")
-      return;
-    }
-
-    if (profiles.length === 0) {
-      setNonce(profiles.length)
-    } else {
-      setNonce(profiles.length + 1)
-    }
-
-    setUserProfiles(profiles);
+  const refetchProfiles = async () => {
+    const newProfiles = await refetch()
+    setUserProfiles(newProfiles.data.profiles);
   }
 
   useEffect(() => {
@@ -88,8 +78,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       console.log("CHAINID", chainId)
       setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
       setMicroStrategy(new MicroGrantsStrategy({ chain: chainId, rpc: window.ethereum }));
-      fetchProfiles()
-    } else {
     }
 
     if (window.ethereum) {
@@ -101,12 +89,28 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     } else {
       console.log("Ethereum object doesn't exist on window. You should consider installing MetaMask!");
     }
+
+    
+    if (!profiles) {
+      console.log("No profiles found")
+      return;
+    }
+
+    if (profiles.length === 0) {
+      setNonce(profiles.length)
+    } else {
+      setNonce(profiles.length + 1)
+    }
+
+    if (isConnected) {
+      setUserProfiles(profiles);
+    }
   }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash]);
 
   return (
     <GlobalContext.Provider value={{
       registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles,
-      nonce, fetchProfiles, selectedProfileHash, changeSelectedProfileHash
+      nonce, refetchProfiles, selectedProfileHash, changeSelectedProfileHash
     }}>
       {children}
     </GlobalContext.Provider>

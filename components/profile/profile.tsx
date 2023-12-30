@@ -46,7 +46,7 @@ export default function Profile() {
         setSingleMember('')
     }
 
-    const { fetchProfiles } = useContext(GlobalContext)
+    const { refetchProfiles } = useContext(GlobalContext)
 
     useEffect(() => {
         setInitialValues()
@@ -111,7 +111,7 @@ export default function Profile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    fetchProfiles();
+                    refetchProfiles();
                 } else {
                     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }

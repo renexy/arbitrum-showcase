@@ -119,6 +119,7 @@ export default function Container() {
     }, [userProfiles, hasProfiles, selectedProfileHash])
 
     React.useEffect(() => {
+        console.log('2', userProfiles)
 
     }, [userProfiles])
 

@@ -28,7 +28,7 @@ export default function CreateProfile() {
         return useContext(GlobalContext);
     };
 
-    const { registry, signer, nonce, fetchProfiles } = useGlobalContext();
+    const { registry, signer, nonce, refetchProfiles } = useGlobalContext();
 
     const handleDelete = (memberName: string) => {
         const updatedMembers = members.filter((member) => member !== memberName);
@@ -57,8 +57,9 @@ export default function CreateProfile() {
             return;
         }
 
+				console.log("nonce: ", nonce)
         const createProfileArgs: CreateProfileArgs = {
-            nonce: nonce,
+            nonce: nonce + 1,
             name: profileName,
             metadata: {
                 protocol: BigInt(protocol),
@@ -85,7 +86,7 @@ export default function CreateProfile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    fetchProfiles();
+                    refetchProfiles();
                 } else {
                     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }

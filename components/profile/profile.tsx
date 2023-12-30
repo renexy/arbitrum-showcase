@@ -209,7 +209,7 @@ export default function Profile() {
                                 label="Id"
                                 color='secondary'
                                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
-                                value={shortenEthAddress(selectedProfile.id)}
+                                value={selectedProfile?.id && selectedProfile.id.length > 9 ? shortenEthAddress(selectedProfile.id) : selectedProfile?.id}
                                 InputProps={{
                                     readOnly: true,
                                     endAdornment: (<InputAdornment position="end">
@@ -228,7 +228,7 @@ export default function Profile() {
                                 label="Anchor"
                                 color='secondary'
                                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
-                                value={shortenEthAddress(selectedProfile.anchor)}
+                                value={selectedProfile?.anchor && selectedProfile.anchor.length > 9 ? shortenEthAddress(selectedProfile.anchor) : selectedProfile?.anchor}
                                 InputProps={{
                                     readOnly: true,
                                     endAdornment: (<InputAdornment position="end">
@@ -247,7 +247,7 @@ export default function Profile() {
                                 label="Owner"
                                 color='secondary'
                                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
-                                value={shortenEthAddress(selectedProfile.owner)}
+                                value={selectedProfile?.owner && selectedProfile.owner.length > 9 ? shortenEthAddress(selectedProfile.owner) : selectedProfile?.owner}
                                 InputProps={{
                                     readOnly: true,
                                     endAdornment: (<InputAdornment position="end">
@@ -314,8 +314,7 @@ export default function Profile() {
                             <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
                                 {newProfileMembers.map((member, index) => (
                                     <ListItem key={index}>
-                                        {/* <ListItemText primary={shortenEthAddress(member.address)} /> */}
-                                        <ListItemText primary={member.address} />
+                                        <ListItemText primary={member?.address && member.address.length > 9 ? shortenEthAddress(member.address) : member?.address} />
                                         {editMode && <IconButton edge="end" aria-label="delete"
                                             onClick={() => handleDelete(member)}>
                                             <DeleteIcon />

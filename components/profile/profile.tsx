@@ -20,7 +20,7 @@ const copyToClipboard = (text: string) => {
 
 export default function Profile() {
     const [selectedProfile, setSelectedProfile] = useState<TransformedProfile | undefined>(undefined)
-    const { registry, signer, userProfiles, hasProfiles, selectedProfileHash, changeSelectedProfileHash } = React.useContext(GlobalContext)
+    const { registry, signer, userProfiles, hasProfiles, selectedProfileHash } = React.useContext(GlobalContext)
     const [dialogOpenDelete, setDialogOpenDelete] = useState(false)
     const [dialogOpenAdd, setDialogOpenAdd] = useState(false)
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
@@ -47,6 +47,10 @@ export default function Profile() {
     }
 
     const { fetchProfiles } = useContext(GlobalContext)
+
+    useEffect(() => {
+        setInitialValues()
+    }, [selectedProfileHash])
 
     useEffect(() => {
         if (editMode) return

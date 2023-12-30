@@ -116,7 +116,11 @@ export default function Container() {
                 setMenuSelected('Profile')
             }
         }
-    }, [userProfiles, hasProfiles, selectedProfileHash, changeSelectedProfileHash])
+    }, [userProfiles, hasProfiles, selectedProfileHash])
+
+    React.useEffect(() => {
+
+    }, [userProfiles])
 
     const handleDrawerOpen = () => {
         setOpen(true);

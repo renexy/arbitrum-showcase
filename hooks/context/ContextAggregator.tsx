@@ -83,7 +83,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   }
 
   useEffect(() => {
-    console.log('yo')
     if (chainId) {
       setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
       console.log("CHAINID", chainId)
@@ -91,7 +90,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       setMicroStrategy(new MicroGrantsStrategy({ chain: chainId, rpc: window.ethereum }));
       fetchProfiles()
     } else {
-      console.log("ChainId undefined");
     }
 
     if (window.ethereum) {

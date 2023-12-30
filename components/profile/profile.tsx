@@ -155,9 +155,12 @@ export default function Profile() {
     }
 
     const handleMembersUpdate = async (registry: any, signer: any) => {
-      if (newAddresses.length === 0) {
+      if (newProfileMembers.length === 0) {
+        console.log("HUH")
         return;
       }
+
+      console.log("newProfileMembers", newProfileMembers) 
 
       // we don't want to add the members that exist in selectProfile
       // so we have to take those out!

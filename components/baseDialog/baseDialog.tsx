@@ -63,7 +63,7 @@ function TransactionDialog(props: TransactionDialogProps) {
             {status === 'failed' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
                     <DialogTitle>{status === 'failed' && "Failed to Create Profile"}</DialogTitle>
-                    <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
+                    <Button sx={{ height: '12px' }} variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
                 </div>
             </Dialog>}
         </>

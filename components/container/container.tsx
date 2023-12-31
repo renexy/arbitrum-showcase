@@ -31,6 +31,7 @@ import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import BaseDialog from '../baseDialog/baseDialog';
 import CreateProfile from '../createProfile/createProfile';
 import GlobalContext from '@/hooks/context/ContextAggregator';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 const drawerWidth = 240;
 
@@ -181,9 +182,9 @@ export default function Container() {
                                 return <MenuItem key={item.anchor} value={item.anchor}>{item.name}</MenuItem>
                             })}
                             <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>
-                                <Fab size="small" color="secondary" aria-label="add" sx={{ alignSelf: 'flex-end', height: '25px', width: '25px', minHeight: '20px' }}>
-                                    <AddIcon sx={{ fill: 'white' }} />
-                                </Fab>Create profile</MenuItem>
+                                <AddCircleIcon />
+                                Create profile
+                            </MenuItem>
                         </Select>
                     </FormControl> : <Button sx={{ flex: 1 }} variant="outlined" color="secondary" onClick={() => { setMenuSelected('Create') }}>Create profile</Button>
                     }

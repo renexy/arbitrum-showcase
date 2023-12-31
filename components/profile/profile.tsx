@@ -341,9 +341,6 @@ export default function Profile() {
                                     readOnly: true,
                                     disabled: true,
                                     endAdornment: (<InputAdornment position="end" sx={{ display: 'flex', gap: '4px' }}>
-                                        <Tooltip title="Transfer ownership">
-                                            <SwapHorizIcon sx={{ cursor: 'pointer', height: '14px' }} onClick={() => { console.log('transfer') }}></SwapHorizIcon>
-                                        </Tooltip>
                                         <ContentCopyIcon sx={{ cursor: 'pointer', height: '12px' }}
                                             onClick={() => {
                                                 copyToClipboard(selectedProfile.anchor);

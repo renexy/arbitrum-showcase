@@ -60,156 +60,156 @@ export default function Profile() {
     }, [editMode])
 
     const handleNameUpdate = async (registry: any, signer: any) => {
-      // this var holds the new name
-      var newProfileNameAdd = newProfileName
+        // this var holds the new name
+        var newProfileNameAdd = newProfileName
 
-      if (newProfileNameAdd === selectedProfile?.name) {
-        console.log("WHAT?")
-        return;
-      }
-      console.log("newProfileNameAdd", newProfileNameAdd)
-      console.log("selectedProfile", selectedProfile?.name)
+        if (newProfileNameAdd === selectedProfile?.name) {
+            console.log("WHAT?")
+            return;
+        }
+        console.log("newProfileNameAdd", newProfileNameAdd)
+        console.log("selectedProfile", selectedProfile?.name)
 
-      const nameArgs: ProfileNameArgs = {
-          profileId: selectedProfile?.id || '',
-          name: newProfileNameAdd,
-      };
+        const nameArgs: ProfileNameArgs = {
+            profileId: selectedProfile?.id || '',
+            name: newProfileNameAdd,
+        };
 
-      try {
-        setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
-
-        const txData: TransactionData = registry.updateProfileName(nameArgs);
-
-        const hash = await signer.sendTransaction({
-            data: txData.data,
-            to: txData.to,
-            value: BigInt(txData.value),
-        });
-
-        setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
-
-        // Listening to the transaction
         try {
-            const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
-            if (receipt.status === 1) {
-                setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                refetchProfiles();
-            } else {
-                setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+            const txData: TransactionData = registry.updateProfileName(nameArgs);
+
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+            });
+
+            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+            // Listening to the transaction
+            try {
+                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+                if (receipt.status === 1) {
+                    setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                    refetchProfiles();
+                } else {
+                    setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+                }
+            } catch (error) {
+                console.error(error);
+                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
             }
         } catch (error) {
-            console.error(error);
-            setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+            console.log("user rejected"); // User rejected the signature
+            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
-      } catch (error) {
-          console.log("user rejected"); // User rejected the signature
-          setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
-      }
     }
 
     const handleMetadataUpdate = async (registry: any, signer: any) => {
-      // this var holds the new metadata
-      var newProfileMetadataAdd = newProfileMetadata
+        // this var holds the new metadata
+        var newProfileMetadataAdd = newProfileMetadata
 
-      if (newProfileMetadataAdd === selectedProfile?.pointer) {
-        return;
-      }
+        if (newProfileMetadataAdd === selectedProfile?.pointer) {
+            return;
+        }
 
-      const metadataArgs: ProfileMetadataArgs  = {
-          profileId: selectedProfile?.id || '',
-          metadata: {
-              protocol: BigInt(Number(selectedProfile?.protocol)),
-              pointer: newProfileMetadataAdd,
-          },
-      };
+        const metadataArgs: ProfileMetadataArgs = {
+            profileId: selectedProfile?.id || '',
+            metadata: {
+                protocol: BigInt(Number(selectedProfile?.protocol)),
+                pointer: newProfileMetadataAdd,
+            },
+        };
 
-      try {
-        setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
-
-        const txData: TransactionData = registry.updateProfileMetadata(metadataArgs);
-
-        const hash = await signer.sendTransaction({
-            data: txData.data,
-            to: txData.to,
-            value: BigInt(txData.value),
-        });
-
-        setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
-
-        // Listening to the transaction
         try {
-            const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
-            if (receipt.status === 1) {
-                setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                refetchProfiles();
-            } else {
-                setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+            const txData: TransactionData = registry.updateProfileMetadata(metadataArgs);
+
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+            });
+
+            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+            // Listening to the transaction
+            try {
+                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+                if (receipt.status === 1) {
+                    setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                    refetchProfiles();
+                } else {
+                    setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+                }
+            } catch (error) {
+                console.error(error);
+                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
             }
         } catch (error) {
-            console.error(error);
-            setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+            console.log("user rejected"); // User rejected the signature
+            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
-      } catch (error) {
-          console.log("user rejected"); // User rejected the signature
-          setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
-      }
     }
 
     const handleMembersUpdate = async (registry: any, signer: any) => {
-      if (newProfileMembers.length === selectedProfile?.members.length) {
-        return;
-      }
+        if (newProfileMembers.length === selectedProfile?.members.length) {
+            return;
+        }
 
-      // we don't want to add the members that exist in selectProfile
-      // so we have to take those out!
-      var newMembersToAdd = selectedProfile?.members
-      // this array holds the new addresses
-      var newAddresses = newProfileMembers
+        // we don't want to add the members that exist in selectProfile
+        // so we have to take those out!
+        var newMembersToAdd = selectedProfile?.members
+        // this array holds the new addresses
+        var newAddresses = newProfileMembers
 
-      // we don't want to make any changes if any of the data matches selectedProfile
+        // we don't want to make any changes if any of the data matches selectedProfile
 
-      const filteredMembers = newAddresses?.filter((member) => { return !newMembersToAdd?.find(x => x.address === member.address) })
+        const filteredMembers = newAddresses?.filter((member) => { return !newMembersToAdd?.find(x => x.address === member.address) })
 
-      const memberArgs: MemberArgs = {
-          profileId: selectedProfile?.id || '',
-          members: filteredMembers.map(member => member.address),
-      };
+        const memberArgs: MemberArgs = {
+            profileId: selectedProfile?.id || '',
+            members: filteredMembers.map(member => member.address),
+        };
 
-      console.log(memberArgs)
-      console.log(selectedProfile?.id)
-      console.log(newProfileMembers.map(member => member.address))
+        console.log(memberArgs)
+        console.log(selectedProfile?.id)
+        console.log(newProfileMembers.map(member => member.address))
 
-      try {
-          setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+        try {
+            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
 
-          const txData: TransactionData = registry.addMembers(memberArgs);
+            const txData: TransactionData = registry.addMembers(memberArgs);
 
-          const hash = await signer.sendTransaction({
-              data: txData.data,
-              to: txData.to,
-              value: BigInt(txData.value),
-          });
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+            });
 
-          setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
 
-          // Listening to the transaction
-          try {
-              const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
-              if (receipt.status === 1) {
-                  setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                  refetchProfiles();
-              } else {
-                  setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
-              }
-          } catch (error) {
-              console.error(error);
-              setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
-          }
+            // Listening to the transaction
+            try {
+                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+                if (receipt.status === 1) {
+                    setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                    refetchProfiles();
+                } else {
+                    setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+                }
+            } catch (error) {
+                console.error(error);
+                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+            }
 
-      } catch (error) {
-          console.log("user rejected"); // User rejected the signature
-          setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
-      }
+        } catch (error) {
+            console.log("user rejected"); // User rejected the signature
+            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+        }
     }
 
     const handleUpdate = async (args?: any) => {
@@ -304,11 +304,11 @@ export default function Profile() {
                 </Box>
                 <Box sx={{
                     width: '100%', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
-                    display: 'flex', flex: 1, flexDirection: { xs: 'column', sm: 'row' }
+                    display: 'flex', flex: 1, flexDirection: 'column'
                 }}>
                     <Box sx={{
                         flexDirection: 'column', gap: '18px', justifyContent: 'flex-start',
-                        display: 'flex', flex: { xs: 0.2, sm: 0.5 }
+                        display: 'flex', flex: 0.2
                     }}>
                         <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', width: '100%' }}>
                             <TextField
@@ -390,59 +390,126 @@ export default function Profile() {
                     </Box>
                     <Box sx={{
                         flexDirection: 'column', gap: '18px', justifyContent: 'flex-start',
-                        display: 'flex', flex: { xs: 0.5, sm: 0.5 }
+                        display: 'flex', flex: 0.8
                     }}>
-                        <TextField
-                            id="outlined-adornment-password"
-                            label="Add members"
-                            variant="outlined"
-                            value={singleMember}
-                            color="secondary"
-                            onChange={(e) => { setSingleMember(e.target.value) }}
-                            sx={{ 'fieldSet': { border: '1px solid grey' } }}
-                            InputLabelProps={{
-                                style: {
-                                    color: !editMode ? 'rgba(0, 0, 0, 0.38)' : 'unset'
-                                }
-                            }}
-                            InputProps={{
-                                readOnly: !editMode,
-                                disabled: !editMode,
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton onClick={() => {
-                                            if (singleMember.length > 0) {
-                                                if (!(newProfileMembers.find(x => x.address === singleMember))) {
-                                                    setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }]);
-                                                } else {
-                                                    setShowSnackbarMemberExists(true)
-                                                    setTimeout(() => {
-                                                        setShowSnackbarMemberExists(false);
-                                                    }, 3000);
-                                                }
-                                                setSingleMember('')
-                                            }
-                                        }} edge="end">
-                                            {editMode && <AddIcon sx={{ fill: blueGrey[500] }} />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-                        <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing members</Typography>
-                        {newProfileMembers && newProfileMembers.length > 0 && (
-                            <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
-                                {newProfileMembers.map((member, index) => (
-                                    <ListItem key={index}>
-                                        <ListItemText primary={member?.address && member.address.length > 9 ? shortenEthAddress(member.address) : member?.address} />
-                                        {editMode && <IconButton edge="end" aria-label="delete"
-                                            onClick={() => handleDelete(member)}>
-                                            <DeleteIcon />
-                                        </IconButton>}
-                                    </ListItem>
-                                ))}
-                            </List>
-                        )}
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '20px',
+                            '@media (min-width: 600px)': {
+                                flexDirection: 'row',
+                            },
+                        }}>
+                            {/* First Section */}
+                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
+                                <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing members</Typography>
+                                {newProfileMembers && newProfileMembers.length > 0 ? (
+                                    <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
+                                        {newProfileMembers.map((member, index) => (
+                                            <ListItem key={index}>
+                                                <ListItemText primary={member?.address && member.address.length > 9 ? shortenEthAddress(member.address) : member?.address} />
+                                                {editMode && <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(member)}>
+                                                    <DeleteIcon />
+                                                </IconButton>}
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (<span style={{ textAlign: 'left' }}>No members</span>)}
+
+                                <TextField
+                                    id="outlined-adornment-password"
+                                    label="Add members"
+                                    variant="outlined"
+                                    value={singleMember}
+                                    color="secondary"
+                                    onChange={(e) => { setSingleMember(e.target.value) }}
+                                    sx={{ 'fieldSet': { border: '1px solid grey' } }}
+                                    InputLabelProps={{
+                                        style: {
+                                            color: !editMode ? 'rgba(0, 0, 0, 0.38)' : 'unset'
+                                        }
+                                    }}
+                                    InputProps={{
+                                        readOnly: !editMode,
+                                        disabled: !editMode,
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton onClick={() => {
+                                                    if (singleMember.length > 0) {
+                                                        if (!(newProfileMembers.find(x => x.address === singleMember))) {
+                                                            setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }]);
+                                                        } else {
+                                                            setShowSnackbarMemberExists(true)
+                                                            setTimeout(() => {
+                                                                setShowSnackbarMemberExists(false);
+                                                            }, 3000);
+                                                        }
+                                                        setSingleMember('')
+                                                    }
+                                                }} edge="end">
+                                                    {editMode && <AddIcon sx={{ fill: blueGrey[500] }} />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            </div>
+
+                            {/* Second Section */}
+                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
+                                <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing managers</Typography>
+                                {newProfileMembers && newProfileMembers.length > 0 ? (
+                                    <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
+                                        {newProfileMembers.map((member, index) => (
+                                            <ListItem key={index}>
+                                                <ListItemText primary={member?.address && member.address.length > 9 ? shortenEthAddress(member.address) : member?.address} />
+                                                {editMode && <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(member)}>
+                                                    <DeleteIcon />
+                                                </IconButton>}
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (<span style={{ textAlign: 'left' }}>No managers</span>)}
+
+                                <TextField
+                                    id="outlined-adornment-password"
+                                    label="Add managers"
+                                    variant="outlined"
+                                    value={singleMember}
+                                    color="secondary"
+                                    onChange={(e) => { setSingleMember(e.target.value) }}
+                                    sx={{ 'fieldSet': { border: '1px solid grey' } }}
+                                    InputLabelProps={{
+                                        style: {
+                                            color: !editMode ? 'rgba(0, 0, 0, 0.38)' : 'unset'
+                                        }
+                                    }}
+                                    InputProps={{
+                                        readOnly: !editMode,
+                                        disabled: !editMode,
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton onClick={() => {
+                                                    if (singleMember.length > 0) {
+                                                        if (!(newProfileMembers.find(x => x.address === singleMember))) {
+                                                            setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }]);
+                                                        } else {
+                                                            setShowSnackbarMemberExists(true)
+                                                            setTimeout(() => {
+                                                                setShowSnackbarMemberExists(false);
+                                                            }, 3000);
+                                                        }
+                                                        setSingleMember('')
+                                                    }
+                                                }} edge="end">
+                                                    {editMode && <AddIcon sx={{ fill: blueGrey[500] }} />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+                            </div>
+                        </Box>
                     </Box>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}></BaseDialog>

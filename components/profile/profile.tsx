@@ -264,7 +264,7 @@ export default function Profile() {
     return (
         <Box sx={{
             width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
-            display: 'flex', flexDirection: 'column', flex: 1, padding: '12px'
+            display: 'flex', flexDirection: 'column', flex: 1, padding: '12px', overflow: 'auto'
         }}>
             {!selectedProfile && <Stack spacing={1}>
                 <Skeleton variant="rectangular" width={210} height={60} />
@@ -404,7 +404,7 @@ export default function Profile() {
                             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
                                 <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing members</Typography>
                                 {newProfileMembers && newProfileMembers.length > 0 ? (
-                                    <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
+                                    <List dense sx={{ border: '1px solid grey', borderRadius: '4px', height: '180px', overflow: 'auto' }}>
                                         {newProfileMembers.map((member, index) => (
                                             <ListItem key={index}>
                                                 <ListItemText primary={member?.address && member.address.length > 9 ? shortenEthAddress(member.address) : member?.address} />
@@ -459,7 +459,7 @@ export default function Profile() {
                             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
                                 <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing managers</Typography>
                                 {newProfileMembers && newProfileMembers.length > 0 ? (
-                                    <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto' }}>
+                                    <List dense sx={{ border: '1px solid grey', borderRadius: '4px', height: '180px', overflow: 'auto' }}>
                                         {newProfileMembers.map((member, index) => (
                                             <ListItem key={index}>
                                                 <ListItemText primary={member?.address && member.address.length > 9 ? shortenEthAddress(member.address) : member?.address} />

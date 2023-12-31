@@ -185,6 +185,7 @@ export default function Profile() {
                         onChange={(e) => { setNewProfileName(e.target.value) }}
                         InputProps={{
                             readOnly: !editMode,
+                            disabled: !editMode,
                             disableUnderline: true,
                             sx: {
                                 fontSize: '1.5rem',
@@ -213,6 +214,7 @@ export default function Profile() {
                                 value={selectedProfile?.id && selectedProfile.id.length > 9 ? shortenEthAddress(selectedProfile.id) : selectedProfile?.id}
                                 InputProps={{
                                     readOnly: true,
+                                    disabled: true,
                                     endAdornment: (<InputAdornment position="end">
                                         <ContentCopyIcon sx={{ cursor: 'pointer', height: '12px' }}
                                             onClick={() => {
@@ -232,6 +234,7 @@ export default function Profile() {
                                 value={selectedProfile?.anchor && selectedProfile.anchor.length > 9 ? shortenEthAddress(selectedProfile.anchor) : selectedProfile?.anchor}
                                 InputProps={{
                                     readOnly: true,
+                                    disabled: true,
                                     endAdornment: (<InputAdornment position="end" sx={{ display: 'flex', gap: '4px' }}>
                                         <Tooltip title="Transfer ownership">
                                             <SwapHorizIcon sx={{ cursor: 'pointer', height: '14px' }} onClick={() => { console.log('transfer') }}></SwapHorizIcon>
@@ -254,6 +257,7 @@ export default function Profile() {
                                 value={selectedProfile?.owner && selectedProfile.owner.length > 9 ? shortenEthAddress(selectedProfile.owner) : selectedProfile?.owner}
                                 InputProps={{
                                     readOnly: true,
+                                    disabled: true,
                                     endAdornment: (<InputAdornment position="end" sx={{ display: 'flex', gap: '4px' }}>
                                         <Tooltip title="Transfer ownership">
                                             <SwapHorizIcon sx={{ cursor: 'pointer', height: '14px' }} onClick={() => { console.log('transfer') }}></SwapHorizIcon>
@@ -277,6 +281,7 @@ export default function Profile() {
                             onChange={(e) => { setNewProfileMetadata(e.target.value) }}
                             InputProps={{
                                 readOnly: !editMode,
+                                disabled: !editMode,
                             }}
                             variant="standard"
                         />
@@ -293,8 +298,14 @@ export default function Profile() {
                             color="secondary"
                             onChange={(e) => { setSingleMember(e.target.value) }}
                             sx={{ 'fieldSet': { border: '1px solid grey' } }}
+                            InputLabelProps={{
+                                style: {
+                                    color: !editMode ? 'rgba(0, 0, 0, 0.38)' : 'unset'
+                                }
+                            }}
                             InputProps={{
                                 readOnly: !editMode,
+                                disabled: !editMode,
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton onClick={() => {
@@ -310,7 +321,7 @@ export default function Profile() {
                                                 setSingleMember('')
                                             }
                                         }} edge="end">
-                                            <AddIcon sx={{ fill: blueGrey[500] }} />
+                                            {editMode && <AddIcon sx={{ fill: blueGrey[500] }} />}
                                         </IconButton>
                                     </InputAdornment>
                                 ),

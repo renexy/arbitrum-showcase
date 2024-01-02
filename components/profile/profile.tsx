@@ -405,14 +405,6 @@ export default function Profile() {
 
     const test = async (registry: any, signer: any) => {
 
-        const rpc = 'https://rpc.goerli.eth.gateway.fm'
-        const customProvider = new ethers.providers.JsonRpcProvider(rpc);
-        const contractAddress = registry.contract.address;
-        const contractAbi = registry.contract.abi
-        const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
-
-        const result = await readOnlyContract.profileIdToPendingOwner("0x9a76bac33297c5ea03f20c74ee76525359d4d408327650cfc71973d3e57d0dee")
-        console.log("result", result)
     }
 
     return (

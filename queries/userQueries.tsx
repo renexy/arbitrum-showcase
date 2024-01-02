@@ -46,6 +46,7 @@ export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
         name: profile.name,
         owner: profile.owner.id,
         members: transformedMembers,
+        pendingOwner: '',
       };
     }) : [];
 

@@ -39,6 +39,7 @@ type TransformedProfile = {
   name: string;
   owner: string;
   members: Account[];
+  pendingOwner: string;
 };
 
 type UseUserProfilesReturn = {

@@ -178,12 +178,12 @@ export default function Container() {
                             displayEmpty
                             inputProps={{ 'aria-label': 'Without label' }}
                         >
-                            <ListSubheader sx={{ background: grey[200] }}>Profiles</ListSubheader>
+                            <ListSubheader sx={{ background: grey[200], fontWeight: 900 }}>Owned Profiles</ListSubheader>
                             {userProfiles.map((item) => {
                                 return <MenuItem key={item.anchor} value={item.anchor}>{item.name}</MenuItem>
                             })}
 
-                            <ListSubheader sx={{ background: grey[200] }}>Member profiles</ListSubheader>
+                            <ListSubheader sx={{ background: grey[200], fontWeight: 900 }}>Member Profiles</ListSubheader>
                             {/* {map here} */}
                             <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>
                                 <AddCircleIcon />

@@ -61,6 +61,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
   const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
+  const [pendingOwner, setPendingOwner] = useState<String>('')
   const { loading, error, profiles, hasProfiles, refetch } = useUserProfiles(address || '');
 
   const changeSelectedProfileHash = (hash: string) => {
@@ -71,6 +72,25 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const newProfiles = await refetch()
     setUserProfiles(newProfiles.data.profiles);
   }
+
+  const getPendingOwner = async (registry: any, profiles: TransformedProfile[]) => {
+    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const customProvider = new ethers.providers.JsonRpcProvider(rpc);
+    const contractAddress = registry.contract.address;
+    const contractAbi = registry.contract.abi;
+    const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
+  
+    try {
+      const updatedProfiles = await Promise.all(profiles.map(async profile => {
+        const pendingOwner = await readOnlyContract.profileIdToPendingOwner(profile.id);
+        return { ...profile, pendingOwner };
+      }));
+  
+      setUserProfiles(updatedProfiles);
+    } catch (error) {
+      console.error('Error in getPendingOwner:', error);
+    }
+  };  
 
   useEffect(() => {
     if (chainId) {
@@ -103,7 +123,9 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     }
 
     if (isConnected) {
-      setUserProfiles(profiles);
+      if (registry && profiles) {
+        getPendingOwner(registry, profiles);
+      }
     }
   }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash]);
 

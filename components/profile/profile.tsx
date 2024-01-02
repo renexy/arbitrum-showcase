@@ -36,6 +36,7 @@ export default function Profile() {
     const [newProfileName, setNewProfileName] = useState('')
     const [newProfileMetadata, setNewProfileMetadata] = useState('')
     const [newProfileMembers, setNewProfileMembers] = useState<Account[]>([])
+    const [newOwner, setNewOwner] = useState<string>('')
     const [membersToAdd, setMembersToAdd] = useState<Account[]>([])
     const [membersToRemove, setMembersToRemove] = useState<Account[]>([])
     const [itemsChanged, setItemsChanged] = useState(false)
@@ -45,6 +46,7 @@ export default function Profile() {
         setNewProfileName(userProfiles?.find(x => x.anchor === selectedProfileHash)?.name || '')
         setNewProfileMetadata(userProfiles?.find(x => x.anchor === selectedProfileHash)?.pointer || '')
         setNewProfileMembers(userProfiles?.find(x => x.anchor === selectedProfileHash)?.members || [])
+        setNewOwner(userProfiles?.find(x => x.anchor === selectedProfileHash)?.owner || '')
         setMembersToAdd([])
         setMembersToRemove([])
         setSingleMember('')
@@ -275,6 +277,7 @@ export default function Profile() {
 
         const profileNameChanged = newProfileName !== selectedProfile.name;
         const profileMetadataChanged = newProfileMetadata !== selectedProfile.pointer;
+        const ownerChanged = newOwner !== selectedProfile.owner
 
         let membersChanged = false;
         if (membersToAdd.length > 0 || membersToRemove.length > 0) {
@@ -283,8 +286,8 @@ export default function Profile() {
             membersChanged = false;
         }
 
-        setItemsChanged(profileNameChanged || profileMetadataChanged || membersChanged);
-    }, [newProfileName, newProfileMetadata, newProfileMembers, selectedProfile]);
+        setItemsChanged(profileNameChanged || profileMetadataChanged || membersChanged || ownerChanged);
+    }, [newProfileName, newProfileMetadata, newProfileMembers, selectedProfile, newOwner]);
 
     const handleAddMember = () => {
         if (singleMember.length > 0) {
@@ -429,10 +432,10 @@ export default function Profile() {
                                 label="Owner"
                                 color='secondary'
                                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
-                                value={selectedProfile?.owner && selectedProfile.owner.length > 9 ? shortenEthAddress(selectedProfile.owner) : selectedProfile?.owner}
-                                InputProps={{
-                                    readOnly: true,
-                                    disabled: true,
+                                value={newOwner}
+                                onChange={(e) => { setNewOwner(e.target.value) }} InputProps={{
+                                    readOnly: !editMode,
+                                    disabled: !editMode,
                                     endAdornment: (<InputAdornment position="end" sx={{ display: 'flex', gap: '4px' }}>
                                         <Tooltip title="Transfer ownership">
                                             <SwapHorizIcon sx={{ cursor: 'pointer', height: '14px' }} onClick={() => { console.log('transfer') }}></SwapHorizIcon>

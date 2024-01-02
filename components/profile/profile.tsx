@@ -11,9 +11,10 @@ import shortenEthAddress from '@/global/functions';
 import EditIcon from '@mui/icons-material/Edit';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EditOffIcon from '@mui/icons-material/EditOff';
-import { MemberArgs, ProfileMetadataArgs, ProfileNameArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
+import { MemberArgs, ProfileMetadataArgs, ProfileNameArgs, ProfileAndAddressArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import { ethers } from 'ethers'
 
 const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -247,6 +248,53 @@ export default function Profile() {
         }
     }
 
+    const handleOwnerTransfer = async (registry: any, signer: any) => {
+        if (newOwner === selectedProfile?.owner) {
+            return;
+        }
+
+        const profilePendingOwnerArgs: ProfileAndAddressArgs = {
+            profileId: selectedProfile?.id || '',
+            account: newOwner,
+        };
+
+        console.log(profilePendingOwnerArgs)
+        console.log(selectedProfile?.id)
+        console.log(newProfileMembers.map(member => member.address))
+
+        try {
+            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+            const txData: TransactionData = registry.updateProfilePendingOwner(profilePendingOwnerArgs);
+
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+            });
+
+            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+            // Listening to the transaction
+            try {
+                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+                if (receipt.status === 1) {
+                    setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+                    refetchProfiles();
+                } else {
+                    setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+                }
+            } catch (error) {
+                console.error(error);
+                setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+            }
+
+        } catch (error) {
+            console.log("user rejected"); // User rejected the signature
+            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+        }
+    }
+
     const handleUpdate = async (args?: any) => {
         if (args && args === 'restore') {
             setCreateProfileTransactionStatus('confirm')
@@ -270,6 +318,8 @@ export default function Profile() {
         handleNameUpdate(registry, signer)
 
         handleMetadataUpdate(registry, signer)
+
+        handleOwnerTransfer(registry, signer)
     }
 
     useEffect(() => {
@@ -335,6 +385,18 @@ export default function Profile() {
                 setNewProfileMembers(deleteDisplayedMembers)
             }
         }
+    }
+
+    const test = async (registry: any, signer: any) => {
+
+        const rpc = 'https://rpc.goerli.eth.gateway.fm'
+        const customProvider = new ethers.providers.JsonRpcProvider(rpc);
+        const contractAddress = registry.contract.address;
+        const contractAbi = registry.contract.abi
+        const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
+
+        const result = await readOnlyContract.profileIdToPendingOwner("0x9a76bac33297c5ea03f20c74ee76525359d4d408327650cfc71973d3e57d0dee")
+        console.log("result", result)
     }
 
     return (
@@ -520,6 +582,7 @@ export default function Profile() {
                             </div>
                         </Box>
                     </Box>
+                    <button onClick={() => {test(registry, signer)}}>test</button>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}></BaseDialog>
                     <Snackbar

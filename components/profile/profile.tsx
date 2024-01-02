@@ -22,7 +22,6 @@ const copyToClipboard = (text: string) => {
 export default function Profile() {
     const [selectedProfile, setSelectedProfile] = useState<TransformedProfile | undefined>(undefined)
     const { registry, signer, userProfiles, hasProfiles, selectedProfileHash } = React.useContext(GlobalContext)
-    const [dialogOpenDelete, setDialogOpenDelete] = useState(false)
     const [dialogOpenAdd, setDialogOpenAdd] = useState(false)
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
@@ -40,6 +39,7 @@ export default function Profile() {
     const [membersToAdd, setMembersToAdd] = useState<Account[]>([])
     const [membersToRemove, setMembersToRemove] = useState<Account[]>([])
     const [itemsChanged, setItemsChanged] = useState(false)
+    const [dialogMessage, setDialogMessage] = useState<string>('Apply changes')
 
     const setInitialValues = () => {
         setSelectedProfile(userProfiles?.find(x => x.anchor === selectedProfileHash))
@@ -69,7 +69,6 @@ export default function Profile() {
         var newProfileNameAdd = newProfileName
 
         if (newProfileNameAdd === selectedProfile?.name) {
-            console.log("WHAT?")
             return;
         }
         console.log("newProfileNameAdd", newProfileNameAdd)
@@ -276,6 +275,7 @@ export default function Profile() {
         if (!selectedProfile) return;
 
         const profileNameChanged = newProfileName !== selectedProfile.name;
+        setDialogMessage('Change profile name?')
         const profileMetadataChanged = newProfileMetadata !== selectedProfile.pointer;
         const ownerChanged = newOwner !== selectedProfile.owner
 
@@ -285,6 +285,22 @@ export default function Profile() {
         } else {
             membersChanged = false;
         }
+        let message = '';
+
+        if (profileNameChanged) {
+            message += 'Change profile name? ';
+        }
+        if (profileMetadataChanged) {
+            message += 'Change profile metadata? ';
+        }
+        if (ownerChanged) {
+            message += 'Change owner of profile? ';
+        }
+        if (membersChanged) {
+            message += 'Change members? ';
+        }
+
+        setDialogMessage(message.trim());
 
         setItemsChanged(profileNameChanged || profileMetadataChanged || membersChanged || ownerChanged);
     }, [newProfileName, newProfileMetadata, newProfileMembers, selectedProfile, newOwner]);
@@ -521,7 +537,8 @@ export default function Profile() {
                         </Box>
                     </Box>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
-                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}></BaseDialog>
+                        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
+                        message={dialogMessage}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                         open={showSnackbar}

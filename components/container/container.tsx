@@ -25,7 +25,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import FormControl from '@mui/material/FormControl';
 import Profile from '../profile/profile';
 import Pool from '../pool/pool';
-import { Button, Fab, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Button, Fab, InputLabel, ListSubheader, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import BaseDialog from '../baseDialog/baseDialog';
@@ -178,9 +178,13 @@ export default function Container() {
                             displayEmpty
                             inputProps={{ 'aria-label': 'Without label' }}
                         >
+                            <ListSubheader sx={{ background: grey[200] }}>Profiles</ListSubheader>
                             {userProfiles.map((item) => {
                                 return <MenuItem key={item.anchor} value={item.anchor}>{item.name}</MenuItem>
                             })}
+
+                            <ListSubheader sx={{ background: grey[200] }}>Member profiles</ListSubheader>
+                            {/* {map here} */}
                             <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>
                                 <AddCircleIcon />
                                 Create profile

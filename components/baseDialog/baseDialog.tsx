@@ -16,13 +16,14 @@ import { Backdrop, CircularProgress, Fab, Typography } from '@mui/material';
 export interface TransactionDialogProps {
     open: boolean;
     selectedValue: string;
+    message: string | undefined;
     onClose: (value: string) => void;
     status: 'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed';
     callbackFn?: (args?: any) => void;
 }
 
 function TransactionDialog(props: TransactionDialogProps) {
-    const { onClose, selectedValue, open, status, callbackFn } = props;
+    const { onClose, selectedValue, open, status, message, callbackFn } = props;
 
     const handleClose = () => {
         if (status === 'signature' || status === 'transaction') return
@@ -35,6 +36,7 @@ function TransactionDialog(props: TransactionDialogProps) {
             {status === 'confirm' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
                     <DialogTitle>Confirm transaction</DialogTitle>
+                    <Typography sx={{ textAlign: 'center', padding: '8px 0' }}>{message || 'Create profile'}</Typography>
                     <Button size="small" variant="contained" color="secondary" onClick={() => { callbackFn!() }}>Confirm</Button>
                 </div>
             </Dialog>}
@@ -70,8 +72,8 @@ function TransactionDialog(props: TransactionDialogProps) {
     )
 }
 
-export default function BaseDialog({ open, onClose, dialogVariant, status, callback }:
-    { open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: (args?: any) => void }) {
+export default function BaseDialog({ open, onClose, dialogVariant, status, callback, message }:
+    { open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: (args?: any) => void, message?: string }) {
     const handleClose = (value: string) => {
         onClose()
     };
@@ -84,6 +86,7 @@ export default function BaseDialog({ open, onClose, dialogVariant, status, callb
                 onClose={handleClose}
                 status={status}
                 callbackFn={(e) => callback!(e)}
+                message={message}
             />
             }
         </>

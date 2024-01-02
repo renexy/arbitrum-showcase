@@ -108,21 +108,25 @@ export default function Container() {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const [menuSelected, setMenuSelected] = React.useState("")
-    const { userProfiles, hasProfiles, selectedProfileHash, changeSelectedProfileHash } = React.useContext(GlobalContext)
+    const { userProfiles, hasProfiles, selectedProfileHash, changeSelectedProfileHash, userMemberProfiles } = React.useContext(GlobalContext)
 
     React.useEffect(() => {
-        if (hasProfiles && userProfiles && userProfiles.length > 0) {
+        if (userProfiles && userProfiles.length > 0) {
             if (!selectedProfileHash) {
                 changeSelectedProfileHash(userProfiles[0].anchor)
                 setMenuSelected('Profile')
             }
         }
-    }, [userProfiles, hasProfiles, selectedProfileHash])
-
-    React.useEffect(() => {
-        console.log('2', userProfiles)
-
-    }, [userProfiles])
+        if (userMemberProfiles && userMemberProfiles.length > 0) {
+            if (!selectedProfileHash) {
+                changeSelectedProfileHash(userMemberProfiles[0].anchor)
+                setMenuSelected('Profile')
+            }
+        }
+        if (selectedProfileHash) {
+            setMenuSelected('Profile')
+        }
+    }, [userProfiles, hasProfiles, selectedProfileHash, userMemberProfiles])
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -184,7 +188,10 @@ export default function Container() {
                             })}
 
                             <ListSubheader sx={{ background: grey[200], fontWeight: 900 }}>Member Profiles</ListSubheader>
-                            {/* {map here} */}
+                            {userMemberProfiles.map((item) => {
+                                return <MenuItem key={item.anchor} value={item.anchor}>{item.name}</MenuItem>
+                            })}
+
                             <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>
                                 <AddCircleIcon />
                                 Create profile

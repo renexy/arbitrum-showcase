@@ -15,6 +15,10 @@ import { MemberArgs, ProfileMetadataArgs, ProfileNameArgs, ProfileAndAddressArgs
 import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { ethers } from 'ethers'
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import { useAccount } from 'wagmi';
+import PendingIcon from '@mui/icons-material/Pending';
+import { pendingProfileOwner } from '@/hooks/registry/useReadRegistry';
 
 const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -22,15 +26,20 @@ const copyToClipboard = (text: string) => {
 
 export default function Profile() {
     const [selectedProfile, setSelectedProfile] = useState<TransformedProfile | undefined>(undefined)
-    const { registry, signer, userProfiles, hasProfiles, selectedProfileHash } = React.useContext(GlobalContext)
+    const { registry, signer, userProfiles, hasProfiles, selectedProfileHash, userMemberProfiles } = React.useContext(GlobalContext)
     const [dialogOpenAdd, setDialogOpenAdd] = useState(false)
+    const [dialogAcceptOwnership, setDialogAcceptOwnership] = useState(false)
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
+        useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+    const [acceptOwnershipTransactionStatus, setAcceptOwnershipTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     const [showSnackbar, setShowsnackbar] = useState(false)
     const [showSnackbarCopied, setShowsnackbarCopied] = useState(false)
     const [showSnackbarMemberExists, setShowSnackbarMemberExists] = useState(false)
     const [singleMember, setSingleMember] = useState('')
     const [editMode, setEditMode] = useState(false)
+    const [showPendingOwnership, setShowPendingOwnership] = useState(false)
+    const { address, isConnected } = useAccount();
 
     //form
     const [newProfileName, setNewProfileName] = useState('')
@@ -41,19 +50,37 @@ export default function Profile() {
     const [membersToRemove, setMembersToRemove] = useState<Account[]>([])
     const [itemsChanged, setItemsChanged] = useState(false)
     const [dialogMessage, setDialogMessage] = useState<string>('Apply changes')
+    const { refetchProfiles } = useContext(GlobalContext)
 
     const setInitialValues = () => {
-        setSelectedProfile(userProfiles?.find(x => x.anchor === selectedProfileHash))
-        setNewProfileName(userProfiles?.find(x => x.anchor === selectedProfileHash)?.name || '')
-        setNewProfileMetadata(userProfiles?.find(x => x.anchor === selectedProfileHash)?.pointer || '')
-        setNewProfileMembers(userProfiles?.find(x => x.anchor === selectedProfileHash)?.members || [])
-        setNewOwner(userProfiles?.find(x => x.anchor === selectedProfileHash)?.owner || '')
+        let findByUserProfiles: boolean = !!userProfiles?.find(x => x.anchor === selectedProfileHash)
+        let searchOption = userProfiles
+        if (!findByUserProfiles) {
+            searchOption = userMemberProfiles
+        }
+        setSelectedProfile(searchOption?.find(x => x.anchor === selectedProfileHash))
+        setNewProfileName(searchOption?.find(x => x.anchor === selectedProfileHash)?.name || '')
+        setNewProfileMetadata(searchOption?.find(x => x.anchor === selectedProfileHash)?.pointer || '')
+        setNewProfileMembers(searchOption?.find(x => x.anchor === selectedProfileHash)?.members || [])
+        setNewOwner(searchOption?.find(x => x.anchor === selectedProfileHash)?.owner || '')
         setMembersToAdd([])
         setMembersToRemove([])
         setSingleMember('')
     }
 
-    const { refetchProfiles } = useContext(GlobalContext)
+    const displayPendingOwnerShip = () => {
+        let findByUserProfiles: boolean = !!userProfiles?.find(x => x.anchor === selectedProfileHash)
+        let searchOption = userProfiles
+        if (!findByUserProfiles) {
+            searchOption = userMemberProfiles
+        }
+        const selected = searchOption?.find(x => x.anchor === selectedProfileHash)?.pendingOwner
+        if (selected !== '0x0000000000000000000000000000000000000000') {
+            setShowPendingOwnership(true)
+        } else {
+            setShowPendingOwnership(false)
+        }
+    }
 
     useEffect(() => {
         setInitialValues()
@@ -62,8 +89,17 @@ export default function Profile() {
     useEffect(() => {
         if (editMode) return
         setInitialValues()
+        displayPendingOwnerShip()
         setItemsChanged(false)
     }, [editMode])
+
+    const handleAcceptOwnership = async () => {
+        // you have to manage this state here, also don't forget to refetch all profiles (even member profiles)
+        // when the owner acceps the new change
+        setAcceptOwnershipTransactionStatus('signature')
+        setAcceptOwnershipTransactionStatus('transaction')
+        setAcceptOwnershipTransactionStatus('succeeded')
+    }
 
     const handleNameUpdate = async (registry: any, signer: any) => {
         // this var holds the new name
@@ -407,6 +443,17 @@ export default function Profile() {
 
     }
 
+    const CustomLabel = () => {
+        return (
+            <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+                Owner{/* Your custom label text */}
+                <Tooltip title="Ownership pending">
+                    <PendingIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} />
+                </Tooltip>
+            </Typography>
+        );
+    };
+
     return (
         <Box sx={{
             width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
@@ -428,25 +475,30 @@ export default function Profile() {
                     width: '100%', minWidth: '100%', display: 'flex', alignItems: 'center',
                     paddingBottom: '16px'
                 }}>
-                    <TextField
-                        id="standard-read-only-input"
-                        color='secondary'
-                        sx={{ textAlign: 'left', flex: 1 }}
-                        value={newProfileName}
-                        onChange={(e) => { setNewProfileName(e.target.value) }}
-                        InputProps={{
-                            readOnly: !editMode,
-                            disabled: !editMode,
-                            disableUnderline: true,
-                            sx: {
-                                fontSize: '1.5rem',
-                                color: 'rgba(0, 0, 0, 0.6)'
-                            }
-                        }}
-                        variant="standard"
-                    />
-                    {!editMode && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
-                    {editMode && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flex: 1 }}>
+                        <TextField
+                            id="standard-read-only-input"
+                            color='secondary'
+                            sx={{ textAlign: 'left' }}
+                            value={newProfileName}
+                            onChange={(e) => { setNewProfileName(e.target.value) }}
+                            InputProps={{
+                                readOnly: !editMode,
+                                disabled: !editMode,
+                                disableUnderline: true,
+                                sx: {
+                                    fontSize: '1.5rem',
+                                    color: 'rgba(0, 0, 0, 0.6)'
+                                }
+                            }}
+                            variant="standard"
+                        />
+                        {showPendingOwnership && address === selectedProfile.pendingOwner && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
+                            <HandshakeIcon sx={{ fill: '#607d8b', cursor: 'pointer' }}></HandshakeIcon>
+                        </Tooltip>}
+                    </div>
+                    {!editMode && selectedProfile.owner === address && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
+                    {editMode && selectedProfile.owner === address && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
                 </Box>
                 <Box sx={{
                     width: '100%', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
@@ -499,7 +551,7 @@ export default function Profile() {
                             </TextField>
                             <TextField
                                 id="standard-read-only-input"
-                                label="Owner"
+                                label={showPendingOwnership && address === selectedProfile.pendingOwner ? <CustomLabel /> : 'Owner'}
                                 color='secondary'
                                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
                                 value={newOwner}
@@ -590,10 +642,13 @@ export default function Profile() {
                             </div>
                         </Box>
                     </Box>
-                    <button onClick={() => {test(registry, signer)}}>test</button>
+                    <button onClick={() => { test(registry, signer) }}>test</button>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
                         message={dialogMessage}></BaseDialog>
+                    <BaseDialog open={dialogAcceptOwnership} onClose={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }}
+                        dialogVariant={'transaction'} status={acceptOwnershipTransactionStatus} callback={(e) => { handleAcceptOwnership(e) }}
+                        message={'Accept ownership?'}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                         open={showSnackbar}

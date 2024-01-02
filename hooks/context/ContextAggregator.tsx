@@ -19,6 +19,7 @@ interface GlobalContextState {
   refetchProfiles: () => void;
   selectedProfileHash: string | undefined;
   changeSelectedProfileHash: (hash: string) => void;
+  userMemberProfiles: TransformedProfile[];
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -32,7 +33,8 @@ const GlobalContext = createContext<GlobalContextState>({
   hasProfiles: false,
   refetchProfiles: () => { },
   selectedProfileHash: '',
-  changeSelectedProfileHash: (hash) => { }
+  changeSelectedProfileHash: (hash) => { },
+  userMemberProfiles: []
 });
 
 interface GlobalProviderProps {
@@ -61,7 +63,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [userMemberProfiles, setUserMemberProfiles] = useState<TransformedProfile[]>([])
   const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
-  const [pendingOwner, setPendingOwner] = useState<String>('')
   const { loading, error, profiles, hasProfiles, refetch } = fetchOwnedProfiles(address || '');
   const { memberProfiles, hasMemberProfiles } = fetchMemberProfiles(address || '');
 
@@ -80,7 +81,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const contractAddress = registry.contract.address;
     const contractAbi = registry.contract.abi;
     const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
-  
+
     try {
       const updatedProfiles = await Promise.all(profiles.map(async profile => {
         const pendingOwner = await readOnlyContract.profileIdToPendingOwner(profile.id);
@@ -91,14 +92,20 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         const pendingOwner = await readOnlyContract.profileIdToPendingOwner(profile.id);
         return { ...profile, pendingOwner };
       }));
-  
+
       setUserProfiles(updatedProfiles);
-      setUserMemberProfiles(updatedMemberProfiles);
+      const newMemberProfiles = updatedMemberProfiles.filter(memberProfile =>
+        !updatedProfiles.some(profile => profile.anchor === memberProfile.anchor)
+      );
+
+      // here we take only the profiles that don't appear in userProfiles, since
+      // we don't want to show duplicates
+      setUserMemberProfiles(prevMemberProfiles => [...prevMemberProfiles, ...newMemberProfiles]);
       console.log("updatedMemberProfiles", updatedMemberProfiles)
     } catch (error) {
       console.error('Error in getPendingOwner:', error);
     }
-  };  
+  };
 
   useEffect(() => {
     if (chainId) {
@@ -144,7 +151,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   return (
     <GlobalContext.Provider value={{
       registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles,
-      nonce, refetchProfiles, selectedProfileHash, changeSelectedProfileHash
+      nonce, refetchProfiles, selectedProfileHash, changeSelectedProfileHash, userMemberProfiles
     }}>
       {children}
     </GlobalContext.Provider>

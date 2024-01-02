@@ -277,17 +277,10 @@ export default function Profile() {
         const profileMetadataChanged = newProfileMetadata !== selectedProfile.pointer;
 
         let membersChanged = false;
-        if (selectedProfile.members.length !== newProfileMembers.length) {
+        if (membersToAdd.length > 0 || membersToRemove.length > 0) {
             membersChanged = true;
-        } else if (selectedProfile.members.length > 0) {
-            for (let i = 0; i < newProfileMembers.length; i++) {
-                if (newProfileMembers[i]?.address !== selectedProfile.members[i]?.address) {
-                    membersChanged = true;
-                    break;
-                }
-            }
-        } else if (newProfileMembers.length > 0) {
-            membersChanged = true;
+        } else {
+            membersChanged = false;
         }
 
         setItemsChanged(profileNameChanged || profileMetadataChanged || membersChanged);

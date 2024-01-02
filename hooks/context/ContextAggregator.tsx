@@ -4,8 +4,7 @@ import { useContext } from 'react';
 import { useAccount } from 'wagmi';
 import { useNetwork } from "wagmi";
 import { ethers } from 'ethers';
-import { useUserProfiles } from '@/queries/userQueries';
-
+import { fetchOwnedProfiles, fetchMemberProfiles } from '@/queries/userQueries';
 
 // Initial state definitions
 interface GlobalContextState {
@@ -59,10 +58,12 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | undefined>();
 
   const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
+  const [userMemberProfiles, setUserMemberProfiles] = useState<TransformedProfile[]>([])
   const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
   const [pendingOwner, setPendingOwner] = useState<String>('')
-  const { loading, error, profiles, hasProfiles, refetch } = useUserProfiles(address || '');
+  const { loading, error, profiles, hasProfiles, refetch } = fetchOwnedProfiles(address || '');
+  const { memberProfiles, hasMemberProfiles } = fetchMemberProfiles(address || '');
 
   const changeSelectedProfileHash = (hash: string) => {
     setSelectedProfileHash(hash)
@@ -73,7 +74,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     setUserProfiles(newProfiles.data.profiles);
   }
 
-  const getPendingOwner = async (registry: any, profiles: TransformedProfile[]) => {
+  const getPendingOwner = async (registry: any, profiles: TransformedProfile[], memberProfiles: TransformedProfile[]) => {
     const rpc = 'https://rpc.goerli.eth.gateway.fm';
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = registry.contract.address;
@@ -85,8 +86,15 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         const pendingOwner = await readOnlyContract.profileIdToPendingOwner(profile.id);
         return { ...profile, pendingOwner };
       }));
+
+      const updatedMemberProfiles = await Promise.all(memberProfiles.map(async profile => {
+        const pendingOwner = await readOnlyContract.profileIdToPendingOwner(profile.id);
+        return { ...profile, pendingOwner };
+      }));
   
       setUserProfiles(updatedProfiles);
+      setUserMemberProfiles(updatedMemberProfiles);
+      console.log("updatedMemberProfiles", updatedMemberProfiles)
     } catch (error) {
       console.error('Error in getPendingOwner:', error);
     }
@@ -110,9 +118,13 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       console.log("Ethereum object doesn't exist on window. You should consider installing MetaMask!");
     }
 
-    
     if (!profiles) {
       console.log("No profiles found")
+      return;
+    }
+
+    if (!memberProfiles) {
+      console.log("No member profiles found")
       return;
     }
 
@@ -124,7 +136,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
     if (isConnected) {
       if (registry && profiles) {
-        getPendingOwner(registry, profiles);
+        getPendingOwner(registry, profiles, memberProfiles);
       }
     }
   }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash]);

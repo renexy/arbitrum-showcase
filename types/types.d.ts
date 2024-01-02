@@ -42,10 +42,41 @@ type TransformedProfile = {
   pendingOwner: string;
 };
 
-type UseUserProfilesReturn = {
+type ownedProfilesReturn = {
   loading: boolean;
   error?: ApolloError;
   profiles?: TransformedProfile[];
   hasProfiles: boolean;
   refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
 };
+
+type memberProfilesReturn = {
+  loading: boolean;
+  error?: ApolloError;
+  memberProfiles?: TransformedProfile[];
+  hasMemberProfiles: boolean;
+  refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
+};
+
+interface Role {
+  id: string;
+  __typename: string;
+}
+
+interface RoleAccount {
+  id: string;
+  role: Role;
+  __typename: string;
+}
+
+interface RoleAccountsDouble {
+  roleAccounts: RoleAccount[];
+}
+
+interface RoleIdsResponse {
+  loading: boolean;
+  error: ApolloError;
+  roleAccounts: RoleAccountsDouble;
+  hasMemberProfiles?: boolean;
+  refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
+}

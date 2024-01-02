@@ -22,11 +22,45 @@ const GET_PROFILES_BY_USER_ADDRESS = gql`
   }
 `;
 
-export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
+const GET_USER_ROLES_BY_USER_ADDRESS = gql`
+  query getMemberProfilesByUserAddress($userAddress: ID!) {
+    roleAccounts(where: { account: $userAddress }) {
+      id
+      role {
+        id
+      }
+    }
+  }
+`;
+
+const GET_MEMBER_PROFILES_BY_IDS = gql`
+  query GetMemberProfilesByIds($ids: [ID!]!) {
+    profiles(where: { id_in: $ids }) {
+      id
+      name
+      owner {
+        id
+      }
+      anchor
+      metadata {
+        protocol
+        pointer
+      }
+      memberRole {
+        accounts {
+          id
+        }
+      }
+    }
+  }
+`;
+
+// Fetches owned profiles given user address
+export function fetchOwnedProfiles(userAddress: string): ownedProfilesReturn {
   const { loading, error, data, refetch } = useQuery(GET_PROFILES_BY_USER_ADDRESS, {
     variables: { userAddress },
-    onCompleted: (data: any) => console.log("Query completed:", data),
-    onError: (error: any) => console.error("Query error:", error),
+    onCompleted: (data: any) => console.log("Owned Profiles Query completed:", data),
+    onError: (error: any) => console.error("Owned Profiles Query error:", error),
   });
 
   const transformProfileData = (profiles: Profile[]): TransformedProfile[] =>
@@ -58,6 +92,85 @@ export function useUserProfiles(userAddress: string): UseUserProfilesReturn {
     error,
     profiles: data ? transformProfileData(data.profiles) : [],
     hasProfiles, // Indicates if profiles are available
+    refetch,
+  };
+}
+
+// Fetches role Ids given address has
+export function fetchRoleIds(userAddress: string): RoleIdsResponse {
+  const { loading, error, data, refetch } = useQuery(GET_USER_ROLES_BY_USER_ADDRESS, {
+    variables: { userAddress },
+    onCompleted: (data: any) => console.log("Role IDs Query completed:", data),
+    onError: (error: any) => console.error("Role IDs Query error:", error),
+  });
+
+  // Determine if profiles are available
+  const hasMemberProfiles = data?.profiles && data.profiles.length > 0;
+
+  //console.log("ROLE IDS", data)
+
+  return {
+    loading,
+    error,
+    roleAccounts: data,
+    hasMemberProfiles, // Indicates if member profiles are available
+    refetch,
+  };
+}
+
+// Fetches member profiles given role Ids
+export function fetchMemberProfiles(userAddress: string): memberProfilesReturn {
+  const roleIdsReponse = fetchRoleIds(userAddress)
+
+  //console.log("roleIdsReponse", roleIdsReponse)
+
+  // Transform roleAccounts data to extract IDs
+  const extractIdsFromRoleAccounts = (response: RoleIdsResponse) => {
+    return response && response.roleAccounts
+      ? response.roleAccounts.roleAccounts.map(account => account.role.id)
+      : [];
+  };
+
+  // Extract IDs directly from roleIdsReponse
+  const ids = extractIdsFromRoleAccounts(roleIdsReponse);
+
+  //console.log("roleAccountIds", roleAccountIds)
+
+  const { loading, error, data, refetch } = useQuery(GET_MEMBER_PROFILES_BY_IDS, {
+    variables: { ids },
+    onCompleted: (data: any) => console.log("Member Profiles Query completed:", data),
+    onError: (error: any) => console.error("Member Profiles Query error:", error),
+  });
+
+  const transformProfileData = (profiles: Profile[]): TransformedProfile[] =>
+    profiles ? profiles.map(profile => {
+      // Transform each member in the memberRole.accounts array
+      const transformedMembers = profile.memberRole.accounts.map((account: RawAccount) => {
+        const [id, address] = account.id.split("-");
+        return { id, address };
+      });
+
+      // Transform the profile data
+      return {
+        anchor: profile.anchor,
+        id: profile.id,
+        protocol: profile.metadata.protocol === '1' ? "IPFS" : profile.metadata.protocol.toString(),
+        pointer: profile.metadata.pointer,
+        name: profile.name,
+        owner: profile.owner.id,
+        members: transformedMembers,
+        pendingOwner: '',
+      };
+    }) : [];
+
+  // Determine if profiles are available
+  const hasMemberProfiles = data?.profiles && data.profiles.length > 0;
+
+  return {
+    loading,
+    error,
+    memberProfiles: data ? transformProfileData(data.profiles) : [],
+    hasMemberProfiles, // Indicates if profiles are available
     refetch,
   };
 }

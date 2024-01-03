@@ -76,14 +76,15 @@ export default function Profile() {
             console.log("No active selectedProfile");
             return;
         }
+
         if (profile?.pendingOwner === '0x0000000000000000000000000000000000000000') {
             setShowPendingOwnership(false)
-            console.log(profile.pendingOwner)
-            console.log("false")
+            //console.log(profile.pendingOwner)
+            //console.log("false")
         } else {
             setShowPendingOwnership(true)
-            console.log(profile?.pendingOwner)
-            console.log("true")
+            //console.log(profile?.pendingOwner)
+            //console.log("true")
         }
     }
 
@@ -487,7 +488,7 @@ export default function Profile() {
         return (
             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
                 Owner{/* Your custom label text */}
-                <Tooltip title="Ownership pending">
+                <Tooltip title={`Ownership pending ${selectedProfile?.pendingOwner}`} sx={{ textAlign: "center"}}>
                     <ErrorOutlineIcon sx={{ fill: '#607d8b', cursor: 'pointer', paddingLeft: '4px' }} />
                 </Tooltip>
             </Typography>

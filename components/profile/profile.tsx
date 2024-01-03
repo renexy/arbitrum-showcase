@@ -524,9 +524,10 @@ export default function Profile() {
                             }}
                             variant="standard"
                         />
-                        {!showPendingOwnership && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
-                            <HandshakeIcon sx={{ fill: '#607d8b', cursor: 'pointer' }}></HandshakeIcon>
-                        </Tooltip>}
+                        {showPendingOwnership && address === selectedProfile.pendingOwner &&
+                                <Button variant="contained" endIcon={<HandshakeIcon />}>
+                                    Accept ownership
+                                </Button>}
                     </div>
                     {!editMode && selectedProfile.owner === address && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
                     {editMode && selectedProfile.owner === address && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
@@ -670,7 +671,6 @@ export default function Profile() {
                             </div>
                         </Box>
                     </Box>
-                    <button onClick={() => { test(registry, signer) }}>test</button>
                     <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
                         message={dialogMessage}></BaseDialog>
@@ -710,7 +710,7 @@ export default function Profile() {
                         color="secondary"
                     >
                         <Alert severity="warning" sx={{ width: '100%' }}>
-                            Owner can't be member!
+                            Owner can&apos;t be member!
                         </Alert>
                     </Snackbar>
                 </Box>

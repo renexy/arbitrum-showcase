@@ -1,4 +1,6 @@
-function shortenEthAddress(address: string) {
+import { ethers } from 'ethers';
+
+export const shortenEthAddress = (address: string) => {
     if (!address || address.length < 7) {
         return address; // Return the original address if it's too short to shorten
     }
@@ -7,4 +9,10 @@ function shortenEthAddress(address: string) {
     return `${address.substring(0, 5)}...${address.substring(address.length - 5)}`;
 }
 
-export default shortenEthAddress
+export const toChecksumAddress = (address: string) => {
+  try {
+    return ethers.utils.getAddress(address);
+  } catch (error) {
+    console.error('Invalid Ethereum address:', error);
+  }
+}

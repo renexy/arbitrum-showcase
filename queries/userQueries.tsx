@@ -1,3 +1,4 @@
+import { toChecksumAddress } from '@/global/functions';
 import { useQuery, gql, ApolloError } from '@apollo/client';
 
 const GET_PROFILES_BY_USER_ADDRESS = gql`
@@ -137,7 +138,8 @@ export const transformProfileData = (profiles: Profile[]): TransformedProfile[] 
 profiles ? profiles.map(profile => {
   // Transform each member in the memberRole.accounts array
   const transformedMembers = profile.memberRole.accounts.map((account: RawAccount) => {
-    const [id, address] = account.id.split("-");
+    const [id, rawAddress] = account.id.split("-");
+    const address = toChecksumAddress(rawAddress) || rawAddress;
     return { id, address };
   });
 
@@ -148,7 +150,7 @@ profiles ? profiles.map(profile => {
     protocol: profile.metadata.protocol === '1' ? "IPFS" : profile.metadata.protocol.toString(),
     pointer: profile.metadata.pointer,
     name: profile.name,
-    owner: profile.owner.id,
+    owner: toChecksumAddress(profile.owner.id) || profile.owner.id,
     members: transformedMembers,
     pendingOwner: '',
   };

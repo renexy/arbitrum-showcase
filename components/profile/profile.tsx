@@ -7,7 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import BaseDialog from '../baseDialog/baseDialog';
 import AddIcon from '@mui/icons-material/Add';
 import { blueGrey } from '@mui/material/colors';
-import shortenEthAddress from '@/global/functions';
+import { shortenEthAddress } from '@/global/functions';
 import EditIcon from '@mui/icons-material/Edit';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EditOffIcon from '@mui/icons-material/EditOff';
@@ -416,7 +416,7 @@ export default function Profile() {
     const handleAddMember = () => {
         if (singleMember.length > 0) {
             if (selectedProfile?.members && selectedProfile.members.length > 0) {
-                if (!(selectedProfile.members.find(x => x.address === singleMember.toLowerCase())) && !(membersToAdd.find(x => x.address === singleMember.toLowerCase()))) {
+                if (!(selectedProfile.members.find(x => x.address === singleMember)) && !(membersToAdd.find(x => x.address === singleMember))) {
                     setMembersToAdd([...membersToAdd, { address: singleMember, id: '' }]);
                     setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }])
                 } else {
@@ -520,8 +520,8 @@ export default function Profile() {
                             <HandshakeIcon sx={{ fill: '#607d8b', cursor: 'pointer' }}></HandshakeIcon>
                         </Tooltip>}
                     </div>
-                    {!editMode && selectedProfile.owner === address?.toLowerCase() && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
-                    {editMode && selectedProfile.owner === address?.toLowerCase() && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
+                    {!editMode && selectedProfile.owner === address && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
+                    {editMode && selectedProfile.owner === address && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
                 </Box>
                 <Box sx={{
                     width: '100%', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',

@@ -71,6 +71,10 @@ export default function Profile() {
     }
 
     const displayPendingOwnerShip = () => {
+        if (!selectedProfile) {
+            console.log("No active selectedProfile");
+            return;
+        }
         if (selectedProfile?.pendingOwner === '0x0000000000000000000000000000000000000000') {
             setShowPendingOwnership(false)
             console.log(selectedProfile.pendingOwner)
@@ -91,7 +95,7 @@ export default function Profile() {
         setInitialValues()
         displayPendingOwnerShip()
         setItemsChanged(false)
-    }, [editMode, selectedProfileHash])
+    }, [editMode, selectedProfileHash, userProfiles, userMemberProfiles])
 
     const handleAcceptOwnership = async (registry: any, signer: any) => {
         const profilePendingOwnerArgs = selectedProfile?.id
@@ -309,6 +313,10 @@ export default function Profile() {
             return;
         }
 
+        console.log("newOwner", newOwner)
+        console.log("selectedProfile", selectedProfile?.owner)
+        console.log("electedProfile?.id", selectedProfile?.id)
+
         const profilePendingOwnerArgs: ProfileAndAddressArgs = {
             profileId: selectedProfile?.id || '',
             account: newOwner,
@@ -525,7 +533,7 @@ export default function Profile() {
                             variant="standard"
                         />
                         {showPendingOwnership && address === selectedProfile.pendingOwner &&
-                            <Button variant="contained" sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }} />}>
+                            <Button variant="contained" sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }} onClick={() => {setDialogAcceptOwnership(!dialogAcceptOwnership)}} />}>
                                 Accept ownership
                             </Button>}
                     </div>

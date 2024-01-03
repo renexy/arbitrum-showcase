@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { useAccount } from 'wagmi';
 import { useNetwork } from "wagmi";
 import { ethers } from 'ethers';
-import { fetchOwnedProfiles, fetchMemberProfiles } from '@/queries/userQueries';
+import { fetchOwnedProfiles, fetchMemberProfiles, transformProfileData } from '@/queries/userQueries';
 
 // Initial state definitions
 interface GlobalContextState {
@@ -63,17 +63,26 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [userMemberProfiles, setUserMemberProfiles] = useState<TransformedProfile[]>([])
   const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
-  const { loading, error, profiles, hasProfiles, refetch } = fetchOwnedProfiles(address || '');
-  const { memberProfiles, hasMemberProfiles } = fetchMemberProfiles(address || '');
+  const { loading, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
+  const { memberProfiles, hasMemberProfiles, refetch: refetchMember } = fetchMemberProfiles(address || '');
 
   const changeSelectedProfileHash = (hash: string) => {
     setSelectedProfileHash(hash)
   }
 
   const refetchProfiles = async () => {
-    const newProfiles = await refetch()
-    setUserProfiles(newProfiles.data.profiles);
-  }
+    const { data: refetchedProfilesData } = await refetchOwned();
+    const { data: refetchedMemberProfilesData } = await refetchMember();
+
+    console.log("refetchedProfilesData", refetchedProfilesData)
+    console.log("refetchedMemberProfilesData", refetchedMemberProfilesData)
+  
+    // Apply the transformations to the refetched data
+    const transformedRefetchedProfiles = transformProfileData(refetchedProfilesData.profiles);
+    const transformedRefetchedMemberProfiles = transformProfileData(refetchedMemberProfilesData.profiles);
+  
+    getPendingOwner(registry, transformedRefetchedProfiles, transformedRefetchedMemberProfiles);
+  };
 
   const getPendingOwner = async (registry: any, profiles: TransformedProfile[], memberProfiles: TransformedProfile[]) => {
     const rpc = 'https://rpc.goerli.eth.gateway.fm';
@@ -81,6 +90,9 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const contractAddress = registry.contract.address;
     const contractAbi = registry.contract.abi;
     const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
+
+    //console.log("profiles OBJ", profiles)
+    //console.log("memberProfiles OBJ", memberProfiles)
 
     try {
       const updatedProfiles = await Promise.all(profiles.map(async profile => {
@@ -93,6 +105,11 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         return { ...profile, pendingOwner };
       }));
 
+      
+      setUserProfiles([]);
+      setUserMemberProfiles([]);
+      //console.log("updatedProfiles", updatedProfiles)
+
       setUserProfiles(updatedProfiles);
       const newMemberProfiles = updatedMemberProfiles.filter(memberProfile =>
         !updatedProfiles.some(profile => profile.anchor === memberProfile.anchor)
@@ -101,7 +118,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       // here we take only the profiles that don't appear in userProfiles, since
       // we don't want to show duplicates
       setUserMemberProfiles(prevMemberProfiles => [...prevMemberProfiles, ...newMemberProfiles]);
-      console.log("updatedMemberProfiles", updatedMemberProfiles)
+      //console.log("updatedMemberProfiles", updatedMemberProfiles)
+      
     } catch (error) {
       console.error('Error in getPendingOwner:', error);
     }
@@ -126,7 +144,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     }
 
     if (!profiles) {
-      console.log("No profiles found")
+      console.log("No profiles found") 
       return;
     }
 
@@ -146,7 +164,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         getPendingOwner(registry, profiles, memberProfiles);
       }
     }
-  }, [chainId, chain, address, isConnected, hasProfiles, selectedProfileHash]);
+  }, [chainId, chain, address, isConnected, hasProfiles, hasMemberProfiles]);
 
   return (
     <GlobalContext.Provider value={{

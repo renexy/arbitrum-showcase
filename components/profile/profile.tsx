@@ -515,7 +515,7 @@ export default function Profile() {
                             }}
                             variant="standard"
                         />
-                        {!showPendingOwnership && address !== selectedProfile.pendingOwner && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
+                        {showPendingOwnership && address === selectedProfile.pendingOwner && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
                             <HandshakeIcon sx={{ fill: '#607d8b', cursor: 'pointer' }}></HandshakeIcon>
                         </Tooltip>}
                     </div>

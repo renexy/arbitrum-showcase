@@ -416,9 +416,17 @@ export default function Profile() {
     }, [newProfileName, newProfileMetadata, newProfileMembers, selectedProfile, newOwner]);
 
     const handleAddMember = () => {
+        if (singleMember === address) {
+            setShowSnackbarMemberExists(true)
+            setTimeout(() => {
+                setShowSnackbarMemberExists(false);
+            }, 3000);
+            return
+        }
         if (singleMember.length > 0) {
             if (selectedProfile?.members && selectedProfile.members.length > 0) {
-                if (!(selectedProfile.members.find(x => x.address === singleMember)) && !(membersToAdd.find(x => x.address === singleMember))) {
+                if (!(selectedProfile.members.find(x => x.address === singleMember)) &&
+                    !(membersToAdd.find(x => x.address === singleMember))) {
                     setMembersToAdd([...membersToAdd, { address: singleMember, id: '' }]);
                     setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }])
                 } else {

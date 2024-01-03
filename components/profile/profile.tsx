@@ -114,6 +114,7 @@ export default function Profile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setAcceptOwnershipTransactionStatus('succeeded'); // Transaction succeeded
+                    refetchProfiles();
                 } else {
                     setAcceptOwnershipTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }

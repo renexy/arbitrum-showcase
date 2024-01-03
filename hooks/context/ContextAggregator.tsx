@@ -160,7 +160,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     }
 
     if (isConnected) {
-      if (registry && profiles) {
+      if (registry) {
         getPendingOwner(registry, profiles, memberProfiles);
       }
     }

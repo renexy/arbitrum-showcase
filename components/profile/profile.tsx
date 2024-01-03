@@ -71,10 +71,14 @@ export default function Profile() {
     }
 
     const displayPendingOwnerShip = () => {
-        if (selectedProfile?.pendingOwner !== '0x0000000000000000000000000000000000000000') {
-            setShowPendingOwnership(true)
-        } else {
+        if (selectedProfile?.pendingOwner === '0x0000000000000000000000000000000000000000') {
             setShowPendingOwnership(false)
+            console.log(selectedProfile.pendingOwner)
+            console.log("false")
+        } else {
+            setShowPendingOwnership(true)
+            console.log(selectedProfile?.pendingOwner)
+            console.log("true")
         }
     }
 
@@ -578,7 +582,7 @@ export default function Profile() {
                             </TextField>
                             <TextField
                                 id="standard-read-only-input"
-                                label={showPendingOwnership && address === selectedProfile.pendingOwner ? <CustomLabel /> : 'Owner'}
+                                label={showPendingOwnership ? <CustomLabel /> : 'Owner'}
                                 color='secondary'
                                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
                                 value={newOwner}

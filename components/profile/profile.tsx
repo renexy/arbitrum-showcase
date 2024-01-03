@@ -37,6 +37,7 @@ export default function Profile() {
     const [showSnackbar, setShowsnackbar] = useState(false)
     const [showSnackbarCopied, setShowsnackbarCopied] = useState(false)
     const [showSnackbarMemberExists, setShowSnackbarMemberExists] = useState(false)
+    const [showSnackbarMemberIsOwner, setShowSnackbarMemberIsOwner] = useState(false)
     const [singleMember, setSingleMember] = useState('')
     const [editMode, setEditMode] = useState(false)
     const [showPendingOwnership, setShowPendingOwnership] = useState(false)
@@ -417,9 +418,9 @@ export default function Profile() {
 
     const handleAddMember = () => {
         if (singleMember === address) {
-            setShowSnackbarMemberExists(true)
+            setShowSnackbarMemberIsOwner(true)
             setTimeout(() => {
-                setShowSnackbarMemberExists(false);
+                setShowSnackbarMemberIsOwner(false);
             }, 3000);
             return
         }
@@ -703,6 +704,15 @@ export default function Profile() {
                     >
                         <Alert severity="warning" sx={{ width: '100%' }}>
                             Member already exists!
+                        </Alert>
+                    </Snackbar>
+                    <Snackbar
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        open={showSnackbarMemberIsOwner}
+                        color="secondary"
+                    >
+                        <Alert severity="warning" sx={{ width: '100%' }}>
+                            Owner can't be member!
                         </Alert>
                     </Snackbar>
                 </Box>

@@ -485,7 +485,6 @@ export default function Profile() {
                             InputProps={{
                                 readOnly: !editMode,
                                 disabled: !editMode,
-                                disableUnderline: true,
                                 sx: {
                                     fontSize: '1.5rem',
                                     color: 'rgba(0, 0, 0, 0.6)'
@@ -493,7 +492,7 @@ export default function Profile() {
                             }}
                             variant="standard"
                         />
-                        {showPendingOwnership && address === selectedProfile.pendingOwner && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
+                        {!showPendingOwnership && address !== selectedProfile.pendingOwner && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
                             <HandshakeIcon sx={{ fill: '#607d8b', cursor: 'pointer' }}></HandshakeIcon>
                         </Tooltip>}
                     </div>

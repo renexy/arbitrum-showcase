@@ -70,13 +70,7 @@ export default function Profile() {
     }
 
     const displayPendingOwnerShip = () => {
-        let findByUserProfiles: boolean = !!userProfiles?.find(x => x.anchor === selectedProfileHash)
-        let searchOption = userProfiles
-        if (!findByUserProfiles) {
-            searchOption = userMemberProfiles
-        }
-        const selected = searchOption?.find(x => x.anchor === selectedProfileHash)?.pendingOwner
-        if (selected !== '0x0000000000000000000000000000000000000000') {
+        if (selectedProfile?.pendingOwner !== '0x0000000000000000000000000000000000000000') {
             setShowPendingOwnership(true)
         } else {
             setShowPendingOwnership(false)

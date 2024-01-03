@@ -480,7 +480,7 @@ export default function Profile() {
             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
                 Owner{/* Your custom label text */}
                 <Tooltip title="Ownership pending">
-                    <ErrorOutlineIcon sx={{ fill: '#607d8b', cursor: 'pointer', paddingLeft: '8px' }} />
+                    <ErrorOutlineIcon sx={{ fill: '#607d8b', cursor: 'pointer', paddingLeft: '4px' }} />
                 </Tooltip>
             </Typography>
         );
@@ -524,7 +524,7 @@ export default function Profile() {
                             }}
                             variant="standard"
                         />
-                        {showPendingOwnership && address === selectedProfile.pendingOwner && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
+                        {!showPendingOwnership && <Tooltip title="Accept ownership" onClick={() => { setDialogAcceptOwnership(true) }}>
                             <HandshakeIcon sx={{ fill: '#607d8b', cursor: 'pointer' }}></HandshakeIcon>
                         </Tooltip>}
                     </div>
@@ -675,7 +675,7 @@ export default function Profile() {
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
                         message={dialogMessage}></BaseDialog>
                     <BaseDialog open={dialogAcceptOwnership} onClose={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }}
-                        dialogVariant={'transaction'} status={!acceptOwnershipTransactionStatus} callback={() => { handleAcceptOwnership(registry, signer) }}
+                        dialogVariant={'transaction'} status={acceptOwnershipTransactionStatus} callback={() => { handleAcceptOwnership(registry, signer) }}
                         message={'Accept ownership?'}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}

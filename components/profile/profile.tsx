@@ -525,9 +525,9 @@ export default function Profile() {
                             variant="standard"
                         />
                         {showPendingOwnership && address === selectedProfile.pendingOwner &&
-                                <Button variant="contained" endIcon={<HandshakeIcon />}>
-                                    Accept ownership
-                                </Button>}
+                            <Button variant="contained" sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }} />}>
+                                Accept ownership
+                            </Button>}
                     </div>
                     {!editMode && selectedProfile.owner === address && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
                     {editMode && selectedProfile.owner === address && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}

@@ -91,14 +91,40 @@ export default function Profile() {
         setInitialValues()
         displayPendingOwnerShip()
         setItemsChanged(false)
-    }, [editMode])
+    }, [editMode, selectedProfileHash])
 
-    const handleAcceptOwnership = async () => {
-        // you have to manage this state here, also don't forget to refetch all profiles (even member profiles)
-        // when the owner acceps the new change
-        setAcceptOwnershipTransactionStatus('signature')
-        setAcceptOwnershipTransactionStatus('transaction')
-        setAcceptOwnershipTransactionStatus('succeeded')
+    const handleAcceptOwnership = async (registry: any, signer: any) => {
+        const profilePendingOwnerArgs = selectedProfile?.id
+
+        try {
+            setAcceptOwnershipTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+            const txData: TransactionData = registry.acceptProfileOwnership(profilePendingOwnerArgs);
+
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+            });
+
+            setAcceptOwnershipTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+            // Listening to the transaction
+            try {
+                const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+                if (receipt.status === 1) {
+                    setAcceptOwnershipTransactionStatus('succeeded'); // Transaction succeeded
+                } else {
+                    setAcceptOwnershipTransactionStatus('failed'); // Transaction failed but no error was thrown
+                }
+            } catch (error) {
+                console.error(error);
+                setAcceptOwnershipTransactionStatus('failed'); // Transaction failed with an error
+            }
+        } catch (error) {
+            console.log("user rejected"); // User rejected the signature
+            setAcceptOwnershipTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+        }
     }
 
     const handleNameUpdate = async (registry: any, signer: any) => {
@@ -108,8 +134,6 @@ export default function Profile() {
         if (newProfileNameAdd === selectedProfile?.name) {
             return;
         }
-        console.log("newProfileNameAdd", newProfileNameAdd)
-        console.log("selectedProfile", selectedProfile?.name)
 
         const nameArgs: ProfileNameArgs = {
             profileId: selectedProfile?.id || '',
@@ -134,7 +158,6 @@ export default function Profile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    refetchProfiles();
                 } else {
                     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }
@@ -182,7 +205,6 @@ export default function Profile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    refetchProfiles();
                 } else {
                     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }
@@ -224,7 +246,6 @@ export default function Profile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    refetchProfiles();
                 } else {
                     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }
@@ -246,9 +267,9 @@ export default function Profile() {
             members: membersToRemove.map(member => member.address),
         };
 
-        console.log(memberArgs)
+        /*console.log(memberArgs)
         console.log(selectedProfile?.id)
-        console.log(newProfileMembers.map(member => member.address))
+        console.log(newProfileMembers.map(member => member.address))*/
 
         try {
             setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
@@ -268,7 +289,6 @@ export default function Profile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    refetchProfiles();
                 } else {
                     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }
@@ -315,7 +335,6 @@ export default function Profile() {
                 const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
                 if (receipt.status === 1) {
                     setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
-                    refetchProfiles();
                 } else {
                     setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
                 }
@@ -345,16 +364,19 @@ export default function Profile() {
         }
 
         if (membersToRemove.length > 0)
-            handleMembersDeletion(registry, signer)
+            await handleMembersDeletion(registry, signer)
 
         if (membersToAdd.length > 0)
-            handleMembersAddition(registry, signer)
+            await handleMembersAddition(registry, signer)
 
-        handleNameUpdate(registry, signer)
+        await handleNameUpdate(registry, signer)
 
-        handleMetadataUpdate(registry, signer)
+        await handleMetadataUpdate(registry, signer)
 
-        handleOwnerTransfer(registry, signer)
+        await handleOwnerTransfer(registry, signer)
+
+        refetchProfiles();
+        setEditMode(false);
     }
 
     useEffect(() => {
@@ -394,7 +416,7 @@ export default function Profile() {
     const handleAddMember = () => {
         if (singleMember.length > 0) {
             if (selectedProfile?.members && selectedProfile.members.length > 0) {
-                if (!(selectedProfile.members.find(x => x.address === singleMember)) && !(membersToAdd.find(x => x.address === singleMember))) {
+                if (!(selectedProfile.members.find(x => x.address === singleMember.toLowerCase())) && !(membersToAdd.find(x => x.address === singleMember.toLowerCase()))) {
                     setMembersToAdd([...membersToAdd, { address: singleMember, id: '' }]);
                     setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }])
                 } else {
@@ -441,6 +463,7 @@ export default function Profile() {
 
     const test = async (registry: any, signer: any) => {
 
+        refetchProfiles();
     }
 
     const CustomLabel = () => {
@@ -496,8 +519,8 @@ export default function Profile() {
                             <HandshakeIcon sx={{ fill: '#607d8b', cursor: 'pointer' }}></HandshakeIcon>
                         </Tooltip>}
                     </div>
-                    {!editMode && selectedProfile.owner === address && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
-                    {editMode && selectedProfile.owner === address && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
+                    {!editMode && selectedProfile.owner === address?.toLowerCase() && <EditIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(true) }}></EditIcon>}
+                    {editMode && selectedProfile.owner === address?.toLowerCase() && <EditOffIcon sx={{ fill: '#607d8b', cursor: 'pointer' }} onClick={() => { setEditMode(false) }}></EditOffIcon>}
                 </Box>
                 <Box sx={{
                     width: '100%', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
@@ -558,9 +581,6 @@ export default function Profile() {
                                     readOnly: !editMode,
                                     disabled: !editMode,
                                     endAdornment: (<InputAdornment position="end" sx={{ display: 'flex', gap: '4px' }}>
-                                        <Tooltip title="Transfer ownership">
-                                            <SwapHorizIcon sx={{ cursor: 'pointer', height: '14px' }} onClick={() => { console.log('transfer') }}></SwapHorizIcon>
-                                        </Tooltip>
                                         <ContentCopyIcon sx={{ cursor: 'pointer', height: '12px' }}
                                             onClick={() => {
                                                 copyToClipboard(selectedProfile.owner);
@@ -646,7 +666,7 @@ export default function Profile() {
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
                         message={dialogMessage}></BaseDialog>
                     <BaseDialog open={dialogAcceptOwnership} onClose={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }}
-                        dialogVariant={'transaction'} status={acceptOwnershipTransactionStatus} callback={() => { handleAcceptOwnership() }}
+                        dialogVariant={'transaction'} status={acceptOwnershipTransactionStatus} callback={() => { handleAcceptOwnership(registry, signer) }}
                         message={'Accept ownership?'}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -681,7 +701,6 @@ export default function Profile() {
                 editMode && <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-end' }}>
                     <Button color="secondary" onClick={() => { setEditMode(false) }}>Reset</Button>
                     <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
-                    <Button onClick={() => { handleMembersDeletion(registry, signer) }}>Test</Button>
                 </Box>
             }
         </Box >

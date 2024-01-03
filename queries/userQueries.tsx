@@ -63,27 +63,6 @@ export function fetchOwnedProfiles(userAddress: string): ownedProfilesReturn {
     onError: (error: any) => console.error("Owned Profiles Query error:", error),
   });
 
-  const transformProfileData = (profiles: Profile[]): TransformedProfile[] =>
-    profiles ? profiles.map(profile => {
-      // Transform each member in the memberRole.accounts array
-      const transformedMembers = profile.memberRole.accounts.map((account: RawAccount) => {
-        const [id, address] = account.id.split("-");
-        return { id, address };
-      });
-
-      // Transform the profile data
-      return {
-        anchor: profile.anchor,
-        id: profile.id,
-        protocol: profile.metadata.protocol === '1' ? "IPFS" : profile.metadata.protocol.toString(),
-        pointer: profile.metadata.pointer,
-        name: profile.name,
-        owner: profile.owner.id,
-        members: transformedMembers,
-        pendingOwner: '',
-      };
-    }) : [];
-
   // Determine if profiles are available
   const hasProfiles = data?.profiles && data.profiles.length > 0;
 
@@ -142,27 +121,6 @@ export function fetchMemberProfiles(userAddress: string): memberProfilesReturn {
     onError: (error: any) => console.error("Member Profiles Query error:", error),
   });
 
-  const transformProfileData = (profiles: Profile[]): TransformedProfile[] =>
-    profiles ? profiles.map(profile => {
-      // Transform each member in the memberRole.accounts array
-      const transformedMembers = profile.memberRole.accounts.map((account: RawAccount) => {
-        const [id, address] = account.id.split("-");
-        return { id, address };
-      });
-
-      // Transform the profile data
-      return {
-        anchor: profile.anchor,
-        id: profile.id,
-        protocol: profile.metadata.protocol === '1' ? "IPFS" : profile.metadata.protocol.toString(),
-        pointer: profile.metadata.pointer,
-        name: profile.name,
-        owner: profile.owner.id,
-        members: transformedMembers,
-        pendingOwner: '',
-      };
-    }) : [];
-
   // Determine if profiles are available
   const hasMemberProfiles = data?.profiles && data.profiles.length > 0;
 
@@ -174,3 +132,24 @@ export function fetchMemberProfiles(userAddress: string): memberProfilesReturn {
     refetch,
   };
 }
+
+export const transformProfileData = (profiles: Profile[]): TransformedProfile[] =>
+profiles ? profiles.map(profile => {
+  // Transform each member in the memberRole.accounts array
+  const transformedMembers = profile.memberRole.accounts.map((account: RawAccount) => {
+    const [id, address] = account.id.split("-");
+    return { id, address };
+  });
+
+  // Transform the profile data
+  return {
+    anchor: profile.anchor,
+    id: profile.id,
+    protocol: profile.metadata.protocol === '1' ? "IPFS" : profile.metadata.protocol.toString(),
+    pointer: profile.metadata.pointer,
+    name: profile.name,
+    owner: profile.owner.id,
+    members: transformedMembers,
+    pendingOwner: '',
+  };
+}) : [];

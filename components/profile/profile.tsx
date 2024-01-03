@@ -68,27 +68,27 @@ export default function Profile() {
         setMembersToAdd([])
         setMembersToRemove([])
         setSingleMember('')
+        displayPendingOwnerShip(searchOption?.find(x => x.anchor === selectedProfileHash)!)
     }
 
-    const displayPendingOwnerShip = () => {
-        if (!selectedProfile) {
+    const displayPendingOwnerShip = (profile: TransformedProfile) => {
+        if (!profile) {
             console.log("No active selectedProfile");
             return;
         }
-        if (selectedProfile?.pendingOwner === '0x0000000000000000000000000000000000000000') {
+        if (profile?.pendingOwner === '0x0000000000000000000000000000000000000000') {
             setShowPendingOwnership(false)
-            console.log("selectedProfile", selectedProfile.pendingOwner)
+            console.log(profile.pendingOwner)
             console.log("false")
         } else {
             setShowPendingOwnership(true)
-            console.log("selectedProfile", selectedProfile?.pendingOwner)
+            console.log(profile?.pendingOwner)
             console.log("true")
         }
     }
 
     useEffect(() => {
         setInitialValues()
-        displayPendingOwnerShip()
     }, [selectedProfileHash])
 
     useEffect(() => {
@@ -533,7 +533,7 @@ export default function Profile() {
                             variant="standard"
                         />
                         {showPendingOwnership && address === selectedProfile.pendingOwner &&
-                            <Button variant="contained" sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }} onClick={() => {setDialogAcceptOwnership(!dialogAcceptOwnership)}} />}>
+                            <Button variant="contained" sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }} onClick={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }} />}>
                                 Accept ownership
                             </Button>}
                     </div>

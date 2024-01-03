@@ -88,6 +88,7 @@ export default function Profile() {
 
     useEffect(() => {
         setInitialValues()
+        displayPendingOwnerShip()
     }, [selectedProfileHash])
 
     useEffect(() => {

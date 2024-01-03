@@ -675,7 +675,7 @@ export default function Profile() {
                         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
                         message={dialogMessage}></BaseDialog>
                     <BaseDialog open={dialogAcceptOwnership} onClose={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }}
-                        dialogVariant={'transaction'} status={acceptOwnershipTransactionStatus} callback={() => { handleAcceptOwnership(registry, signer) }}
+                        dialogVariant={'transaction'} status={!acceptOwnershipTransactionStatus} callback={() => { handleAcceptOwnership(registry, signer) }}
                         message={'Accept ownership?'}></BaseDialog>
                     <Snackbar
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}

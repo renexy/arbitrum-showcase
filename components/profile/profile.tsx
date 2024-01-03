@@ -77,11 +77,11 @@ export default function Profile() {
         }
         if (selectedProfile?.pendingOwner === '0x0000000000000000000000000000000000000000') {
             setShowPendingOwnership(false)
-            console.log(selectedProfile.pendingOwner)
+            console.log("selectedProfile", selectedProfile.pendingOwner)
             console.log("false")
         } else {
             setShowPendingOwnership(true)
-            console.log(selectedProfile?.pendingOwner)
+            console.log("selectedProfile", selectedProfile?.pendingOwner)
             console.log("true")
         }
     }
@@ -94,7 +94,6 @@ export default function Profile() {
     useEffect(() => {
         if (editMode) return
         setInitialValues()
-        displayPendingOwnerShip()
         setItemsChanged(false)
     }, [editMode, selectedProfileHash, userProfiles, userMemberProfiles])
 

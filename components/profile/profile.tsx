@@ -524,7 +524,7 @@ export default function Profile() {
                             }}
                             variant="standard"
                         />
-                        {showPendingOwnership && address === selectedProfile.pendingOwner &&
+                        {!showPendingOwnership && 
                                 <Button variant="contained" endIcon={<HandshakeIcon />}>
                                     Accept ownership
                                 </Button>}

@@ -81,7 +81,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const transformedRefetchedProfiles = transformProfileData(refetchedProfilesData.profiles);
     const transformedRefetchedMemberProfiles = transformProfileData(refetchedMemberProfilesData.profiles);
   
-    getPendingOwner(registry, transformedRefetchedProfiles, transformedRefetchedMemberProfiles);
+    await getPendingOwner(registry, transformedRefetchedProfiles, transformedRefetchedMemberProfiles);
   };
 
   const getPendingOwner = async (registry: any, profiles: TransformedProfile[], memberProfiles: TransformedProfile[]) => {
@@ -100,24 +100,32 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         return { ...profile, pendingOwner };
       }));
 
+      //console.log("updatedProfiles", updatedProfiles)
+
+      //console.log("userProfiles", userProfiles)
+      //console.log("updatedProfiles", updatedProfiles)
+
+      setUserProfiles(updatedProfiles);
+
       const updatedMemberProfiles = await Promise.all(memberProfiles.map(async profile => {
         const pendingOwner = await readOnlyContract.profileIdToPendingOwner(profile.id);
         return { ...profile, pendingOwner };
       }));
 
-      
-      setUserProfiles([]);
-      setUserMemberProfiles([]);
-      //console.log("updatedProfiles", updatedProfiles)
+      //console.log("userMemberProfiles", userMemberProfiles)
+      //console.log("updatedMemberProfiles", updatedMemberProfiles)
 
-      setUserProfiles(updatedProfiles);
+      //console.log("updatedMemberProfiles", updatedMemberProfiles)
+
       const newMemberProfiles = updatedMemberProfiles.filter(memberProfile =>
         !updatedProfiles.some(profile => profile.anchor === memberProfile.anchor)
       );
 
+      //console.log("newMemberProfiles", newMemberProfiles)
+
       // here we take only the profiles that don't appear in userProfiles, since
       // we don't want to show duplicates
-      setUserMemberProfiles(prevMemberProfiles => [...prevMemberProfiles, ...newMemberProfiles]);
+      setUserMemberProfiles(newMemberProfiles);
       //console.log("updatedMemberProfiles", updatedMemberProfiles)
       
     } catch (error) {

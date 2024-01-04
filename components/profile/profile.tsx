@@ -362,6 +362,7 @@ export default function Profile() {
     const handleUpdate = async (args?: any) => {
         if (args && args === 'restore') {
             setCreateProfileTransactionStatus('confirm')
+            setAcceptOwnershipTransactionStatus('confirm')
             return;
         }
 
@@ -488,7 +489,7 @@ export default function Profile() {
         return (
             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
                 Owner{/* Your custom label text */}
-                <Tooltip title={`Ownership pending ${selectedProfile?.pendingOwner}`} sx={{ textAlign: "center"}}>
+                <Tooltip title={`Ownership pending ${selectedProfile?.pendingOwner}`} sx={{ textAlign: "center" }}>
                     <ErrorOutlineIcon sx={{ fill: '#607d8b', cursor: 'pointer', paddingLeft: '4px' }} />
                 </Tooltip>
             </Typography>
@@ -533,8 +534,10 @@ export default function Profile() {
                             }}
                             variant="standard"
                         />
-                        {showPendingOwnership && address === selectedProfile.pendingOwner &&
-                            <Button variant="contained" sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }} onClick={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }} />}>
+                        {!showPendingOwnership && address !== selectedProfile.pendingOwner &&
+                            <Button variant="contained" onClick={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }}
+                                sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }}
+                                />}>
                                 Accept ownership
                             </Button>}
                     </div>

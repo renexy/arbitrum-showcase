@@ -534,7 +534,7 @@ export default function Profile() {
                             }}
                             variant="standard"
                         />
-                        {!showPendingOwnership && address !== selectedProfile.pendingOwner &&
+                        {showPendingOwnership && address === selectedProfile.pendingOwner &&
                             <Button variant="contained" onClick={() => { setDialogAcceptOwnership(!dialogAcceptOwnership) }}
                                 sx={{ paddingLeft: '8px' }} endIcon={<HandshakeIcon sx={{ fill: '#fff', cursor: 'pointer' }}
                                 />}>

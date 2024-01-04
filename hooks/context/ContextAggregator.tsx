@@ -104,10 +104,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         const pendingOwner = await readOnlyContract.profileIdToPendingOwner(profile.id);
         return { ...profile, pendingOwner };
       }));
-
       
-      setUserProfiles([]);
-      setUserMemberProfiles([]);
       //console.log("updatedProfiles", updatedProfiles)
 
       setUserProfiles(updatedProfiles);

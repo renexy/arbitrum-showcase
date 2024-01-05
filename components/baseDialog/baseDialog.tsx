@@ -9,20 +9,49 @@ import ListItemText from '@mui/material/ListItemText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import PersonIcon from '@mui/icons-material/Person';
-import { blue, blueGrey } from '@mui/material/colors';
+import { blue, blueGrey, green, grey } from '@mui/material/colors';
 import AddIcon from '@mui/icons-material/Add';
-import { Backdrop, CircularProgress, Fab, Step, StepContent, StepLabel, Stepper, Typography } from '@mui/material';
-
+import { Backdrop, Badge, CircularProgress, Fab, Step, StepContent, StepLabel, Stepper, Typography } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { FiberManualRecordOutlined } from '@mui/icons-material';
+import CircleIcon from '@mui/icons-material/Circle';
+import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 
 const steps = [
     {
-        label: 'Select campaign settings',
+        label: 'Using your profile',
+        working: false,
+        done: true
     },
     {
-        label: 'Create an ad group',
+        label: 'Saving your application to IPFS',
+        working: false,
+        done: false
     },
     {
-        label: 'Create an ad',
+        label: 'Deploying a new pool strategy',
+        working: true,
+        done: true,
+    },
+    {
+        label: 'Approve token',
+        working: false,
+        done: true,
+    },
+    {
+        label: 'Creating a new pool',
+        working: false,
+        done: false,
+    },
+    {
+        label: 'Indexing your pool',
+        working: true,
+        done: false,
+    },
+    {
+        label: 'Indexing pool metadata on IPFS',
+        working: true,
+        done: false,
     },
 ];
 
@@ -121,18 +150,21 @@ function StepperDialog(props: TransactionDialogProps) {
                 <Typography variant="h6" color={'#f5f5f5'}>Transaction Sent</Typography>
             </Backdrop>}
             {status === 'succeeded' && <Dialog onClose={handleClose} open={open}>
-                <Stepper activeStep={activeStep} orientation="vertical">
+                <Stepper activeStep={activeStep} orientation="vertical" sx={{ padding: '30px' }}>
                     {steps.map((step, index) => (
                         <Step key={step.label}>
-                            <StepLabel
-                                optional={
-                                    index === 2 ? (
-                                        <Typography variant="caption">Last step</Typography>
-                                    ) : null
-                                }
-                            >
+                            {!step.done && step.working &&
+                                <StepLabel StepIconComponent={BuildCircleIcon} StepIconProps={{ sx: { fill: grey[500] } }}>
+                                    {step.label}
+                                </StepLabel>
+                            }
+                            {!step.done && !step.working &&
+                                <StepLabel StepIconComponent={CircleIcon} StepIconProps={{ sx: { fill: grey[500] } }}>
+                                    {step.label}
+                                </StepLabel>}
+                            {step.done && <StepLabel StepIconComponent={CheckCircleIcon} StepIconProps={{ sx: { fill: green[500] } }}>
                                 {step.label}
-                            </StepLabel>
+                            </StepLabel>}
                         </Step>
                     ))}
                 </Stepper>

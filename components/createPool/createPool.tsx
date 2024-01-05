@@ -28,6 +28,9 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 export default function CreatePool({ changeCreatePool }: any) {
+    const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+    const [createPoolTransactionStatus, setCreatePoolTransactionStatus] =
+        useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     // form
     const [strategyType, setStrategyType] = useState<'Manual' | 'Governance token' | 'Hats protocol'>('Manual')
     const [poolName, setPoolName] = useState<string>('')
@@ -61,6 +64,13 @@ export default function CreatePool({ changeCreatePool }: any) {
         }
     };
 
+    const handleCreatePool = () => {
+        // make sure u do if checks for all fields
+        setCreatePoolTransactionStatus('signature');
+        setCreatePoolTransactionStatus('transaction');
+        setCreatePoolTransactionStatus('succeeded');
+    }
+
     const CustomLabel = ({ text, tooltipText }: any) => {
         return (
             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
@@ -76,7 +86,7 @@ export default function CreatePool({ changeCreatePool }: any) {
             width: 'auto', minWidth: '50%', gap: '24px', justifyContent: 'flex-start', alignItems: 'center',
             display: 'flex', flexDirection: 'column', flex: 1
         }}>
-            <Button size="small" sx={{ alignSelf: 'flex-start' }}
+            <Button size="medium" sx={{ alignSelf: 'flex-start' }}
                 onClick={() => { changeCreatePool() }}
                 endIcon={<ArrowBackIcon sx={{ fill: '#fff', cursor: 'pointer' }} />}>
                 Back
@@ -86,7 +96,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                 variant="outlined"
                 color="secondary"
                 value={strategyType}
-                size="small"
+                size="medium"
                 onChange={(e: any) => { setStrategyType(e.target.value) }}
                 select
                 sx={{ width: { xs: '100%', sm: '350px' } }}
@@ -98,17 +108,17 @@ export default function CreatePool({ changeCreatePool }: any) {
                 <MenuItem key={'manual'} value="Manual">
                     Manual
                 </MenuItem>
-                <MenuItem key={'governance token'} value="Governance token">
+                <MenuItem key={'governance token'} value="Governance token" disabled>
                     Governance token
                 </MenuItem>
-                <MenuItem key={'hats protocol'} value="Hats protocol">
+                <MenuItem key={'hats protocol'} value="Hats protocol" disabled>
                     Hats protocol
                 </MenuItem>
             </TextField>
             <TextField
                 variant="outlined"
                 color="secondary"
-                size="small"
+                size="medium"
                 placeholder='Gitcoin Micro Grants'
                 value={poolName}
                 onChange={(e: any) => { setPoolName(e.target.value) }}
@@ -122,7 +132,7 @@ export default function CreatePool({ changeCreatePool }: any) {
             <TextField
                 variant="outlined"
                 color="secondary"
-                size="small"
+                size="medium"
                 placeholder='https://www.website.com'
                 value={website}
                 onChange={(e: any) => { setWebsite(e.target.value) }}
@@ -136,7 +146,7 @@ export default function CreatePool({ changeCreatePool }: any) {
             <TextField
                 variant="outlined"
                 color="secondary"
-                size="small"
+                size="medium"
                 multiline
                 rows={4}
                 placeholder='Description'
@@ -152,7 +162,7 @@ export default function CreatePool({ changeCreatePool }: any) {
             <TextField
                 variant="outlined"
                 color="secondary"
-                size="small"
+                size="medium"
                 placeholder='Pool token address'
                 value={poolTokenAddress}
                 onChange={(e: any) => { setPoolTokenAddress(e.target.value) }}
@@ -167,7 +177,7 @@ export default function CreatePool({ changeCreatePool }: any) {
             <TextField
                 variant="outlined"
                 color="secondary"
-                size="small"
+                size="medium"
                 placeholder='ETH'
                 value={fundPoolAmount}
                 onChange={(e: any) => { setFundPoolAmount(e.target.value) }}
@@ -181,7 +191,7 @@ export default function CreatePool({ changeCreatePool }: any) {
             <TextField
                 variant="outlined"
                 color="secondary"
-                size="small"
+                size="medium"
                 placeholder='ETH'
                 value={maxGrantAmount}
                 onChange={(e: any) => { setMaxGrantAmount(e.target.value) }}
@@ -196,7 +206,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                 variant="outlined"
                 color="secondary"
                 type="number"
-                size="small"
+                size="medium"
                 placeholder='ETH'
                 value={approvalThreshold}
                 onChange={handleApprovalThresholdChange}
@@ -211,7 +221,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                 variant="outlined"
                 color="secondary"
                 type="date"
-                size="small"
+                size="medium"
                 sx={{ width: { xs: '100%', sm: '350px' } }}
                 value={startDate}
                 onChange={(e: any) => { setStartDate(e.target.value) }}
@@ -225,7 +235,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                 variant="outlined"
                 color="secondary"
                 type="date"
-                size="small"
+                size="medium"
                 sx={{ width: { xs: '100%', sm: '350px' } }}
                 value={endDate}
                 onChange={(e: any) => { setEndDate(e.target.value) }}
@@ -284,6 +294,19 @@ export default function CreatePool({ changeCreatePool }: any) {
                     </Typography>
                 )}
             </Box>
+
+            <Button
+                component="span"
+                variant="contained"
+                color="secondary"
+                size="medium"
+                onClick={() => { setDialogOpen(true) }}
+            >
+                Create pool
+            </Button>
+
+            <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }}
+                dialogVariant={'transaction'} status={createPoolTransactionStatus} callback={() => { handleCreatePool() }}></BaseDialog>
         </Box >
     );
 }

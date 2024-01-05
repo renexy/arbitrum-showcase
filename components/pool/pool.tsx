@@ -18,7 +18,7 @@ import {
   sendTransaction,
   waitForTransaction,
 } from "@wagmi/core";
-import { green, red } from '@mui/material/colors';
+import { green, grey, red } from '@mui/material/colors';
 
 const top100Films = [
   { label: 'The Shawshank Redemption', year: 1994 },
@@ -296,7 +296,7 @@ export default function Pool() {
         <TextField
           id="standard-read-only-input"
           color='secondary'
-          sx={{ textAlign: 'left', border: 'none' }}
+          sx={{ textAlign: 'left', border: 'none', flex: 1 }}
           value={'Pool 108'}
           InputProps={{
             readOnly: true,
@@ -309,9 +309,9 @@ export default function Pool() {
           }}
           variant="standard"
         />
-        <Button variant="outlined" sx={{ background: 'transparent', borderRadius: '9999px' }} color="secondary"
+        <Button variant="outlined" sx={{ background: green[300] }} color="secondary"
           disabled>
-          <Typography sx={{ color: green[300], fontWeight: 'bold', fontSize: '1rem' }}>ACTIVE</Typography>
+          <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>ACTIVE</Typography>
         </Button>
       </div>
       <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', width: '100%' }}>

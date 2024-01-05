@@ -58,13 +58,13 @@ function TransactionDialog(props: TransactionDialogProps) {
             </Backdrop>}
             {status === 'succeeded' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
-                    <DialogTitle>{status === 'succeeded' && "Profile Created Successfully"}</DialogTitle>
+                    <DialogTitle>{status === 'succeeded' && "Profile updated sucessfully"}</DialogTitle>
                     <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
                 </div>
             </Dialog>}
             {status === 'failed' && <Dialog onClose={handleClose} open={open}>
                 <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
-                    <DialogTitle>{status === 'failed' && "Failed to Create Profile"}</DialogTitle>
+                    <DialogTitle>{status === 'failed' && "Failed to update profile"}</DialogTitle>
                     <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
                 </div>
             </Dialog>}

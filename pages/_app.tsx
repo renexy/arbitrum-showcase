@@ -22,7 +22,6 @@ export default function App({ Component, pageProps }: AppProps) {
   const { chains, publicClient } = configureChains(
     [arbitrum, goerli],
     [
-      alchemyProvider({ apiKey: process.env.ALCHEMY_KEY || "" }),
       publicProvider()
     ]
   );

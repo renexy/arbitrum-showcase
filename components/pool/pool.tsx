@@ -6,6 +6,7 @@ import { Autocomplete, Button, Fab, InputAdornment, Paper, TextField, Typography
 import { CreatePoolArgs } from "@allo-team/allo-v2-sdk/dist/Allo/types";
 import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
 import { StrategyType } from "@allo-team/allo-v2-sdk/dist/strategies/MicroGrantsStrategy/types";
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import { useNetwork } from 'wagmi';
 import AddIcon from '@mui/icons-material/Add';
@@ -276,7 +277,7 @@ export default function Pool() {
       width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
       display: 'flex', flexDirection: 'column', flex: 1, padding: '12px', overflow: 'auto'
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <Autocomplete
           id="combo-box-demo"
           disableClearable
@@ -286,7 +287,7 @@ export default function Pool() {
           renderInput={(params) => <TextField {...params} label="Pool" color="secondary" />}
         />
         <Button variant="contained"
-          sx={{ paddingLeft: '8px', fontSize: '1rem', width: { xs: '100%', sm: '260px' } }} endIcon={<AddIcon sx={{ fill: '#fff', cursor: 'pointer' }}
+          sx={{ paddingLeft: '8px', fontSize: '1rem', width: { xs: '100%', sm: '200px', height: '30px' } }} endIcon={<AddIcon sx={{ fill: '#fff', cursor: 'pointer' }}
           />}>
           Create new pool
         </Button>
@@ -308,7 +309,10 @@ export default function Pool() {
           }}
           variant="standard"
         />
-        <Typography sx={{ color: green[300], fontWeight: 'bold', fontSize: '1.5rem' }}>ACTIVE</Typography>
+        <Button variant="outlined" sx={{ background: 'transparent', borderRadius: '9999px' }} color="secondary"
+          disabled>
+          <Typography sx={{ color: green[300], fontWeight: 'bold', fontSize: '1rem' }}>ACTIVE</Typography>
+        </Button>
       </div>
       <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', width: '100%' }}>
         <TextField

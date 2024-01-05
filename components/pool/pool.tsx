@@ -273,19 +273,21 @@ export default function Pool() {
       width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
       display: 'flex', flexDirection: 'column', flex: 1, padding: '12px', overflow: 'auto'
     }}>
-      <Button variant="contained"
-        sx={{ paddingLeft: '8px', width: 300 }} endIcon={<AddIcon sx={{ fill: '#fff', cursor: 'pointer' }}
-        />}>
-        Create new pool
-      </Button>
-      <Autocomplete
-        id="combo-box-demo"
-        disableClearable
-        options={top100Films}
-        color="secondary"
-        sx={{ width: 300, textAlign: 'left' }}
-        renderInput={(params) => <TextField {...params} label="Pool" color="secondary" />}
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <Autocomplete
+          id="combo-box-demo"
+          disableClearable
+          options={top100Films}
+          color="secondary"
+          sx={{ width: { xs: '100%', sm: '260px' }, textAlign: 'left' }}
+          renderInput={(params) => <TextField {...params} label="Pool" color="secondary" />}
+        />
+        <Button variant="contained"
+          sx={{ paddingLeft: '8px', width: { xs: '100%', sm: '260px' } }} endIcon={<AddIcon sx={{ fill: '#fff', cursor: 'pointer' }}
+          />}>
+          Create new pool
+        </Button>
+      </div>
     </Box>
   );
 }

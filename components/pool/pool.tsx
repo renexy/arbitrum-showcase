@@ -219,9 +219,6 @@ export default function Pool() {
 
     const initStrategyData = await microStrategy?.getInitializeData(initParams)
 
-    console.log("x", initStrategyData)
-
-
     const createPoolArgs: CreatePoolArgs = {
       profileId: "0xebbcdfd805ded94bd2ed5a5a3293d775a6da49db1e9b1afed50df9a30c8a307c", // sender must be a profile member 
       strategy: "0xb3af05b23a376c3b9564df3c815b4361d30892ed", // approved strategy contract

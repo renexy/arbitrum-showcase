@@ -199,7 +199,7 @@ const BrowsePools = () => {
                           ? `${item.pool.metadata.name.slice(0, 9)}...`
                           : item.pool.metadata.name
                         : 'No name'}</Typography>
-                    <Button variant="outlined" sx={{ background: green[300] }} color="secondary"
+                    <Button size="small" variant="outlined" sx={{ background: green[300] }} color="secondary"
                       disabled>
                       <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>ACTIVE</Typography>
                     </Button>
@@ -255,7 +255,7 @@ const BrowsePools = () => {
                           ? `${item.pool.metadata.name.slice(0, 9)}...`
                           : item.pool.metadata.name
                         : 'No name'}</Typography>
-                    <Button variant="outlined" sx={{ background: red[300] }} color="secondary"
+                    <Button size="small" variant="outlined" sx={{ background: red[300] }} color="secondary"
                       disabled>
                       <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>INACTIVE</Typography>
                     </Button>

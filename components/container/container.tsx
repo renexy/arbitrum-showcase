@@ -32,7 +32,6 @@ import BaseDialog from '../baseDialog/baseDialog';
 import CreateProfile from '../createProfile/createProfile';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import BrowseProfiles from '../browseProfiles/browseProfiles';
 import CloudIcon from '@mui/icons-material/Cloud';
 import BrowsePools from '../browsePools/browsePools';
 

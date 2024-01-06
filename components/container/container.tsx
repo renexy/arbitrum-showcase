@@ -262,7 +262,8 @@ export default function Container() {
 
             <Box component="main" sx={{
                 flexGrow: 1, flex: 1, p: 3, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', textAlign: 'center'
+                alignItems: 'center', justifyContent: menuSelected === 'Browse pools' ? 'flex-start' : 'center',
+                textAlign: 'center'
             }}>
                 <DrawerHeader />
                 {!menuSelected && !selectedProfileHash && <Typography variant="h5" paragraph sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>

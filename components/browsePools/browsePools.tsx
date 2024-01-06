@@ -24,10 +24,34 @@ const getRandomImage = () => {
 };
 
 const BrowsePools = () => {
-    const cardData = Array.from({ length: 6 }, (_, index) => ({
+  const cardData = Array.from({ length: 6 }, (_, index) => ({
+      id: index,
+      image: getRandomImage(),
+  }));
+  const [upcomingPools, setUpcomingPools] = React.useState<TPoolData[]>([]);
+  const [activePools, setActivePools] = React.useState<TPoolData[]>([]);
+  const [endedPools, setEndedPools] = React.useState<TPoolData[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const cardData = Array.from({ length: 6 }, (_, index) => ({
         id: index,
         image: getRandomImage(),
-    }));
+      }));
+
+      const upcomingPools = await getPools(TPoolType.UPCOMING);
+      const activePools = await getPools(TPoolType.ACTIVE);
+      const endedPools = await getPools(TPoolType.ENDED);
+
+      setUpcomingPools(upcomingPools);
+      setActivePools(activePools);
+      setEndedPools(endedPools);
+
+      console.log("upcomingPools", upcomingPools)
+    };
+
+    fetchData();
+  }, []);
 
   const ipfsClient = getIPFSClient();
 
@@ -81,18 +105,6 @@ const BrowsePools = () => {
     }
     return pools;
   }
- 
-  /*const upcomingPools = await getPools(TPoolType.UPCOMING);
-
-  const activePools = await getPools(TPoolType.ACTIVE);
-  
-  const endedPools = await getPools(TPoolType.ENDED);*/
-  
-  /*useEffect(() => {
-    console.log("upcomingPools", upcomingPools);
-    console.log("activePools", activePools);
-    console.log("endedPools", endedPools);
-  }, []);*/
 
   return (
     <Grid container spacing={2}>

@@ -32,6 +32,7 @@ import BaseDialog from '../baseDialog/baseDialog';
 import CreateProfile from '../createProfile/createProfile';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import BrowseProfiles from '../browseProfiles/browseProfiles';
 
 const drawerWidth = 240;
 
@@ -269,6 +270,7 @@ export default function Container() {
                 {menuSelected === 'Profile' && <Profile />}
                 {menuSelected === 'Pool' && <Pool />}
                 {menuSelected === 'Create' && <CreateProfile></CreateProfile>}
+               {/* <BrowseProfiles></BrowseProfiles> */}
             </Box>
         </Box>
     );

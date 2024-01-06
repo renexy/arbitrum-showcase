@@ -61,7 +61,7 @@ export function fetchOwnedProfiles(userAddress: string): ownedProfilesReturn {
   const { loading, error, data, refetch } = useQuery(GET_PROFILES_BY_USER_ADDRESS, {
     variables: { userAddress },
     onCompleted: (data: any) => console.log("Owned Profiles Query completed:", data),
-    onError: (error: any) => console.error("Owned Profiles Query error:", error),
+    onError: (error: ApolloError) => console.error("Owned Profiles Query error:", error),
   });
 
   // Determine if profiles are available
@@ -81,7 +81,7 @@ export function fetchRoleIds(userAddress: string): RoleIdsResponse {
   const { loading, error, data, refetch } = useQuery(GET_USER_ROLES_BY_USER_ADDRESS, {
     variables: { userAddress },
     onCompleted: (data: any) => console.log("Role IDs Query completed:", data),
-    onError: (error: any) => console.error("Role IDs Query error:", error),
+    onError: (error: ApolloError) => console.error("Role IDs Query error:", error),
   });
 
   // Determine if profiles are available
@@ -119,7 +119,7 @@ export function fetchMemberProfiles(userAddress: string): memberProfilesReturn {
   const { loading, error, data, refetch } = useQuery(GET_MEMBER_PROFILES_BY_IDS, {
     variables: { ids },
     onCompleted: (data: any) => console.log("Member Profiles Query completed:", data),
-    onError: (error: any) => console.error("Member Profiles Query error:", error),
+    onError: (error: ApolloError) => console.error("Member Profiles Query error:", error),
   });
 
   // Determine if profiles are available

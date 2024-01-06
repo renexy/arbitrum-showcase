@@ -23,22 +23,11 @@ const getRandomImage = () => {
     return imageUrls[Math.floor(Math.random() * imageUrls.length)];
 };
 
-const getRandomText = () => {
-  const texts = [
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-      // Add more text options as needed
-  ];
-  return texts[Math.floor(Math.random() * texts.length)];
-};
-
-const BrowsePools = async () => {
-  const cardData = Array.from({ length: 6 }, (_, index) => ({
-      id: index,
-      image: getRandomImage(),
-      text: getRandomText(),
-  }));
+const BrowsePools = () => {
+    const cardData = Array.from({ length: 6 }, (_, index) => ({
+        id: index,
+        image: getRandomImage(),
+    }));
 
   const ipfsClient = getIPFSClient();
 

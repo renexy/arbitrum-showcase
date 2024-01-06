@@ -15,23 +15,20 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Link from '@mui/material/Link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-
 const steps = ['Basic info', 'Wallet info', 'Dates & more'];
 
-const VisuallyHiddenInput = styled('input')({
-    clip: 'rect(0 0 0 0)',
-    clipPath: 'inset(50%)',
-    height: 1,
-    overflow: 'hidden',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    whiteSpace: 'nowrap',
-    width: 1,
-});
+const delay = (ms: number) => {
+    return new Promise<void>((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, ms);
+    });
+};
 
 export default function CreatePool({ changeCreatePool }: any) {
     const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+    const [items, setItems] = useState<Array<{ label: string; working: boolean; done: boolean; failed: boolean }>>([]);
+    const [createDisabled, setCreateDisabled] = useState(false)
     const [createPoolTransactionStatus, setCreatePoolTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     // form
@@ -52,13 +49,20 @@ export default function CreatePool({ changeCreatePool }: any) {
         [k: number]: boolean;
     }>({});
 
+    useEffect(() => {
+        if (poolName && website && description && fundPoolAmount && maxGrantAmount && startDate && endDate && selectedFile) {
+            setCreateDisabled(false)
+        } else {
+            setCreateDisabled(true)
+        }
+    }, [strategyType, poolName, website, description, fundPoolAmount, maxGrantAmount, startDate, endDate, selectedFile])
+
     const handleStep = (step: number) => () => {
         setActiveStep(step);
     };
 
     const handleFileChange = (event: any) => {
         const file = event.target.files[0];
-        // Check if the selected file is a PNG or JPG
         if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
             setSelectedFile(file);
         } else {
@@ -70,16 +74,84 @@ export default function CreatePool({ changeCreatePool }: any) {
         const value = parseFloat(e.target.value);
         if (!isNaN(value)) {
             setApprovalThreshold(value);
-        } else {
-            // Handle the case where the input is not a valid number
         }
     };
 
-    const handleCreatePool = () => {
-        // make sure u do if checks for all fields
-        setCreatePoolTransactionStatus('signature');
-        setCreatePoolTransactionStatus('transaction');
-        setCreatePoolTransactionStatus('succeeded');
+    const handleCreatePool = async () => {
+        const steps = [
+            {
+                label: 'Deploying contract',
+                working: false,
+                done: false,
+                failed: false
+            },
+            {
+                label: 'Uploading to IPFS',
+                working: false,
+                done: false,
+                failed: false
+            },
+            {
+                label: 'Creating pool',
+                working: false,
+                done: false,
+                failed: false
+            }
+        ];
+        setItems(steps)
+
+        await delay(2500)
+
+        setItems(prevItems => {
+            const updatedItems = [...prevItems];
+            updatedItems[0].working = true;
+            return updatedItems;
+        });
+
+        await delay(2500)
+
+        setItems(prevItems => {
+            const updatedItems = [...prevItems];
+            updatedItems[0].working = false;
+            updatedItems[0].done = true;
+            return updatedItems;
+        });
+
+        await delay(2500)
+
+        setItems(prevItems => {
+            const updatedItems = [...prevItems];
+            updatedItems[1].working = true;
+            updatedItems[1].done = false;
+            return updatedItems;
+        });
+
+        await delay(2500)
+
+        setItems(prevItems => {
+            const updatedItems = [...prevItems];
+            updatedItems[1].working = false;
+            updatedItems[1].done = true;
+            return updatedItems;
+        });
+
+        await delay(2500)
+
+        setItems(prevItems => {
+            const updatedItems = [...prevItems];
+            updatedItems[2].working = true;
+            updatedItems[2].done = false;
+            return updatedItems;
+        });
+
+        await delay(2500)
+
+        setItems(prevItems => {
+            const updatedItems = [...prevItems];
+            updatedItems[2].working = false;
+            updatedItems[2].done = true;
+            return updatedItems;
+        });
     }
 
     const CustomLabel = ({ text, tooltipText }: any) => {
@@ -299,7 +371,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                             color="secondary"
                             startIcon={<CloudUploadIcon sx={{ fill: 'white' }} />}
                         >
-                            Upload file
+                            Upload banner image
                         </Button>
                     </label>
                     <input
@@ -320,15 +392,16 @@ export default function CreatePool({ changeCreatePool }: any) {
                 component="span"
                 variant="contained"
                 color="secondary"
+                disabled={createDisabled}
                 size="medium"
                 sx={{ alignSelf: 'flex-end' }}
-                onClick={() => { setDialogOpen(true) }}
+                onClick={() => { handleCreatePool(); setDialogOpen(true) }}
             >
                 Create pool
             </Button>
 
-            <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }}
-                dialogVariant={'stepper'} status={createPoolTransactionStatus} callback={() => { handleCreatePool() }}></BaseDialog>
+            <BaseDialog steps={items} open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }}
+                dialogVariant={'stepper'} status={createPoolTransactionStatus}></BaseDialog>
         </Box >
     );
 }

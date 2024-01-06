@@ -33,6 +33,8 @@ import CreateProfile from '../createProfile/createProfile';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import BrowseProfiles from '../browseProfiles/browseProfiles';
+import CloudIcon from '@mui/icons-material/Cloud';
+import BrowsePools from '../browsePools/browsePools';
 
 const drawerWidth = 240;
 
@@ -206,7 +208,7 @@ export default function Container() {
                 </DrawerHeader>
                 <Divider />
                 <List>
-                    {['Profile', 'Pool'].map((text, index) => (
+                    {['Profile', 'Pool', 'Browse pools'].map((text, index) => (
                         <ListItem key={text} disablePadding sx={{ display: 'block' }} onClick={() => { if (selectedProfileHash) { setMenuSelected(text) } }}>
                             <ListItemButton disabled={!selectedProfileHash}
                                 sx={{
@@ -223,7 +225,8 @@ export default function Container() {
                                     }}
                                 >
                                     {text === 'Profile' ? <AccountBoxIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> :
-                                        <FolderIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} />}
+                                        text === 'Browse pools' ? <CloudIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> :
+                                            <FolderIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} />}
                                 </ListItemIcon>
                                 <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} className={`${text === menuSelected ? 'selected' : ''}`} />
                             </ListItemButton>
@@ -270,7 +273,7 @@ export default function Container() {
                 {menuSelected === 'Profile' && <Profile />}
                 {menuSelected === 'Pool' && <Pool />}
                 {menuSelected === 'Create' && <CreateProfile></CreateProfile>}
-               {/* <BrowseProfiles></BrowseProfiles> */}
+                {menuSelected === 'Browse pools' && <BrowsePools></BrowsePools>}
             </Box>
         </Box>
     );

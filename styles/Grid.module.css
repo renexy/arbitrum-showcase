@@ -1,0 +1,15 @@
+/* Default styles for the flex container */
+.colBreak {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    flex-wrap: wrap; /* Allow items to wrap */
+}
+
+/* Media query for smaller screen sizes */
+@media (max-width: 345px) {
+    /* Change flex direction to column below 345px */
+    .colBreak {
+        flex-direction: column;
+    }
+}

@@ -28,16 +28,12 @@ const BrowsePools = () => {
       id: index,
       image: getRandomImage(),
   }));
-  const [upcomingPools, setUpcomingPools] = React.useState<TPoolData[]>([]);
-  const [activePools, setActivePools] = React.useState<TPoolData[]>([]);
-  const [endedPools, setEndedPools] = React.useState<TPoolData[]>([]);
+  const [upcomingPools, setUpcomingPools] = React.useState<TPoolData[] | undefined>([]);
+  const [activePools, setActivePools] = React.useState<TPoolData[] | undefined>([]);
+  const [endedPools, setEndedPools] = React.useState<TPoolData[] | undefined>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const cardData = Array.from({ length: 6 }, (_, index) => ({
-        id: index,
-        image: getRandomImage(),
-      }));
 
       const upcomingPools = await getPools(TPoolType.UPCOMING);
       const activePools = await getPools(TPoolType.ACTIVE);
@@ -48,12 +44,35 @@ const BrowsePools = () => {
       setEndedPools(endedPools);
 
       console.log("upcomingPools", upcomingPools)
+      console.log("activePools FETCH", activePools)
+      console.log("endedPools", endedPools)
     };
 
     fetchData();
   }, []);
 
   const ipfsClient = getIPFSClient();
+
+  const fetchPools = async (queryType: string, first: number, offest: number) => {
+    const response = await fetch('/api/pools', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        queryJson: queryType,
+        first: first,
+        offset: offest,
+      }),
+    });
+  
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+  
+    const data = await response.json();
+    return data;
+  };
 
   const getPools = async (type: TPoolType) => {
     let pools: TPoolData[] = [];
@@ -74,20 +93,35 @@ const BrowsePools = () => {
       return pools;
     }
 
+    console.log(graphqlQuery)
+
     try {
-      const response: any = await request(
-        graphqlEndpoint,
-        graphqlQuery,
-        {
-          first: 10,
-          offset: 0
-        }
-      );
-      pools = response[responseObject];
+      const response = await fetchPools(graphqlQuery, 100, 0)
+      console.log("response", response)
+
+      if (type === TPoolType.UPCOMING) {
+        pools = response.upcomingMicroGrants;
+        console.log("activeMicroGrants", pools)
+      } else if (type === TPoolType.ACTIVE) {
+        pools = response.activeMicroGrants;
+        console.log("activeMicroGrants", pools)
+      } else if (type === TPoolType.ENDED) {
+        pools = response.endedMicroGrants;
+        console.log("endedMicroGrants", pools)
+      }
+
+      console.log("POOxzxbLS", pools)
+
+      if (!pools) {
+        console.log("Pools length is zero")
+        return;
+      }
+
       for (const pool of pools) {
         let metadata: TPoolMetadata;
         try {
-          metadata = await ipfsClient.fetchJson(pool.pool.metadataPointer);
+          const pointer = pool.pool.metadataPointer.toString();
+          metadata = await ipfsClient.fetchJson(pointer);
           pool.pool.metadata = metadata;
           if (metadata.base64Image) {
             let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
@@ -96,14 +130,21 @@ const BrowsePools = () => {
           if (!metadata.name) {
             metadata.name = `Pool ${pool.poolId}`;
           }
-        } catch {
-          console.log("IPFS", "Unable to fetch metadata");
+        } catch (error) {
+          console.log("IPFS", "Unable to fetch metadata", error);
         }
       }
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log("Error fetching pools: ", error);
     }
+    console.log("SALGMAOSLGMAD", pools)
     return pools;
+  }
+
+  const test = async () => {
+    console.log("upcomingPools", upcomingPools);
+    console.log("activePools", activePools);
+    console.log("endedPools", endedPools);
   }
 
   return (
@@ -153,6 +194,7 @@ const BrowsePools = () => {
                     </div>
                 </CardContent>
             </Card>
+          <Button onClick={() => {test()}}> test</Button>
         </Grid>
       ))}
     </Grid>

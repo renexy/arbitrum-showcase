@@ -1,7 +1,7 @@
 import Container from '@/components/container/container';
 import { Box, Button, Step, StepButton, Stepper, TextField, Typography } from '@mui/material';
 import Head from 'next/head'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const steps = ['Basic info', 'Grant info'];
@@ -23,6 +23,7 @@ export default function ApplicationForm() {
     const [reqAmount, setReqAmount] = useState<string>('')
     const [recipientAddress, setRecipientAddress] = useState<string>('')
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [applyDisabled, setApplyDisabled] = useState(true)
 
     const handleFileChange = (event: any) => {
         const file = event.target.files[0];
@@ -32,6 +33,14 @@ export default function ApplicationForm() {
             alert('Please select a PNG or JPG file.');
         }
     };
+
+    useEffect(() => {
+        if (name && website && description && email && reqAmount && recipientAddress && selectedFile) {
+            setApplyDisabled(false)
+        } else {
+            setApplyDisabled(true)
+        }
+    }, [name, website, description, email, reqAmount, recipientAddress, selectedFile])
 
     return (
         <>
@@ -164,6 +173,7 @@ export default function ApplicationForm() {
                 variant="contained"
                 color="secondary"
                 size="medium"
+                disabled={applyDisabled}
                 sx={{ alignSelf: 'flex-end' }}
                 onClick={() => { alert('apply applicant') }}
             >

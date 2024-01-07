@@ -1,21 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { getActiveMicroGrantsQuery, getEndedMicroGrantsQuery, getUpcomingMicroGrantsQuery, graphqlEndpoint } from "@/queries/poolQuery";
 import { Grid, Card, CardMedia, CardContent, Typography, Button, Stack, Skeleton, Box, Tabs, Tab, TextField } from '@mui/material';
 import { green, red } from '@mui/material/colors';
 import GridModuleCss from '@/styles/Grid.module.css'
-import { getIPFSClient } from "@/services/ipfs";
 import { TPoolData, TPoolMetadata } from "@/types/typesPool";
 import request from "graphql-request";
 import { ethers } from 'ethers';
 import Link from 'next/link';
+import GlobalContext from '@/hooks/context/ContextAggregator';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
-
-enum TPoolType {
-    UPCOMING = "upcoming",
-    ACTIVE = "active",
-    ENDED = "ended",
-}
 
 const weiToEth = (weiValue: any) => {
     if (!weiValue) return "0.0 ETH";
@@ -37,13 +30,11 @@ const convertUnixTimestamp = (timestamp: any) => {
 }
 
 const BrowsePools = () => {
-    const [upcomingPools, setUpcomingPools] = React.useState<TPoolData[] | undefined>([]);
-    const [activePools, setActivePools] = React.useState<TPoolData[] | undefined>([]);
-    const [endedPools, setEndedPools] = React.useState<TPoolData[] | undefined>([]);
-    const [loading, setLoading] = React.useState<boolean>(true)
     const [value, setValue] = React.useState(0);
     const [search, setSearch] = useState('')
     const [filteredPools, setFilteredPools] = useState<TPoolData[]>([])
+
+    const { loading, activePools, endedPools } = React.useContext(GlobalContext);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
@@ -72,114 +63,6 @@ const BrowsePools = () => {
         }
     }, [search])
 
-    useEffect(() => {
-        const fetchData = async () => {
-
-            // const upcomingPools = await getPools(TPoolType.UPCOMING);
-            const activePools = await getPools(TPoolType.ACTIVE);
-            const endedPools = await getPools(TPoolType.ENDED);
-
-            // setUpcomingPools(upcomingPools);
-            setActivePools(activePools);
-            setEndedPools(endedPools);
-            setLoading(false)
-            console.log("upcomingPools", upcomingPools)
-            console.log("activePools FETCH", activePools)
-            console.log("endedPools", endedPools)
-        };
-
-        fetchData();
-    }, []);
-
-    const ipfsClient = getIPFSClient();
-
-    const fetchPools = async (queryType: string, first: number, offest: number) => {
-        const response = await fetch('/api/pools', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                queryJson: queryType,
-                first: first,
-                offset: offest,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-        return data;
-    };
-
-    const getPools = async (type: TPoolType) => {
-        let pools: TPoolData[] = [];
-
-        let graphqlQuery;
-        let responseObject;
-
-        if (type === TPoolType.UPCOMING) {
-            graphqlQuery = getUpcomingMicroGrantsQuery;
-            responseObject = "upcomingMicroGrants";
-        } else if (type === TPoolType.ACTIVE) {
-            graphqlQuery = getActiveMicroGrantsQuery;
-            responseObject = "activeMicroGrants";
-        } else if (type === TPoolType.ENDED) {
-            graphqlQuery = getEndedMicroGrantsQuery;
-            responseObject = "endedMicroGrants";
-        } else {
-            return pools;
-        }
-
-        console.log(graphqlQuery)
-
-        try {
-            const response = await fetchPools(graphqlQuery, 10, 0)
-            console.log("response", response)
-
-            if (type === TPoolType.UPCOMING) {
-                pools = response.upcomingMicroGrants;
-                console.log("activeMicroGrants", pools)
-            } else if (type === TPoolType.ACTIVE) {
-                pools = response.activeMicroGrants;
-                console.log("activeMicroGrants", pools)
-            } else if (type === TPoolType.ENDED) {
-                pools = response.endedMicroGrants;
-                console.log("endedMicroGrants", pools)
-            }
-
-            console.log("POOxzxbLS", pools)
-
-            if (!pools) {
-                console.log("Pools length is zero")
-                return;
-            }
-
-            for (const pool of pools) {
-                let metadata: TPoolMetadata;
-                try {
-                    const pointer = pool.pool.metadataPointer.toString();
-                    metadata = await ipfsClient.fetchJson(pointer);
-                    pool.pool.metadata = metadata;
-                    if (metadata.base64Image) {
-                        let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
-                        pool.pool.poolBanner = poolBanner.data;
-                    }
-                    if (!metadata.name) {
-                        metadata.name = `Pool ${pool.poolId}`;
-                    }
-                } catch (error) {
-                    console.log("IPFS", "Unable to fetch metadata", error);
-                }
-            }
-        } catch (error) {
-            console.log("Error fetching pools: ", error);
-        }
-        console.log("SALGMAOSLGMAD", pools)
-        return pools;
-    }
     return (
         <>
             {!loading && <Box sx={{ alignSelf: 'flex-start', paddingBottom: { xs: '24px', sm: '8px' } }}>

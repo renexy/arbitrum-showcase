@@ -55,20 +55,20 @@ export default function Profile() {
     const { refetchProfiles } = useContext(GlobalContext)
 
     const setInitialValues = () => {
-        let findByUserProfiles: boolean = !!userProfiles?.find(x => x.anchor === selectedProfileHash)
+        let findByUserProfiles: boolean = !!userProfiles?.find(x => x.id === selectedProfileHash)
         let searchOption = userProfiles
         if (!findByUserProfiles) {
             searchOption = userMemberProfiles
         }
-        setSelectedProfile(searchOption?.find(x => x.anchor === selectedProfileHash))
-        setNewProfileName(searchOption?.find(x => x.anchor === selectedProfileHash)?.name || '')
-        setNewProfileMetadata(searchOption?.find(x => x.anchor === selectedProfileHash)?.pointer || '')
-        setNewProfileMembers(searchOption?.find(x => x.anchor === selectedProfileHash)?.members || [])
-        setNewOwner(searchOption?.find(x => x.anchor === selectedProfileHash)?.owner || '')
+        setSelectedProfile(searchOption?.find(x => x.id === selectedProfileHash))
+        setNewProfileName(searchOption?.find(x => x.id === selectedProfileHash)?.name || '')
+        setNewProfileMetadata(searchOption?.find(x => x.id === selectedProfileHash)?.pointer || '')
+        setNewProfileMembers(searchOption?.find(x => x.id === selectedProfileHash)?.members || [])
+        setNewOwner(searchOption?.find(x => x.id === selectedProfileHash)?.owner || '')
         setMembersToAdd([])
         setMembersToRemove([])
         setSingleMember('')
-        displayPendingOwnerShip(searchOption?.find(x => x.anchor === selectedProfileHash)!)
+        displayPendingOwnerShip(searchOption?.find(x => x.id === selectedProfileHash)!)
     }
 
     const displayPendingOwnerShip = (profile: TransformedProfile) => {
@@ -128,7 +128,7 @@ export default function Profile() {
                 setAcceptOwnershipTransactionStatus('failed'); // Transaction failed with an error
             }
         } catch (error) {
-            console.log("user rejected"); // User rejected the signature
+            console.log("user rejected", error); // User rejected the signature
             setAcceptOwnershipTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
     }
@@ -172,7 +172,7 @@ export default function Profile() {
                 setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
             }
         } catch (error) {
-            console.log("user rejected"); // User rejected the signature
+            console.log("user rejected", error); // User rejected the signature
             setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
     }
@@ -219,7 +219,7 @@ export default function Profile() {
                 setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
             }
         } catch (error) {
-            console.log("user rejected"); // User rejected the signature
+            console.log("user rejected", error); // User rejected the signature
             setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
     }
@@ -261,7 +261,7 @@ export default function Profile() {
             }
 
         } catch (error) {
-            console.log("user rejected"); // User rejected the signature
+            console.log("user rejected", error); // User rejected the signature
             setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
     }
@@ -304,7 +304,7 @@ export default function Profile() {
             }
 
         } catch (error) {
-            console.log("user rejected"); // User rejected the signature
+            console.log("user rejected", error); // User rejected the signature
             setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
     }
@@ -314,18 +314,18 @@ export default function Profile() {
             return;
         }
 
-        console.log("newOwner", newOwner)
+        /*console.log("newOwner", newOwner)
         console.log("selectedProfile", selectedProfile?.owner)
-        console.log("electedProfile?.id", selectedProfile?.id)
+        console.log("electedProfile?.id", selectedProfile?.id)*/
 
         const profilePendingOwnerArgs: ProfileAndAddressArgs = {
             profileId: selectedProfile?.id || '',
             account: newOwner,
         };
 
-        console.log(profilePendingOwnerArgs)
+        /*console.log(profilePendingOwnerArgs)
         console.log(selectedProfile?.id)
-        console.log(newProfileMembers.map(member => member.address))
+        console.log(newProfileMembers.map(member => member.address))*/
 
         try {
             setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
@@ -354,7 +354,7 @@ export default function Profile() {
             }
 
         } catch (error) {
-            console.log("user rejected"); // User rejected the signature
+            console.log("user rejected", error); // User rejected the signature
             setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
         }
     }

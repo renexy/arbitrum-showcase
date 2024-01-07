@@ -124,14 +124,14 @@ export default function Container() {
     React.useEffect(() => {
         if (userProfiles && userProfiles.length > 0) {
             if (!selectedProfileHash) {
-                changeSelectedProfileHash(userProfiles[0].anchor)
+                changeSelectedProfileHash(userProfiles[0].id)
                 if (!router.pathname.includes('/pool'))
                     setMenuSelected('Profile')
             }
         }
         if (userMemberProfiles && userMemberProfiles.length > 0) {
             if (!selectedProfileHash) {
-                changeSelectedProfileHash(userMemberProfiles[0].anchor)
+                changeSelectedProfileHash(userMemberProfiles[0].id)
                 if (!router.pathname.includes('/pool'))
                     setMenuSelected('Profile')
             }
@@ -198,12 +198,12 @@ export default function Container() {
                         >
                             <ListSubheader sx={{ background: grey[200], fontWeight: 900 }}>Owned Profiles</ListSubheader>
                             {userProfiles.map((item) => {
-                                return <MenuItem key={item.anchor} value={item.anchor}>{item.name}</MenuItem>
+                                return <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
                             })}
 
                             <ListSubheader sx={{ background: grey[200], fontWeight: 900 }}>Member Profiles</ListSubheader>
                             {userMemberProfiles.map((item) => {
-                                return <MenuItem key={item.anchor} value={item.anchor}>{item.name}</MenuItem>
+                                return <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
                             })}
 
                             <MenuItem key="create" value={"Create"} sx={{ gap: '12px' }}>

@@ -14,6 +14,7 @@ import { green, grey, red } from '@mui/material/colors';
 import { useState } from 'react';
 import CreatePool from '../createPool/createPool';
 import DisplayPoolInfo from '../displayPoolInfo/displayPoolInfo';
+import GlobalContext from '@/hooks/context/ContextAggregator';
 
 const top100Films = [
   { label: 'The Shawshank Redemption', year: 1994 },
@@ -24,6 +25,7 @@ const top100Films = [
 export default function Pool() {
   const [showCreatePool, setShowCreatePool] = useState(false)
   const [value, setValue] = React.useState('one');
+  const { selectedProfileHash } = React.useContext(GlobalContext)
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
@@ -51,6 +53,7 @@ export default function Pool() {
               />}>
               Create new pool
             </Button>
+            <Button onClick={() => {console.log(selectedProfileHash)}}>test</Button>
           </div>
           <DisplayPoolInfo />
         </>}

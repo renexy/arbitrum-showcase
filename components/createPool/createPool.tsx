@@ -6,8 +6,6 @@ import AddIcon from '@mui/icons-material/Add';
 import { blueGrey } from '@mui/material/colors';
 import BaseDialog from '../baseDialog/baseDialog';
 import { useState, useEffect } from 'react'
-import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
-import { useContext } from "react";
 import GlobalContext from '../../hooks/context/ContextAggregator';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import InfoIcon from '@mui/icons-material/Info';
@@ -16,9 +14,9 @@ import Link from '@mui/material/Link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { ethers } from 'ethers'
 import {
-  getWalletClient,
-  sendTransaction,
-  waitForTransaction,
+    getWalletClient,
+    sendTransaction,
+    waitForTransaction,
 } from "@wagmi/core";
 import { StrategyType } from "@allo-team/allo-v2-sdk/dist/strategies/MicroGrantsStrategy/types";
 import { useNetwork } from 'wagmi';
@@ -53,6 +51,8 @@ export default function CreatePool({ changeCreatePool }: any) {
     const [endDate, setEndDate] = useState('');
     const [stateRegistryMandatory, setStateRegistryMandatory] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [managers, setManagers] = useState<string[]>([])
+    const [singleManager, setSingleManager] = useState('')
     const [activeStep, setActiveStep] = React.useState(0);
     const [completed, setCompleted] = React.useState<{
         [k: number]: boolean;
@@ -162,6 +162,11 @@ export default function CreatePool({ changeCreatePool }: any) {
             return updatedItems;
         });
     }
+
+    const handleDelete = (memberName: string) => {
+        const updatedMembers = managers.filter((member) => member !== memberName);
+        setManagers(updatedMembers);
+    };
 
     const CustomLabel = ({ text, tooltipText }: any) => {
         return (
@@ -396,6 +401,48 @@ export default function CreatePool({ changeCreatePool }: any) {
                         </Typography>
                     )}
                 </Box>
+                <TextField
+                    id="outlined-adornment-password"
+                    label="Managers"
+                    variant="outlined"
+                    value={singleManager}
+                    color="secondary"
+                    onChange={(e) => { setSingleManager(e.target.value) }}
+                    sx={{ 'fieldSet': { border: '1px solid grey' }, width: { xs: '100%', sm: '350px' } }}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton onClick={() => {
+                                    if (singleManager.length > 0) {
+                                        // Check if the manager already exists in the managers array
+                                        const managerExists = managers.some(manager => manager === singleManager);
+
+                                        // If the manager doesn't exist, add it to the managers state
+                                        if (!managerExists) {
+                                            setManagers([...managers, singleManager]);
+                                            setSingleManager('');
+                                        }
+                                    }
+                                }} edge="end"
+                                >
+                                    <AddIcon sx={{ fill: blueGrey[500] }} />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+                {managers.length > 0 && (
+                    <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto', width: { xs: '100%', sm: '350px' } }}>
+                        {managers.map((manager, index) => (
+                            <ListItem key={index}>
+                                <ListItemText primary={`${manager.substring(0, 3)}...${manager.substring(manager.length - 3)}`} />
+                                <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(manager)}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </ListItem>
+                        ))}
+                    </List>
+                )}
             </>}
             <Button
                 component="span"

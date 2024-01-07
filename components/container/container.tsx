@@ -296,7 +296,7 @@ export default function Container() {
                 {menuSelected === 'Pool' && <Pool />}
                 {menuSelected === 'Create' && <CreateProfile></CreateProfile>}
                 {menuSelected === 'Browse pools' && <BrowsePools></BrowsePools>}
-                {router.pathname.includes('/pool') && menuSelected === '' && <PoolDetails></PoolDetails>}
+                {router.pathname.includes('/pool/') && menuSelected === '' && <PoolDetails></PoolDetails>}
             </Box>
         </Box>
     );

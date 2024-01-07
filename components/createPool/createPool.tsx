@@ -6,8 +6,6 @@ import AddIcon from '@mui/icons-material/Add';
 import { blueGrey } from '@mui/material/colors';
 import BaseDialog from '../baseDialog/baseDialog';
 import { useState, useEffect } from 'react'
-import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
-import { useContext } from "react";
 import GlobalContext from '../../hooks/context/ContextAggregator';
 import { CreateProfileArgs } from '@allo-team/allo-v2-sdk/dist/Registry/types';
 import InfoIcon from '@mui/icons-material/Info';
@@ -16,9 +14,9 @@ import Link from '@mui/material/Link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { ethers } from 'ethers'
 import {
-getWalletClient,
-sendTransaction,
-waitForTransaction,
+  getWalletClient,
+  sendTransaction,
+  waitForTransaction,
 } from "@wagmi/core";
 import { StrategyType } from "@allo-team/allo-v2-sdk/dist/strategies/MicroGrantsStrategy/types";
 import { useAccount, useNetwork, WagmiConfig  } from 'wagmi';
@@ -43,33 +41,36 @@ const delay = (ms: number) => {
           resolve();
       }, ms);
   });
-};
+};//
 
 export default function CreatePool({ changeCreatePool }: any) {
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false)
-  const [items, setItems] = useState<Array<{ label: string; working: boolean; done: boolean; failed: boolean }>>([]);
-  const [createDisabled, setCreateDisabled] = useState(false)
-  const [createPoolTransactionStatus, setCreatePoolTransactionStatus] = useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
-  // form
-  const [strategyType, setStrategyType] = useState<TStrategyType>(StrategyType.MicroGrants as TStrategyType)
-  const [poolName, setPoolName] = useState<string>('')
-  const [website, setWebsite] = useState<string>('')
-  const [description, setDescription] = useState<string>('')
-  const [poolTokenAddress, setPoolTokenAddress] = useState<string>('')
-  const [fundPoolAmount, setFundPoolAmount] = useState<string>('')
-  const [maxGrantAmount, setMaxGrantAmount] = useState<string>('')
-  const [approvalThreshold, setApprovalThreshold] = useState<number>(1)
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [stateRegistryMandatory, setStateRegistryMandatory] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedFile64, setSelectedFile64] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [completed, setCompleted] = React.useState<{
-      [k: number]: boolean;
-  }>({});
+    const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+    const [items, setItems] = useState<Array<{ label: string; working: boolean; done: boolean; failed: boolean }>>([]);
+    const [createDisabled, setCreateDisabled] = useState(false)
+    const [createPoolTransactionStatus, setCreatePoolTransactionStatus] =
+        useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+    // form
+    const [strategyType, setStrategyType] = useState(StrategyType.MicroGrants as TStrategyType)
+    const [poolName, setPoolName] = useState<string>('')
+    const [website, setWebsite] = useState<string>('')
+    const [description, setDescription] = useState<string>('')
+    const [poolTokenAddress, setPoolTokenAddress] = useState<string>('')
+    const [fundPoolAmount, setFundPoolAmount] = useState<string>('')
+    const [maxGrantAmount, setMaxGrantAmount] = useState<string>('')
+    const [approvalThreshold, setApprovalThreshold] = useState<number>(1)
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [stateRegistryMandatory, setStateRegistryMandatory] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile64, setSelectedFile64] = useState<string | null>(null);
+    const [managers, setManagers] = useState<string[]>([])
+    const [singleManager, setSingleManager] = useState('')
+    const [activeStep, setActiveStep] = React.useState(0);
+    const [completed, setCompleted] = React.useState<{
+        [k: number]: boolean;
+    }>({});
 
-  const { allo, selectedProfileHash, microStrategy, signer } = useContext(GlobalContext);
+  const { allo, selectedProfileHash, microStrategy, signer } = React.useContext(GlobalContext);
   const ipfsClient = getIPFSClient();
   const { chain } = useNetwork();
   const { address } = useAccount();
@@ -353,7 +354,7 @@ export default function CreatePool({ changeCreatePool }: any) {
         amount: BigInt(fundPoolAmount),
         metadata: {
           protocol: BigInt(1),
-          pointer: pIPFSPointer,
+          pointer: IPFSPointer,
         },
         managers: managers,
       };
@@ -421,6 +422,11 @@ export default function CreatePool({ changeCreatePool }: any) {
         return updatedItems;
     });
   }
+
+  const handleDelete = (memberName: string) => {
+    const updatedMembers = managers.filter((member) => member !== memberName);
+    setManagers(updatedMembers);
+  };
 
   const CustomLabel = ({ text, tooltipText }: any) => {
       return (
@@ -655,6 +661,48 @@ export default function CreatePool({ changeCreatePool }: any) {
                       </Typography>
                   )}
               </Box>
+              <TextField
+                  id="outlined-adornment-password"
+                  label="Managers"
+                  variant="outlined"
+                  value={singleManager}
+                  color="secondary"
+                  onChange={(e) => { setSingleManager(e.target.value) }}
+                  sx={{ 'fieldSet': { border: '1px solid grey' }, width: { xs: '100%', sm: '350px' } }}
+                  InputProps={{
+                      endAdornment: (
+                          <InputAdornment position="end">
+                              <IconButton onClick={() => {
+                                  if (singleManager.length > 0) {
+                                      // Check if the manager already exists in the managers array
+                                      const managerExists = managers.some(manager => manager === singleManager);
+
+                                      // If the manager doesn't exist, add it to the managers state
+                                      if (!managerExists) {
+                                          setManagers([...managers, singleManager]);
+                                          setSingleManager('');
+                                      }
+                                  }
+                              }} edge="end"
+                              >
+                                  <AddIcon sx={{ fill: blueGrey[500] }} />
+                              </IconButton>
+                          </InputAdornment>
+                      ),
+                  }}
+              />
+              {managers.length > 0 && (
+                  <List dense sx={{ border: '1px solid grey', borderRadius: '4px', maxHeight: '200px', overflow: 'auto', width: { xs: '100%', sm: '350px' } }}>
+                      {managers.map((manager, index) => (
+                          <ListItem key={index}>
+                              <ListItemText primary={`${manager.substring(0, 3)}...${manager.substring(manager.length - 3)}`} />
+                              <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(manager)}>
+                                  <DeleteIcon />
+                              </IconButton>
+                          </ListItem>
+                      ))}
+                  </List>
+              )}
           </>}
           <Button
               component="span"

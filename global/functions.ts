@@ -16,3 +16,7 @@ export const toChecksumAddress = (address: string) => {
     console.error('Invalid Ethereum address:', error);
   }
 }
+
+export function dateStringToSeconds(dateStr: string) {
+  return Math.floor(new Date(dateStr).getTime() / 1000);
+}

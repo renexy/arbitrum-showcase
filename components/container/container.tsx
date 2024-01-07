@@ -34,6 +34,8 @@ import GlobalContext from '@/hooks/context/ContextAggregator';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloudIcon from '@mui/icons-material/Cloud';
 import BrowsePools from '../browsePools/browsePools';
+import { useRouter } from 'next/router';
+import PoolDetails from '@/pages/pool/[id]';
 
 const drawerWidth = 240;
 
@@ -109,24 +111,34 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function Container() {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
+    const router = useRouter();
     const [menuSelected, setMenuSelected] = React.useState("")
     const { userProfiles, hasProfiles, selectedProfileHash, changeSelectedProfileHash, userMemberProfiles } = React.useContext(GlobalContext)
+
+    React.useEffect(() => {
+        if (router.pathname.includes('/pool/')) {
+            setMenuSelected('')
+        }
+    }, [router.pathname])
 
     React.useEffect(() => {
         if (userProfiles && userProfiles.length > 0) {
             if (!selectedProfileHash) {
                 changeSelectedProfileHash(userProfiles[0].anchor)
-                setMenuSelected('Profile')
+                if (!router.pathname.includes('/pool'))
+                    setMenuSelected('Profile')
             }
         }
         if (userMemberProfiles && userMemberProfiles.length > 0) {
             if (!selectedProfileHash) {
                 changeSelectedProfileHash(userMemberProfiles[0].anchor)
-                setMenuSelected('Profile')
+                if (!router.pathname.includes('/pool'))
+                    setMenuSelected('Profile')
             }
         }
         if (selectedProfileHash) {
-            setMenuSelected('Profile')
+            if (!router.pathname.includes('/pool'))
+                setMenuSelected('Profile')
         }
     }, [userProfiles, hasProfiles, selectedProfileHash, userMemberProfiles])
 
@@ -208,8 +220,17 @@ export default function Container() {
                 <Divider />
                 <List>
                     {['Profile', 'Pool', 'Browse pools'].map((text, index) => (
-                        <ListItem key={text} disablePadding sx={{ display: 'block' }} onClick={() => { if (selectedProfileHash) { setMenuSelected(text) } }}>
-                            <ListItemButton disabled={!selectedProfileHash}
+                        <ListItem key={text} disablePadding sx={{ display: 'block' }}
+                            onClick={() => {
+                                if (selectedProfileHash) { router.replace('/'); setMenuSelected(text) }
+                                else {
+                                    if (!selectedProfileHash && text === 'Browse pools') {
+                                        router.replace('/');
+                                        setMenuSelected(text)
+                                    }
+                                }
+                            }}>
+                            <ListItemButton disabled={!selectedProfileHash && text !== 'Browse pools'}
                                 sx={{
                                     minHeight: 48,
                                     justifyContent: open ? 'initial' : 'center',
@@ -266,14 +287,16 @@ export default function Container() {
                 textAlign: 'center'
             }}>
                 <DrawerHeader />
-                {!menuSelected && !selectedProfileHash && <Typography variant="h5" paragraph sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                    You don&apos;t have any profiles. Click &apos;Create profile&apos; in top left corner to start.
-                </Typography>
+                {!menuSelected && !router.pathname.includes('/pool/')
+                    && !selectedProfileHash && <Typography variant="h5" paragraph sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                        You don&apos;t have any profiles. Click &apos;Create profile&apos; in top left corner to start.
+                    </Typography>
                 }
                 {menuSelected === 'Profile' && <Profile />}
                 {menuSelected === 'Pool' && <Pool />}
                 {menuSelected === 'Create' && <CreateProfile></CreateProfile>}
                 {menuSelected === 'Browse pools' && <BrowsePools></BrowsePools>}
+                {router.pathname.includes('/pool') && menuSelected === '' && <PoolDetails></PoolDetails>}
             </Box>
         </Box>
     );

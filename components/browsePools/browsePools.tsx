@@ -7,6 +7,7 @@ import request from "graphql-request";
 import { ethers } from 'ethers';
 import Link from 'next/link';
 import GlobalContext from '@/hooks/context/ContextAggregator';
+import { convertUnixTimestamp } from '@/global/functions';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -18,16 +19,6 @@ const weiToEth = (weiValue: any) => {
 
     return `${truncatedEth} ETH`;
 };
-
-const convertUnixTimestamp = (timestamp: any) => {
-    if (!timestamp) return "/"
-    const date = new Date(timestamp * 1000); // Convert Unix timestamp to milliseconds
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // Month is zero-indexed, so add 1
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
-}
 
 const BrowsePools = () => {
     const [value, setValue] = React.useState(0);
@@ -104,7 +95,7 @@ const BrowsePools = () => {
                     ))
                 }
                 {!loading && value === 0 && (search.length > 0 ? filteredPools : activePools ? activePools : []).map((item) => (
-                    <Grid key={item.poolId} item xs={12} sm={6} md={4} lg={3}>
+                    <Grid key={'active' + item.poolId} item xs={12} sm={6} md={4} lg={3}>
                         <Link href={'/pool/' + item?.poolId}>
                             <Card sx={{ cursor: 'pointer' }}>
                                 <CardMedia
@@ -162,7 +153,7 @@ const BrowsePools = () => {
                     </Grid>
                 ))}
                 {!loading && value === 1 && (search.length > 0 ? filteredPools : endedPools ? endedPools : []).map((item) => (
-                    <Grid key={item.poolId} item xs={12} sm={6} md={4} lg={3}>
+                    <Grid key={'inactive' + item.poolId} item xs={12} sm={6} md={4} lg={3}>
                         <Link href={'/pool/' + item?.poolId}>
                             <Card sx={{ cursor: 'pointer' }}>
                                 <CardMedia

@@ -2,20 +2,47 @@ import Container from '@/components/container/container';
 import DisplayPoolInfo from '@/components/displayPoolInfo/displayPoolInfo';
 import { Box, Button, Card, CardContent, CardMedia, Grid, Link, Tab, Tabs, Typography } from '@mui/material';
 import Head from 'next/head'
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import GridModuleCss from '@/styles/Grid.module.css'
 import ApplicationForm from '@/components/applicationForm/applicationForm';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { TPoolData } from '@/types/typesPool';
+import { useRouter } from 'next/router';
+import GlobalContext from '@/hooks/context/ContextAggregator';
 
 export default function PoolDetails() {
     const [value, setValue] = React.useState(0);
     const [applications, setApplications] = React.useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
     const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
     const [showApplyForm, setShowApplyForm] = React.useState(false)
+    const router = useRouter()
+    const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
+    const [active, setActive] = useState(false)
+
+    const { loading, activePools, endedPools } = React.useContext(GlobalContext);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
+
+    useEffect(() => {
+        const { id } = router.query;
+        if (activePools && endedPools) {
+            if (id) {
+                var found = activePools?.find(x => x.poolId === id)
+                if (!found) {
+                    var found2 = endedPools?.find(x => x.poolId === id)
+                    if (found2) {
+                        setSelectedPool(found2)
+                        setActive(false)
+                    }
+                } else {
+                    setSelectedPool(found)
+                    setActive(true)
+                }
+            }
+        }
+    }, [router.query, activePools, endedPools])
 
     return (
         <Box sx={{
@@ -35,8 +62,8 @@ export default function PoolDetails() {
                 <Tab color="secondary" label="Applications" />
             </Tabs>
             }
-            {value === 0 && !showApplyForm &&
-                <DisplayPoolInfo />}
+            {value === 0 && !showApplyForm && selectedPool &&
+                <DisplayPoolInfo selectedPool={selectedPool} active={active} />}
 
             {value === 1 && !showApplyForm && <Grid container spacing={2} sx={{ overflow: 'auto' }}>
                 {applications.map((item) => (

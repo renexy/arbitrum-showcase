@@ -31,12 +31,23 @@ export default function Pool() {
   };
 
   React.useEffect(() => {
-    if (activePools && endedPools) {
-      const options = showActiveOnly ? (activePools || []) : (endedPools || []);
-      setDropdownOptions(options)
-      setSelectedPool(undefined)
+    if (showActiveOnly && activePools) {
+      setDropdownOptions(activePools || []);
+      setSelectedPool(undefined);
+    } else if (!showActiveOnly && endedPools) {
+      setDropdownOptions(endedPools || []);
+      setSelectedPool(undefined);
+    } else if (showActiveOnly && !activePools && endedPools) {
+      // Fallback in case activePools are not available but endedPools exist
+      setDropdownOptions(endedPools || []);
+      setSelectedPool(undefined);
+    } else if (!showActiveOnly && activePools && !endedPools) {
+      // Fallback in case endedPools are not available but activePools exist
+      setDropdownOptions(activePools || []);
+      setSelectedPool(undefined);
     }
-  }, [showActiveOnly, activePools, endedPools])
+  }, [showActiveOnly, activePools, endedPools]);
+
 
   return (
     <Box sx={{

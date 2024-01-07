@@ -25,37 +25,48 @@ export default function PoolDetails() {
         setValue(newValue);
     };
 
-    useEffect(() => {
+    React.useEffect(() => {
         const { id } = router.query;
-        if (activePools && endedPools) {
-            if (id) {
-                var found = activePools?.find(x => x.poolId === id)
-                if (!found) {
-                    var found2 = endedPools?.find(x => x.poolId === id)
-                    if (found2) {
-                        setSelectedPool(found2)
-                        setActive(false)
-                    }
-                } else {
-                    setSelectedPool(found)
-                    setActive(true)
+
+        if (id) {
+            if (activePools && activePools.length > 0) {
+                const foundActive = activePools.find(pool => pool.poolId === id);
+                if (foundActive) {
+                    setSelectedPool(foundActive);
+                    setActive(true);
+                    return; // Exit the function once the active pool is found
                 }
             }
+
+            if (endedPools && endedPools.length > 0) {
+                const foundEnded = endedPools.find(pool => pool.poolId === id);
+                if (foundEnded) {
+                    setSelectedPool(foundEnded);
+                    setActive(false);
+                    return; // Exit the function once the ended pool is found
+                }
+            }
+
+            // If the pool with the provided ID is not found in both activePools and endedPools
+            setSelectedPool(undefined);
+            setActive(false);
         }
-    }, [router.query, activePools, endedPools])
+    }, [router.query, activePools, endedPools]);
+
 
     return (
         <Box sx={{
             width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
             display: 'flex', flexDirection: 'column', flex: 1, padding: '12px', overflow: 'auto'
         }}>
+            {!selectedPool && <Typography>Loading...</Typography>}
             {showApplyForm && <Button size="medium" sx={{ alignSelf: 'flex-start' }}
                 onClick={() => { setShowApplyForm(false) }}
                 endIcon={<ArrowBackIcon sx={{ fill: '#fff', cursor: 'pointer' }} />}>
                 Back
             </Button>
             }
-            {!showApplyForm && <Tabs
+            {!showApplyForm && selectedPool && <Tabs
                 textColor="secondary"
                 indicatorColor="secondary" value={value} onChange={handleChange} aria-label="basic tabs example">
                 <Tab color="secondary" label="Pool details" />
@@ -102,7 +113,7 @@ export default function PoolDetails() {
             </Grid>
             }
             {showApplyForm && <ApplicationForm></ApplicationForm>}
-            {value === 0 && !showApplyForm && <Button
+            {value === 0 && !showApplyForm && selectedPool && <Button
                 component="span"
                 variant="contained"
                 color="secondary"

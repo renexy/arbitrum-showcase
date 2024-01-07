@@ -322,7 +322,7 @@ export default function CreatePool({ changeCreatePool }: any) {
             {activeStep === 2 && <><TextField
                 variant="outlined"
                 color="secondary"
-                type="date"
+                type="datetime-local"
                 size="medium"
                 sx={{ width: { xs: '100%', sm: '350px' } }}
                 value={startDate}
@@ -336,7 +336,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                 <TextField
                     variant="outlined"
                     color="secondary"
-                    type="date"
+                    type="datetime-local"
                     size="medium"
                     sx={{ width: { xs: '100%', sm: '350px' } }}
                     value={endDate}

@@ -82,9 +82,9 @@ const BrowsePools = () => {
       setActivePools(activePools);
       setEndedPools(endedPools);
       setLoading(false)
-      console.log("upcomingPools", upcomingPools)
+      /*console.log("upcomingPools", upcomingPools)
       console.log("activePools FETCH", activePools)
-      console.log("endedPools", endedPools)
+      console.log("endedPools", endedPools)*/
     };
 
     fetchData();

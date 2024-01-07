@@ -63,6 +63,12 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [userMemberProfiles, setUserMemberProfiles] = useState<TransformedProfile[]>([])
   const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
   const [nonce, setNonce] = useState<number>(0)
+
+  const [activePoolsOwned, setActivePoolsOwned] = useState();
+  const [inactivePoolsOwned, setInactivePoolsOwned] = useState();
+
+
+  // Graphql
   const { loading, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
   const { memberProfiles, hasMemberProfiles, refetch: refetchMember } = fetchMemberProfiles(address || '');
 

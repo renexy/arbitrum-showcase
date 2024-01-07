@@ -33,6 +33,8 @@ interface GlobalContextState {
   activePools?: TPoolData[];
   endedPools?: TPoolData[];
   loading?: boolean;
+  activeProfilePools?: TPoolData[];
+  endedProfilePools?: TPoolData[];
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -52,6 +54,8 @@ const GlobalContext = createContext<GlobalContextState>({
   activePools: [],
   endedPools: [],
   loading: true,
+  activeProfilePools: [],
+  endedProfilePools: [], 
 });
 
 interface GlobalProviderProps {
@@ -87,7 +91,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [loading, setLoading] = useState<boolean>(true)
 
   const [activeProfilePools, setActiveProfilePools] = useState<TPoolData[] | undefined>([]);
-  const [inactiveProfilePools, setInactiveProfilePools] = useState<TPoolData[] | undefined>([]);
+  const [endedProfilePools, setEndedProfilePools] = useState<TPoolData[] | undefined>([]);
 
   // Graphql
   const { loading: loadingOwnedProfiles, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
@@ -273,7 +277,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
-    setInactiveProfilePools(filterPools(endedPools));
+    setEndedProfilePools(filterPools(endedPools));
     console.log("ACTIVE POOLS FILTERED", filterPools(activePools))
     console.log("ENDED POOLS FILTERED", filterPools(endedPools))
   }, [selectedProfileHash, activePools, endedPools]); // Re-run when the selected profile or pools list changes  
@@ -325,7 +329,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     <GlobalContext.Provider value={{
       registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles,
       nonce, refetchProfiles, selectedProfileHash, changeSelectedProfileHash, userMemberProfiles,
-      upcomingPools, activePools, endedPools, loading
+      upcomingPools, activePools, endedPools, loading,
+      activeProfilePools, endedProfilePools
     }}>
       {children}
     </GlobalContext.Provider>

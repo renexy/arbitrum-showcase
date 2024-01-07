@@ -23,3 +23,7 @@ body {
 .selected span {
   color: #607d8b;
 }
+
+a {
+  text-decoration: none;
+}

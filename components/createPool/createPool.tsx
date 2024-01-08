@@ -71,7 +71,7 @@ export default function CreatePool({ changeCreatePool }: any) {
     [k: number]: boolean;
   }>({});
 
-  const { allo, selectedProfileHash, microStrategy, signer } = React.useContext(GlobalContext);
+  const { allo, selectedProfileHash, microStrategy, signer, refetchPools } = React.useContext(GlobalContext);
   const ipfsClient = getIPFSClient();
   const { chain } = useNetwork();
   const { address } = useAccount();
@@ -386,6 +386,8 @@ export default function CreatePool({ changeCreatePool }: any) {
         updatedItems[2].failed = false;
         return updatedItems;
       });
+
+      refetchPools();
 
       /*const initParams: any = {
         useRegistryAnchor: stateRegistryMandatory,

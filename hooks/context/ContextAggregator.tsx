@@ -26,6 +26,7 @@ interface GlobalContextState {
   nonce: number;
   hasProfiles: boolean;
   refetchProfiles: () => void;
+  refetchPools: () => void;
   selectedProfileHash: string | undefined;
   changeSelectedProfileHash: (hash: string) => void;
   userMemberProfiles: TransformedProfile[];
@@ -50,6 +51,7 @@ const GlobalContext = createContext<GlobalContextState>({
   nonce: 0,
   hasProfiles: false,
   refetchProfiles: () => { },
+  refetchPools: () => { },
   selectedProfileHash: '',
   changeSelectedProfileHash: (hash) => { },
   userMemberProfiles: [],
@@ -128,6 +130,10 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     await getPendingOwner(registry, transformedRefetchedProfiles, transformedRefetchedMemberProfiles);
   };
 
+  const refetchPools = async () => {
+    fetchData();
+  }
+
   const getPendingOwner = async (registry: any, profiles: TransformedProfile[], memberProfiles: TransformedProfile[]) => {
     const rpc = 'https://rpc.goerli.eth.gateway.fm';
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
@@ -177,14 +183,14 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     }
   };
 
-  const getIsPoolAdmin = async (allo: any, address: string) => {
+  const getIsPoolAdmin = async (allo: any, poolId: string, address: string) => {
     const rpc = 'https://rpc.goerli.eth.gateway.fm';
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = allo.contract.address;
     const contractAbi = allo.contract.abi;
     const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
 
-    const isPoolAdmin = await readOnlyContract.isPoolAdmin(address);
+    const isPoolAdmin = await readOnlyContract.isPoolAdmin(poolId, address);
     return isPoolAdmin;
   }
 
@@ -342,10 +348,18 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     setEndedProfilePools(filterPools(endedPools));
 
     const fetchPoolAdminStatus = async () => {
+      if (!selectedPool) {
+        console.log("SelectedPool is undefined")
+        return;
+      }
+
       if (address) {
-        const isPoolAdmin = await getIsPoolAdmin(allo, address);
+        const isPoolAdmin = await getIsPoolAdmin(allo, selectedPool?.poolId, address);
+        console.log("isPoolAdmin", isPoolAdmin)
         setIsPoolAdmin(isPoolAdmin);
       }
+
+      console.log("test")
     };
 
     fetchPoolAdminStatus();
@@ -402,7 +416,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       upcomingPools, activePools, endedPools, loading,
       activeProfilePools, endedProfilePools,
       isPoolAdmin,
-      selectedPool, changeSelectedPool
+      selectedPool, changeSelectedPool, refetchPools
     }}>
       {children}
     </GlobalContext.Provider>

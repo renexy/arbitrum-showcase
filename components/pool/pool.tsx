@@ -104,20 +104,6 @@ export default function Pool() {
         changeSelectedPool(endedProfilePools[0])
       } else
         changeSelectedPool(undefined);
-    } else if (showActiveOnly && !activeProfilePools && endedProfilePools) {
-      // Fallback in case activePools are not available but endedPools exist
-      setDropdownOptions(endedProfilePools || []);
-      if (endedProfilePools.length > 0) {
-        changeSelectedPool(endedProfilePools[0]);
-      } else
-        changeSelectedPool(undefined);
-    } else if (!showActiveOnly && activeProfilePools && !endedProfilePools) {
-      // Fallback in case endedPools are not available but activePools exist
-      setDropdownOptions(activeProfilePools || []);
-      if (activeProfilePools.length > 0) {
-        changeSelectedPool(activeProfilePools[0]);
-      } else
-        changeSelectedPool(undefined);
     }
   }, [showActiveOnly, activeProfilePools, endedProfilePools]);
 

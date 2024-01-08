@@ -105,8 +105,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const { data: refetchedProfilesData } = await refetchOwned();
     const { data: refetchedMemberProfilesData } = await refetchMember();
 
-    console.log("refetchedProfilesData", refetchedProfilesData)
-    console.log("refetchedMemberProfilesData", refetchedMemberProfilesData)
+    //console.log("refetchedProfilesData", refetchedProfilesData)
+    //console.log("refetchedMemberProfilesData", refetchedMemberProfilesData)
   
     // Apply the transformations to the refetched data
     const transformedRefetchedProfiles = transformProfileData(refetchedProfilesData.profiles);
@@ -206,10 +206,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
           return pools;
       }
 
-      console.log(graphqlQuery)
-
       try {
-          const response = await fetchPools(graphqlQuery, 25, 0)
+          const response = await fetchPools(graphqlQuery, 10, 0)
 
           if (type === TPoolType.UPCOMING) {
               pools = response.upcomingMicroGrants;
@@ -262,15 +260,14 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const filteredActivePools = activePools?.filter(pool => pool.chainId === chain?.id.toString());
     const filteredEndedPools = endedPools?.filter(pool => pool.chainId === chain?.id.toString());
 
-
     // setUpcomingPools(upcomingPools);
     setActivePools(filteredActivePools);
     setEndedPools(filteredEndedPools);
     setLoading(false)
 
-    /*console.log("upcomingPools", upcomingPools)*/
-    console.log("activePools", activePools)
-    console.log("endedPools", endedPools)
+    //console.log("upcomingPools", upcomingPools)
+    //console.log("activePools", activePools)
+    //console.log("endedPools", endedPools)
   };
 
   // Now we filter both active/ended pools based on selectedProfileHash
@@ -278,6 +275,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     // Function to filter pools based on the selected profile
     const filterPools = (pools: TPoolData[] | undefined) => pools?.filter(pool => pool.pool.profile.profileId === selectedProfileHash);
   
+    console.log("filterPools(activePools)", filterPools(activePools))
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
@@ -286,7 +284,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   useEffect(() => {
     if (chainId) {
       setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
-      console.log("CHAINID", chainId)
       setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
       setMicroStrategy(new MicroGrantsStrategy({ chain: chainId, rpc: window.ethereum }));
     }

@@ -48,3 +48,5 @@ export const ethToWeiBigInt = (eth: string): bigint => {
 }
 
 export const NATIVE = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+
+export const ethereumHashRegExp = /^(0x)?[0-9a-fA-F]{64}$/;

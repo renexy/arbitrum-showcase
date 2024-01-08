@@ -12,6 +12,9 @@ import { getWalletClient } from '@wagmi/core';
 import { getIPFSClient } from '@/services/ipfs';
 import { useNetwork } from 'wagmi';
 import { MicroGrantsStrategy } from '@allo-team/allo-v2-sdk';
+import { sendTransaction } from "@wagmi/core";
+import { wagmiConfig } from '@/wagmiConfig';
+import { ethToWeiBigInt } from '@/global/functions';
 
 const steps = ['Basic info', 'Grant info'];
 
@@ -49,6 +52,7 @@ export default function ApplicationForm() {
     const [applyDisabled, setApplyDisabled] = useState(true)
     const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
     const [selectedProfileName, setSelectedProfileName] = useState<string | undefined>('')
+    const [selectedProfileAnchor, setSelectedProfileAnchor] = useState<string | undefined>('')
     const [showSnackbar, setShowsnackbar] = useState(false)
     const router = useRouter()
     const ipfsClient = getIPFSClient();
@@ -129,97 +133,144 @@ export default function ApplicationForm() {
         }
 
         setSelectedProfileName(searchOption?.find(x => x.id === selectedProfileHash)?.name)
+        setSelectedProfileAnchor(searchOption?.find(x => x.id === selectedProfileHash)?.anchor)
     }, [selectedProfileHash, userProfiles, userMemberProfiles])
 
     const handleApply = async () => {
-        if (!selectedPool) {
-            console.log("No selected pool available")
-            return;
-        }
+      if (!selectedPool) {
+          console.log("No selected pool available")
+          return;
+      }
 
-        const steps = [
-            {
-                label: 'Uploading to IPFS',
-                working: false,
-                done: false,
-                failed: false
-            },
-            {
-                label: 'Deploying contract',
-                working: false,
-                done: false,
-                failed: false
-            }
-        ];
+      const steps = [
+          {
+              label: 'Uploading to IPFS',
+              working: false,
+              done: false,
+              failed: false
+          },
+          {
+              label: 'Deploying contract',
+              working: false,
+              done: false,
+              failed: false
+          }
+      ];
 
 
-        setItems(steps)
+      setItems(steps)
 
-        setItems(prevItems => {
-            const updatedItems = [...prevItems];
-            updatedItems[0].working = false;
-            updatedItems[0].done = false;
-            return updatedItems;
+      setItems(prevItems => {
+          const updatedItems = [...prevItems];
+          updatedItems[0].working = false;
+          updatedItems[0].done = false;
+          return updatedItems;
+      });
+
+      let IPFSPointer;
+
+      const walletClient = await getWalletClient({ chainId: chain?.id });
+
+      // Upload metadata to IPFS
+      try {
+          setItems(prevItems => {
+              const updatedItems = [...prevItems];
+              updatedItems[0].working = true;
+              updatedItems[0].done = false;
+              return updatedItems;
+          });
+
+          const metadata = {
+              profileId: name,
+              website: website,
+              description: description,
+              base64Image: selectedFile64,
+          };
+
+          let imagePointer;
+          let pointer;
+
+          if (metadata.base64Image && metadata.base64Image.includes("base64")) {
+              imagePointer = await ipfsClient.pinJSON({
+                  data: metadata.base64Image,
+              });
+              metadata.base64Image = imagePointer.IpfsHash;
+          }
+
+          pointer = await ipfsClient.pinJSON(metadata);
+          IPFSPointer = pointer.IpfsHash;
+
+          setItems(prevItems => {
+              const updatedItems = [...prevItems];
+              updatedItems[0].working = false;
+              updatedItems[0].done = true;
+              updatedItems[0].failed = false;
+              return updatedItems;
+          });
+
+      } catch (error) {
+          setItems(prevItems => {
+              const updatedItems = [...prevItems];
+              updatedItems[0].working = false;
+              updatedItems[0].done = true;
+              updatedItems[0].failed = true;
+              return updatedItems;
+          });
+          console.log("Error uploading Metadata to IPFS: ", error)
+      }
+
+      // Submit application
+
+      setItems(prevItems => {
+        const updatedItems = [...prevItems];
+        updatedItems[1].working = true;
+        updatedItems[1].done = false;
+        updatedItems[1].failed = false;
+        return updatedItems;
+      });
+
+      const microGrantsStrategy = new MicroGrantsStrategy({ chain: chain?.id!, poolId: Number(selectedPool.poolId), rpc: window.ethereum })
+
+      const registerRecipientData = microGrantsStrategy.getRegisterRecipientData({
+        registryAnchor: selectedProfileAnchor as `0x${string}`,
+        recipientAddress: recipientAddress as `0x${string}`,
+        requestedAmount: ethToWeiBigInt(reqAmount),
+        metadata: {
+          protocol: BigInt(1),
+          pointer: IPFSPointer,
+        },
+      });
+
+      try {
+        const tx = await sendTransaction({
+          to: registerRecipientData.to as string,
+          data: registerRecipientData.data,
+          value: BigInt(registerRecipientData.value),
         });
-
-        let IPFSPointer;
-
-        const walletClient = await getWalletClient({ chainId: chain?.id });
-
-        // Upload metadata to IPFS
-        try {
-            setItems(prevItems => {
-                const updatedItems = [...prevItems];
-                updatedItems[0].working = true;
-                updatedItems[0].done = false;
-                return updatedItems;
-            });
-
-            const metadata = {
-                profileId: name,
-                website: website,
-                description: description,
-                base64Image: selectedFile64,
-            };
-
-            let imagePointer;
-            let pointer;
-
-            if (metadata.base64Image && metadata.base64Image.includes("base64")) {
-                imagePointer = await ipfsClient.pinJSON({
-                    data: metadata.base64Image,
-                });
-                metadata.base64Image = imagePointer.IpfsHash;
-            }
-
-            pointer = await ipfsClient.pinJSON(metadata);
-            IPFSPointer = pointer.IpfsHash;
-
-            setItems(prevItems => {
-                const updatedItems = [...prevItems];
-                updatedItems[0].working = false;
-                updatedItems[0].done = true;
-                updatedItems[0].failed = false;
-                return updatedItems;
-            });
-
-        } catch (error) {
-            setItems(prevItems => {
-                const updatedItems = [...prevItems];
-                updatedItems[0].working = false;
-                updatedItems[0].done = true;
-                updatedItems[0].failed = true;
-                return updatedItems;
-            });
-            console.log("Error uploading Metadata to IPFS: ", error)
-        }
-
-        // Submit application
-        let recipientId;
-        const chainId = chain?.id;
-        const selectedPoolId = selectedPool.poolId
-        let anchorAddress: string = ZERO_ADDRESS;
-        const microGrantsStrategy = new MicroGrantsStrategy({ chain: chain?.id!, poolId: Number(selectedPool.poolId), rpc: window.ethereum })
+  
+        const reciept =
+          await wagmiConfig.publicClient.waitForTransactionReceipt({
+            hash: tx.hash,
+          });
+  
+        
+        setItems(prevItems => {
+          const updatedItems = [...prevItems];
+          updatedItems[1].working = false;
+          updatedItems[1].done = true;
+          updatedItems[1].failed = false;
+          return updatedItems;
+        });
+      } catch (error) {
+        console.log("Error Registering Application", error);
+        setItems(prevItems => {
+          const updatedItems = [...prevItems];
+          updatedItems[1].working = false;
+          updatedItems[1].done = true;
+          updatedItems[1].failed = true;
+          return updatedItems;
+        });
+      }
 
     }
 
@@ -229,7 +280,7 @@ export default function ApplicationForm() {
         <>
             {selectedPool && <>
                 <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', margin: '18px 0' }}>
-                    Apply for pool with {selectedProfileName}
+                    Apply for pool with <span style={{ fontWeight: 700}}>&nbsp;"{selectedProfileName}"</span>
                 </Typography>
                 <Stepper nonLinear activeStep={activeStep} sx={{ width: '100%' }}>
                     {steps.map((label, index) => (

@@ -35,6 +35,7 @@ interface GlobalContextState {
   loading?: boolean;
   activeProfilePools?: TPoolData[];
   endedProfilePools?: TPoolData[];
+  isPoolAdmin: boolean;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -55,7 +56,8 @@ const GlobalContext = createContext<GlobalContextState>({
   endedPools: [],
   loading: true,
   activeProfilePools: [],
-  endedProfilePools: [], 
+  endedProfilePools: [],
+  isPoolAdmin: false,
 });
 
 interface GlobalProviderProps {
@@ -92,6 +94,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
   const [activeProfilePools, setActiveProfilePools] = useState<TPoolData[] | undefined>([]);
   const [endedProfilePools, setEndedProfilePools] = useState<TPoolData[] | undefined>([]);
+  const [isPoolAdmin, setIsPoolAdmin] = useState<boolean>(false);
 
   // Graphql
   const { loading: loadingOwnedProfiles, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
@@ -163,6 +166,17 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       console.error('Error in getPendingOwner:', error);
     }
   };
+
+  const getIsPoolAdmin = async (allo: any, address: string) => {
+    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const customProvider = new ethers.providers.JsonRpcProvider(rpc);
+    const contractAddress = allo.contract.address;
+    const contractAbi = allo.contract.abi;
+    const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
+
+    const isPoolAdmin = await readOnlyContract.isPoolAdmin(address);
+    return isPoolAdmin;
+  }
 
   const ipfsClient = getIPFSClient();
 
@@ -279,7 +293,16 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
-  }, [selectedProfileHash, activePools, endedPools]); // Re-run when the selected profile or pools list changes  
+
+    const fetchPoolAdminStatus = async () => {
+      if (address) {
+        const isPoolAdmin = await getIsPoolAdmin(allo, address);
+        setIsPoolAdmin(isPoolAdmin);
+      }
+    };
+
+    fetchPoolAdminStatus();
+  }, [selectedProfileHash, activePools, endedPools]); // Re-run when the selected profile or pools list changes
 
   useEffect(() => {
     if (chainId) {
@@ -328,7 +351,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles,
       nonce, refetchProfiles, selectedProfileHash, changeSelectedProfileHash, userMemberProfiles,
       upcomingPools, activePools, endedPools, loading,
-      activeProfilePools, endedProfilePools
+      activeProfilePools, endedProfilePools,
+      isPoolAdmin
     }}>
       {children}
     </GlobalContext.Provider>

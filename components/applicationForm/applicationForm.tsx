@@ -5,9 +5,13 @@ import React, { useEffect, useState } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useRouter } from 'next/router';
 import GlobalContext from '@/hooks/context/ContextAggregator';
-import { TPoolData } from '@/types/typesPool';
+import { TPoolData, ZERO_ADDRESS } from '@/types/typesPool';
 import { ethers } from 'ethers';
 import BaseDialog from '../baseDialog/baseDialog';
+import { getWalletClient } from '@wagmi/core';
+import { getIPFSClient } from '@/services/ipfs';
+import { useNetwork } from 'wagmi';
+import { MicroGrantsStrategy } from '@allo-team/allo-v2-sdk';
 
 const steps = ['Basic info', 'Grant info'];
 
@@ -41,18 +45,31 @@ export default function ApplicationForm() {
     const [reqAmount, setReqAmount] = useState<string>('')
     const [recipientAddress, setRecipientAddress] = useState<string>('')
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile64, setSelectedFile64] = useState<string | null>(null);
     const [applyDisabled, setApplyDisabled] = useState(true)
     const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
     const [showSnackbar, setShowsnackbar] = useState(false)
     const router = useRouter()
+    const ipfsClient = getIPFSClient();
+    const { chain } = useNetwork();
 
     const handleFileChange = (event: any) => {
-        const file = event.target.files[0];
-        if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
-            setSelectedFile(file);
-        } else {
-            alert('Please select a PNG or JPG file.');
-        }
+      const file = event.target.files[0];
+      if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+          if (reader.result) {
+            const base64String = reader.result.toString();
+            if (base64String.includes("base64")) {
+              setSelectedFile64(base64String);
+            }
+          }
+          setSelectedFile(file);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert('Please select a PNG or JPG file.');
+      }
     };
 
     React.useEffect(() => {
@@ -102,22 +119,99 @@ export default function ApplicationForm() {
         }
     };
 
-    const handleApply = () => {
-        const steps = [
-            {
-                label: 'Uploading to IPFS',
-                working: false,
-                done: false,
-                failed: false
-            },
-            {
-                label: 'Deploying contract',
-                working: false,
-                done: false,
-                failed: false
-            }
-        ];
+    const handleApply = async () => {
+      if (!selectedPool) {
+        console.log("No selected pool available")
+        return;
+      }
+
+      const steps = [
+          {
+              label: 'Uploading to IPFS',
+              working: false,
+              done: false,
+              failed: false
+          },
+          {
+              label: 'Deploying contract',
+              working: false,
+              done: false,
+              failed: false
+          }
+      ];
+
+
+      setItems(steps)
+
+      setItems(prevItems => {
+          const updatedItems = [...prevItems];
+          updatedItems[0].working = false;
+          updatedItems[0].done = false;
+          return updatedItems;
+        });
+        
+      let IPFSPointer;
+      
+      const walletClient = await getWalletClient({ chainId: chain?.id });
+
+      // Upload metadata to IPFS
+      try {
+        setItems(prevItems => {
+          const updatedItems = [...prevItems];
+          updatedItems[0].working = true;
+          updatedItems[0].done = false;
+          return updatedItems;
+        });
+
+        const metadata = {
+          profileId: name,
+          website: website,
+          description: description,
+          base64Image: selectedFile64,
+        };
+
+        let imagePointer;
+        let pointer;
+
+        if (metadata.base64Image && metadata.base64Image.includes("base64")) {
+          imagePointer = await ipfsClient.pinJSON({
+            data: metadata.base64Image,
+          });
+          metadata.base64Image = imagePointer.IpfsHash;
+        }
+
+        pointer = await ipfsClient.pinJSON(metadata);
+        IPFSPointer = pointer.IpfsHash;
+
+        setItems(prevItems => {
+          const updatedItems = [...prevItems];
+          updatedItems[0].working = false;
+          updatedItems[0].done = true;
+          updatedItems[0].failed = false;
+          return updatedItems;
+        });
+
+      } catch (error) {
+        setItems(prevItems => {
+          const updatedItems = [...prevItems];
+          updatedItems[0].working = false;
+          updatedItems[0].done = true;
+          updatedItems[0].failed = true;
+          return updatedItems;
+        });
+        console.log("Error uploading Metadata to IPFS: ", error)
+      }
+
+      // Submit application
+      let recipientId;
+      const chainId = chain?.id;
+      const selectedPoolId = selectedPool.poolId
+      let anchorAddress: string = ZERO_ADDRESS;
+      const microGrantsStrategy = new MicroGrantsStrategy({chain: chain?.id!, poolId: Number(selectedPool.poolId), rpc: window.ethereum})
+
     }
+
+    const test = selectedPool?.poolId
 
     return (
         <>
@@ -253,7 +347,7 @@ export default function ApplicationForm() {
                     size="medium"
                     disabled={applyDisabled}
                     sx={{ alignSelf: 'flex-end' }}
-                    onClick={() => { handleApply() }}
+                    onClick={() => { handleApply(); setDialogOpen(true) }}
                 >
                     Apply for pool
                 </Button>

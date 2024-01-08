@@ -418,7 +418,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       upcomingPools, activePools, endedPools, loading,
       activeProfilePools, endedProfilePools,
       isPoolAdmin,
-      selectedPool, changeSelectedPool, refetchPools
+      selectedPool, changeSelectedPool, refetchPools,
     }}>
       {children}
     </GlobalContext.Provider>

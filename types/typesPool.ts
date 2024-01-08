@@ -316,3 +316,5 @@ export type AbiItem = {
 };
 
 export type ContractAbi = Array<AbiItem>;
+
+export declare const ZERO_ADDRESS: `0x${string}`;

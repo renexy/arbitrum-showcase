@@ -75,6 +75,7 @@ export default function Pool() {
                 disableClearable
                 options={dropdownOptions}
                 color="secondary"
+                value={selectedPool}
                 onChange={(event, value) => setSelectedPool(value)}
                 getOptionLabel={(option) => `${option.pool.metadata.name}`}
                 renderOption={(props, option) => {

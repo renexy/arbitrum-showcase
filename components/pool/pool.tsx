@@ -33,18 +33,30 @@ export default function Pool() {
   React.useEffect(() => {
     if (showActiveOnly && activeProfilePools) {
       setDropdownOptions(activeProfilePools || []);
-      setSelectedPool(undefined);
+      if (activeProfilePools.length > 0) {
+        setSelectedPool(activeProfilePools[0])
+      } else
+        setSelectedPool(undefined);
     } else if (!showActiveOnly && endedProfilePools) {
       setDropdownOptions(endedProfilePools || []);
-      setSelectedPool(undefined);
+      if (endedProfilePools.length > 0) {
+        setSelectedPool(endedProfilePools[0])
+      } else
+        setSelectedPool(undefined);
     } else if (showActiveOnly && !activeProfilePools && endedProfilePools) {
       // Fallback in case activePools are not available but endedPools exist
       setDropdownOptions(endedProfilePools || []);
-      setSelectedPool(undefined);
+      if (endedProfilePools.length > 0) {
+        setSelectedPool(endedProfilePools[0]);
+      } else
+        setSelectedPool(undefined);
     } else if (!showActiveOnly && activeProfilePools && !endedProfilePools) {
       // Fallback in case endedPools are not available but activePools exist
       setDropdownOptions(activeProfilePools || []);
-      setSelectedPool(undefined);
+      if (activeProfilePools.length > 0) {
+        setSelectedPool(activeProfilePools[0]);
+      } else
+        setSelectedPool(undefined);
     }
   }, [showActiveOnly, activeProfilePools, endedProfilePools]);
 

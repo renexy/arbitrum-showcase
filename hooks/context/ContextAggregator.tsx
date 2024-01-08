@@ -188,6 +188,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = allo.contract.address;
     const contractAbi = allo.contract.abi;
+    console.log("contractAddress", contractAddress)
     const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
 
     const isPoolAdmin = await readOnlyContract.isPoolAdmin(poolId, address);

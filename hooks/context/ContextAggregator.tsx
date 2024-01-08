@@ -258,12 +258,15 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const activePools = await getPools(TPoolType.ACTIVE);
     const endedPools = await getPools(TPoolType.ENDED);
 
+    // Filter based on connected chain.Id
+    const filteredActivePools = activePools?.filter(pool => pool.chainId === chain?.id.toString());
+    const filteredEndedPools = endedPools?.filter(pool => pool.chainId === chain?.id.toString());
+
+
     // setUpcomingPools(upcomingPools);
-    setActivePools(activePools);
-    setEndedPools(endedPools);
+    setActivePools(filteredActivePools);
+    setEndedPools(filteredEndedPools);
     setLoading(false)
-
-
 
     /*console.log("upcomingPools", upcomingPools)*/
     console.log("activePools", activePools)
@@ -278,8 +281,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
-    console.log("ACTIVE POOLS FILTERED", filterPools(activePools))
-    console.log("ENDED POOLS FILTERED", filterPools(endedPools))
   }, [selectedProfileHash, activePools, endedPools]); // Re-run when the selected profile or pools list changes  
 
   useEffect(() => {

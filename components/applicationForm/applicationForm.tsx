@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import { TPoolData } from '@/types/typesPool';
 import { ethers } from 'ethers';
+import BaseDialog from '../baseDialog/baseDialog';
 
 const steps = ['Basic info', 'Grant info'];
 
@@ -27,6 +28,10 @@ export default function ApplicationForm() {
         [k: number]: boolean;
     }>({});
     const { loading, activePools, endedPools } = React.useContext(GlobalContext);
+    const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+    const [applyFormTransactionStatus, setApplyFormTransactionStatus] =
+        useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+    const [items, setItems] = useState<Array<{ label: string; working: boolean; done: boolean; failed: boolean }>>([]);
 
     //Form
     const [name, setName] = useState<string>('')
@@ -96,6 +101,23 @@ export default function ApplicationForm() {
             console.error('Invalid input. Please enter a valid decimal number.');
         }
     };
+
+    const handleApply = () => {
+        const steps = [
+            {
+                label: 'Uploading to IPFS',
+                working: false,
+                done: false,
+                failed: false
+            },
+            {
+                label: 'Deploying contract',
+                working: false,
+                done: false,
+                failed: false
+            }
+        ];
+    }
 
     return (
         <>
@@ -231,7 +253,7 @@ export default function ApplicationForm() {
                     size="medium"
                     disabled={applyDisabled}
                     sx={{ alignSelf: 'flex-end' }}
-                    onClick={() => { alert('apply applicant') }}
+                    onClick={() => { handleApply() }}
                 >
                     Apply for pool
                 </Button>
@@ -244,6 +266,8 @@ export default function ApplicationForm() {
                         Max. requested amount is {weiToEth(selectedPool?.maxRequestedAmount)} ETH!
                     </Alert>
                 </Snackbar>
+                <BaseDialog steps={items} open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }}
+                    dialogVariant={'stepper'} status={applyFormTransactionStatus}></BaseDialog>
             </>}
             {!selectedPool && <Typography>Loading...</Typography>}
         </>

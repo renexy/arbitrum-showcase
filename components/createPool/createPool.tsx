@@ -36,14 +36,6 @@ import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
 
 const steps = ['Basic info', 'Wallet info', 'Dates & more'];
 
-const delay = (ms: number) => {
-  return new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, ms);
-  });
-};//
-
 export default function CreatePool({ changeCreatePool }: any) {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false)
   const [items, setItems] = useState<Array<{ label: string; working: boolean; done: boolean; failed: boolean }>>([]);

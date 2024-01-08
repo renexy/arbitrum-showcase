@@ -1,20 +1,28 @@
 import Container from '@/components/container/container';
-import { Autocomplete, Button, TextField, Typography } from '@mui/material';
+import { Alert, Autocomplete, Button, InputAdornment, Snackbar, TextField, Typography } from '@mui/material';
 import Head from 'next/head'
 import AddIcon from '@mui/icons-material/Add';
-import React from 'react';
+import React, { useState } from 'react';
 import { green, red } from '@mui/material/colors';
 import { TPoolData } from '@/types/typesPool';
 import { ethers } from 'ethers';
 import { convertUnixTimestamp } from '@/global/functions';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const weiToEth = (weiValue: any) => {
     if (!weiValue) return "0.0 ETH";
 
     const ethValue = ethers.utils.formatEther(weiValue);
-    const truncatedEth = ethValue.slice(0, 5); // Retrieve only the first 5 characters
+    if (ethValue && ethValue.length > 11) {
 
-    return `${truncatedEth} ETH`;
+        return ethValue.slice(0, 5);
+    }
+
+    return `${ethValue} ETH`;
+};
+
+const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
 };
 
 const convertToShorter = (text: string) => {
@@ -23,7 +31,7 @@ const convertToShorter = (text: string) => {
     else return text
 }
 export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool: TPoolData, active: boolean }) {
-
+    const [showSnackbarCopied, setShowsnackbarCopied] = useState(false)
     return (<>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             <TextField
@@ -54,7 +62,7 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 label="Strategy type"
                 color='secondary'
                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
-                value={convertToShorter(selectedPool?.strategy)}
+                value={'Manual'}
                 InputProps={{
                     readOnly: true,
                     disabled: true,
@@ -72,6 +80,13 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 InputProps={{
                     readOnly: true,
                     disabled: true,
+                    endAdornment: (<InputAdornment position="end">
+                        <ContentCopyIcon sx={{ cursor: 'pointer', height: '12px' }}
+                            onClick={() => {
+                                copyToClipboard(selectedPool?.pool?.metadata?.website);
+                                setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
+                            }} />
+                    </InputAdornment>)
                 }}
                 InputLabelProps={{ shrink: true }}
                 variant="standard"
@@ -85,7 +100,13 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 value={convertToShorter(selectedPool?.pool?.metadata?.profileId)}
                 InputProps={{
                     readOnly: true,
-                    disabled: true,
+                    disabled: true, endAdornment: (<InputAdornment position="end">
+                        <ContentCopyIcon sx={{ cursor: 'pointer', height: '12px' }}
+                            onClick={() => {
+                                copyToClipboard(selectedPool?.pool?.metadata?.profileId);
+                                setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
+                            }} />
+                    </InputAdornment>)
                 }}
                 InputLabelProps={{ shrink: true }}
                 variant="standard"
@@ -171,6 +192,15 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 InputLabelProps={{ shrink: true }}
                 variant="standard"
             />
+            <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                open={showSnackbarCopied}
+                color="secondary"
+            >
+                <Alert severity="success" sx={{ width: '100%' }}>
+                    Copied to clipboard!
+                </Alert>
+            </Snackbar>
         </div>
     </>
     )

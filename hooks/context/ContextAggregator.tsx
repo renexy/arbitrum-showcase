@@ -35,6 +35,8 @@ interface GlobalContextState {
   loading?: boolean;
   activeProfilePools?: TPoolData[];
   endedProfilePools?: TPoolData[];
+  selectedPool: TPoolData | undefined;
+  changeSelectedPool: (pool: TPoolData | undefined) => void;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -55,7 +57,9 @@ const GlobalContext = createContext<GlobalContextState>({
   endedPools: [],
   loading: true,
   activeProfilePools: [],
-  endedProfilePools: [], 
+  endedProfilePools: [],
+  selectedPool: undefined,
+  changeSelectedPool: (pool: TPoolData | undefined) => { }
 });
 
 interface GlobalProviderProps {
@@ -93,6 +97,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [activeProfilePools, setActiveProfilePools] = useState<TPoolData[] | undefined>([]);
   const [endedProfilePools, setEndedProfilePools] = useState<TPoolData[] | undefined>([]);
 
+  const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
+
   // Graphql
   const { loading: loadingOwnedProfiles, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
   const { memberProfiles, hasMemberProfiles, refetch: refetchMember } = fetchMemberProfiles(address || '');
@@ -101,17 +107,21 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     setSelectedProfileHash(hash)
   }
 
+  const changeSelectedPool = (pool: TPoolData | undefined) => {
+    setSelectedPool(pool)
+  }
+
   const refetchProfiles = async () => {
     const { data: refetchedProfilesData } = await refetchOwned();
     const { data: refetchedMemberProfilesData } = await refetchMember();
 
     console.log("refetchedProfilesData", refetchedProfilesData)
     console.log("refetchedMemberProfilesData", refetchedMemberProfilesData)
-  
+
     // Apply the transformations to the refetched data
     const transformedRefetchedProfiles = transformProfileData(refetchedProfilesData.profiles);
     const transformedRefetchedMemberProfiles = transformProfileData(refetchedMemberProfilesData.profiles);
-  
+
     await getPendingOwner(registry, transformedRefetchedProfiles, transformedRefetchedMemberProfiles);
   };
 
@@ -158,7 +168,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       // we don't want to show duplicates
       setUserMemberProfiles(newMemberProfiles);
       //console.log("updatedMemberProfiles", updatedMemberProfiles)
-      
+
     } catch (error) {
       console.error('Error in getPendingOwner:', error);
     }
@@ -167,92 +177,92 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const ipfsClient = getIPFSClient();
 
   const fetchPools = async (queryType: string, first: number, offest: number) => {
-      const response = await fetch('/api/pools', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              queryJson: queryType,
-              first: first,
-              offset: offest,
-          }),
-      });
+    const response = await fetch('/api/pools', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        queryJson: queryType,
+        first: first,
+        offset: offest,
+      }),
+    });
 
-      if (!response.ok) {
-          throw new Error('Network response was not ok');
-      }
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
 
-      const data = await response.json();
-      return data;
+    const data = await response.json();
+    return data;
   };
 
   const getPools = async (type: TPoolType) => {
-      let pools: TPoolData[] = [];
+    let pools: TPoolData[] = [];
 
-      let graphqlQuery;
-      let responseObject;
+    let graphqlQuery;
+    let responseObject;
+
+    if (type === TPoolType.UPCOMING) {
+      graphqlQuery = getUpcomingMicroGrantsQuery;
+      responseObject = "upcomingMicroGrants";
+    } else if (type === TPoolType.ACTIVE) {
+      graphqlQuery = getActiveMicroGrantsQuery;
+      responseObject = "activeMicroGrants";
+    } else if (type === TPoolType.ENDED) {
+      graphqlQuery = getEndedMicroGrantsQuery;
+      responseObject = "endedMicroGrants";
+    } else {
+      return pools;
+    }
+
+    console.log(graphqlQuery)
+
+    try {
+      const response = await fetchPools(graphqlQuery, 25, 0)
 
       if (type === TPoolType.UPCOMING) {
-          graphqlQuery = getUpcomingMicroGrantsQuery;
-          responseObject = "upcomingMicroGrants";
+        pools = response.upcomingMicroGrants;
+        console.log("activeMicroGrants", pools)
       } else if (type === TPoolType.ACTIVE) {
-          graphqlQuery = getActiveMicroGrantsQuery;
-          responseObject = "activeMicroGrants";
+        pools = response.activeMicroGrants;
+        console.log("activeMicroGrants", pools)
       } else if (type === TPoolType.ENDED) {
-          graphqlQuery = getEndedMicroGrantsQuery;
-          responseObject = "endedMicroGrants";
-      } else {
-          return pools;
+        pools = response.endedMicroGrants;
+        console.log("endedMicroGrants", pools)
       }
 
-      console.log(graphqlQuery)
+      console.log("POOxzxbLS", pools)
 
-      try {
-          const response = await fetchPools(graphqlQuery, 25, 0)
-
-          if (type === TPoolType.UPCOMING) {
-              pools = response.upcomingMicroGrants;
-              console.log("activeMicroGrants", pools)
-          } else if (type === TPoolType.ACTIVE) {
-              pools = response.activeMicroGrants;
-              console.log("activeMicroGrants", pools)
-          } else if (type === TPoolType.ENDED) {
-              pools = response.endedMicroGrants;
-              console.log("endedMicroGrants", pools)
-          }
-
-          console.log("POOxzxbLS", pools)
-
-          if (!pools) {
-              console.log("Pools length is zero")
-              return;
-          }
-
-          for (const pool of pools) {
-              let metadata: TPoolMetadata;
-              try {
-                  const pointer = pool.pool.metadataPointer.toString();
-                  metadata = await ipfsClient.fetchJson(pointer);
-                  pool.pool.metadata = metadata;
-                  if (metadata.base64Image) {
-                      let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
-                      pool.pool.poolBanner = poolBanner.data;
-                  }
-                  if (!metadata.name) {
-                      metadata.name = `Pool ${pool.poolId}`;
-                  }
-              } catch (error) {
-                  console.log("IPFS", "Unable to fetch metadata", error);
-              }
-          }
-      } catch (error) {
-          console.log("Error fetching pools: ", error);
+      if (!pools) {
+        console.log("Pools length is zero")
+        return;
       }
-      //console.log("SALGMAOSLGMAD", pools)
-      return pools;
+
+      for (const pool of pools) {
+        let metadata: TPoolMetadata;
+        try {
+          const pointer = pool.pool.metadataPointer.toString();
+          metadata = await ipfsClient.fetchJson(pointer);
+          pool.pool.metadata = metadata;
+          if (metadata.base64Image) {
+            let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
+            pool.pool.poolBanner = poolBanner.data;
+          }
+          if (!metadata.name) {
+            metadata.name = `Pool ${pool.poolId}`;
+          }
+        } catch (error) {
+          console.log("IPFS", "Unable to fetch metadata", error);
+        }
+      }
+    } catch (error) {
+      console.log("Error fetching pools: ", error);
+    }
+    //console.log("SALGMAOSLGMAD", pools)
+    return pools;
   }
-    
+
   const fetchData = async () => {
     // const upcomingPools = await getPools(TPoolType.UPCOMING);
     const activePools = await getPools(TPoolType.ACTIVE);
@@ -274,7 +284,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   useEffect(() => {
     // Function to filter pools based on the selected profile
     const filterPools = (pools: TPoolData[] | undefined) => pools?.filter(pool => pool.pool.profile.profileId === selectedProfileHash);
-  
+
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
@@ -301,7 +311,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     }
 
     if (!profiles) {
-      console.log("No profiles found") 
+      console.log("No profiles found")
       return;
     }
 
@@ -325,12 +335,14 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     fetchData();
   }, [chainId, chain, address, isConnected, hasProfiles, hasMemberProfiles]);
 
+
+
   return (
     <GlobalContext.Provider value={{
       registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles,
       nonce, refetchProfiles, selectedProfileHash, changeSelectedProfileHash, userMemberProfiles,
       upcomingPools, activePools, endedPools, loading,
-      activeProfilePools, endedProfilePools
+      activeProfilePools, endedProfilePools, selectedPool, changeSelectedPool
     }}>
       {children}
     </GlobalContext.Provider>

@@ -480,11 +480,6 @@ export default function Profile() {
         }
     }
 
-    const test = async (registry: any, signer: any) => {
-
-        refetchProfiles();
-    }
-
     const CustomLabel = () => {
         return (
             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>

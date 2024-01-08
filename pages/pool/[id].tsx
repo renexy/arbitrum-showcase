@@ -113,7 +113,7 @@ export default function PoolDetails() {
             </Grid>
             }
             {showApplyForm && <ApplicationForm></ApplicationForm>}
-            {value === 0 && !showApplyForm && selectedPool && <Button
+            {value === 0 && active && !showApplyForm && selectedPool && <Button
                 component="span"
                 variant="contained"
                 color="secondary"

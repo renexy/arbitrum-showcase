@@ -24,7 +24,7 @@ import { useAccount } from 'wagmi';
 export default function Pool() {
   const [showCreatePool, setShowCreatePool] = useState(false)
   const [value, setValue] = React.useState('one');
-  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, selectedPool, changeSelectedPool } = React.useContext(GlobalContext);
+  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, selectedPool, changeSelectedPool, isPoolAdmin } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
   const [singleManager, setSingleManager] = useState('')
@@ -207,6 +207,7 @@ export default function Pool() {
                 />
               </div>
             </Box>} */}
+            <div onClick={() => {console.log(isPoolAdmin)}}>test</div>
         </>}
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}
     </Box>

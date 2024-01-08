@@ -342,10 +342,11 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     // Function to filter pools based on the selected profile
     const filterPools = (pools: TPoolData[] | undefined) => pools?.filter(pool => pool.pool.profile.profileId === selectedProfileHash);
   
-    console.log("filterPools(activePools)", filterPools(activePools))
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
+    console.log("filterPools(activePools)", filterPools(activePools))
+    console.log("filterPools(endedPools)", filterPools(endedPools))
 
     const fetchPoolAdminStatus = async () => {
       if (!selectedPool) {

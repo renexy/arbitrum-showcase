@@ -21,7 +21,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 export default function Pool() {
   const [showCreatePool, setShowCreatePool] = useState(false)
   const [value, setValue] = React.useState('one');
-  const { loading, activePools, endedPools, selectedProfileHash } = React.useContext(GlobalContext);
+  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
   const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
@@ -31,22 +31,22 @@ export default function Pool() {
   };
 
   React.useEffect(() => {
-    if (showActiveOnly && activePools) {
-      setDropdownOptions(activePools || []);
+    if (showActiveOnly && activeProfilePools) {
+      setDropdownOptions(activeProfilePools || []);
       setSelectedPool(undefined);
-    } else if (!showActiveOnly && endedPools) {
-      setDropdownOptions(endedPools || []);
+    } else if (!showActiveOnly && endedProfilePools) {
+      setDropdownOptions(endedProfilePools || []);
       setSelectedPool(undefined);
-    } else if (showActiveOnly && !activePools && endedPools) {
+    } else if (showActiveOnly && !activeProfilePools && endedProfilePools) {
       // Fallback in case activePools are not available but endedPools exist
-      setDropdownOptions(endedPools || []);
+      setDropdownOptions(endedProfilePools || []);
       setSelectedPool(undefined);
-    } else if (!showActiveOnly && activePools && !endedPools) {
+    } else if (!showActiveOnly && activeProfilePools && !endedProfilePools) {
       // Fallback in case endedPools are not available but activePools exist
-      setDropdownOptions(activePools || []);
+      setDropdownOptions(activeProfilePools || []);
       setSelectedPool(undefined);
     }
-  }, [showActiveOnly, activePools, endedPools]);
+  }, [showActiveOnly, activeProfilePools, endedProfilePools]);
 
 
   return (

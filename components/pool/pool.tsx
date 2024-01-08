@@ -207,7 +207,6 @@ export default function Pool() {
                 />
               </div>
             </Box>} */}
-            <div onClick={() => {console.log(isPoolAdmin)}}>test</div>
         </>}
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}
     </Box>

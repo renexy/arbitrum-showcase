@@ -18,8 +18,9 @@ export const toChecksumAddress = (address: string) => {
 }
 
 export function dateStringToSeconds(dateStr: string) {
-  return Math.floor(new Date(dateStr).getTime() / 1000);
+  return Math.floor(new Date(dateStr).getTime() / 1000) + 300;
 }
+
 export const convertUnixTimestamp = (timestamp: any) => {
   if (!timestamp) return "/"; // Return a default value if the timestamp is not provided
 
@@ -33,3 +34,17 @@ export const convertUnixTimestamp = (timestamp: any) => {
 
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
+
+
+export const ethToWeiBigInt = (eth: string): bigint => {
+  // 1 ETH is 1e18 Wei
+  const wei = parseFloat(eth) * 1e18;
+
+  // Rounding down to avoid fractional Wei (since Wei is the smallest unit and cannot be fractional)
+  const weiRounded = Math.floor(wei);
+
+  // Convert to BigInt
+  return BigInt(weiRounded);
+}
+
+export const NATIVE = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"

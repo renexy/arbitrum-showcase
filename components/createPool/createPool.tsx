@@ -31,7 +31,8 @@ import {
 import { wagmiConfig } from '@/wagmiConfig';
 import { abi } from "@/utils/erc20.abi";
 import { encodeFunctionData } from 'viem';
-import { dateStringToSeconds } from '@/global/functions';
+import { NATIVE, dateStringToSeconds, ethToWeiBigInt } from '@/global/functions';
+import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
 
 const steps = ['Basic info', 'Wallet info', 'Dates & more'];
 
@@ -50,7 +51,7 @@ export default function CreatePool({ changeCreatePool }: any) {
     const [createPoolTransactionStatus, setCreatePoolTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     // form
-    const [strategyType, setStrategyType] = useState(StrategyType.MicroGrants as TStrategyType)
+    const [strategyType, setStrategyType] = useState(StrategyType.MicroGrants)
     const [poolName, setPoolName] = useState<string>('')
     const [website, setWebsite] = useState<string>('')
     const [description, setDescription] = useState<string>('')
@@ -218,12 +219,13 @@ export default function CreatePool({ changeCreatePool }: any) {
     });
 
     try {
-      const strategyDeployParams = microStrategy.getDeployParams(strategyType);
+      const strategyDeployParams = microStrategy.getDeployParams("MicroGrantsv1");
 
       const hash = await walletClient!.deployContract({
         abi: strategyDeployParams.abi,
         bytecode: strategyDeployParams.bytecode as `0x${string}`,
         args: [],
+        gas: BigInt(5000000)
       });
 
       setItems(prevItems => {
@@ -233,10 +235,17 @@ export default function CreatePool({ changeCreatePool }: any) {
         return updatedItems;
       });
 
-      const result = await waitForTransaction({ hash: hash, chainId: chain?.id });
+      console.log(hash)
+      console.log(chain?.id)
+
+      const result = await wagmiConfig.publicClient.waitForTransactionReceipt({
+        hash: hash,
+        confirmations: 2,
+      });
+      console.log("result", result)
       StrategyAddress = result.contractAddress!;
 
-      if (!poolTokenAddress) {
+      if (poolTokenAddress) {
         try {
           const allowance = await wagmiConfig.publicClient.readContract({
             address: poolTokenAddress as `0x${string}`,
@@ -245,9 +254,9 @@ export default function CreatePool({ changeCreatePool }: any) {
             args: [address, allo.address()],
           });
 
-          if ((allowance as bigint) <= BigInt(fundPoolAmount)) {
+          if ((allowance as bigint) <= ethToWeiBigInt(fundPoolAmount)) {
             const approvalAmount =
-              BigInt(fundPoolAmount) - (allowance as bigint);
+              ethToWeiBigInt(fundPoolAmount) - (allowance as bigint);
     
             const approveData = encodeFunctionData({
               abi: abi,
@@ -262,7 +271,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                 value: BigInt(0),
               });
     
-              await wagmiConfig.publicClient.waitForTransactionReceipt({
+              const receipt = await wagmiConfig.publicClient.waitForTransactionReceipt({
                 hash: tx.hash,
                 confirmations: 2,
               });
@@ -341,23 +350,109 @@ export default function CreatePool({ changeCreatePool }: any) {
         allocationStartTime: BigInt(dateStringToSeconds(startDate)),
         allocationEndTime: BigInt(dateStringToSeconds(endDate)),
         approvalThreshold: BigInt(approvalThreshold),
-        maxRequestedAmount: BigInt(maxGrantAmount),
+        maxRequestedAmount: BigInt(ethToWeiBigInt(maxGrantAmount)),
       };
 
-      const initStrategyData = microStrategy.getInitializeData(initParams);
+      const initStrategyData = await microStrategy?.getInitializeData(initParams)
 
-      const poolCreationData = {
-        profileId: selectedProfileHash,
-        strategy: StrategyAddress,
-        initStrategyData: initStrategyData,
-        token: poolTokenAddress,
-        amount: BigInt(fundPoolAmount),
+      const createPoolArgs: CreatePoolArgs = {
+        profileId: selectedProfileHash!, // sender must be a profile member 
+        strategy: StrategyAddress, // approved strategy contract
+        initStrategyData: initStrategyData || '', // unique to the strategy
+        token: poolTokenAddress || NATIVE,
+        amount: ethToWeiBigInt(fundPoolAmount),
         metadata: {
           protocol: BigInt(1),
           pointer: IPFSPointer,
         },
         managers: managers,
       };
+
+      const txData: TransactionData = allo.createPoolWithCustomStrategy(createPoolArgs);
+
+      const hash = await sendTransaction({
+        data: txData.data,
+        to: txData.to,
+        value: BigInt(txData.value),
+      });
+
+      const result = await waitForTransaction({ hash: hash.hash, chainId: chain?.id });
+      console.log("transaction succeeded", result)
+
+      setItems(prevItems => {
+        const updatedItems = [...prevItems];
+        updatedItems[2].working = false;
+        updatedItems[2].done = true;
+        updatedItems[2].failed = false;
+        return updatedItems;
+      });
+
+      /*const initParams: any = {
+        useRegistryAnchor: stateRegistryMandatory,
+        allocationStartTime: BigInt(dateStringToSeconds(startDate)),
+        allocationEndTime: BigInt(dateStringToSeconds(endDate)),
+        approvalThreshold: BigInt(approvalThreshold),
+        maxRequestedAmount: ethToWeiBigInt(maxGrantAmount),
+      };
+      console.log("stateRegistryMandatory: ", stateRegistryMandatory)
+      console.log("startDate: ", BigInt(dateStringToSeconds(startDate)))
+      console.log("endDate: ", BigInt(dateStringToSeconds(endDate)))
+      console.log("approvalThreshold: ", BigInt(approvalThreshold))
+      console.log("maxGrantAmount: ", BigInt(ethToWeiBigInt(maxGrantAmount)))
+
+      if (!selectedProfileHash) {
+        console.log("No profile selected");
+        return;
+      }
+
+      const initStrategyData = await microStrategy.getInitializeData(initParams); // Get init data for strategy contract
+      console.log("initStrategyData: ", initStrategyData);
+
+      const poolCreationData: CreatePoolArgs = {
+        profileId: selectedProfileHash!,
+        strategy: StrategyAddress,
+        initStrategyData: initStrategyData,
+        token: poolTokenAddress || NATIVE,
+        amount: ethToWeiBigInt(fundPoolAmount),
+        metadata: {
+          protocol: BigInt(1),
+          pointer: IPFSPointer,
+        },
+        managers: managers,
+      };
+      console.log("profileId: ", selectedProfileHash)
+      console.log("strategy: ", StrategyAddress)
+      console.log("initStrategyData: ", initStrategyData)
+      console.log("token: ", poolTokenAddress || NATIVE.toLowerCase())
+      console.log("amount: ", ethToWeiBigInt(fundPoolAmount))
+      console.log("metadata: ", {
+        protocol: BigInt(1),
+        pointer: IPFSPointer,
+      })
+      console.log("managers: ", managers)
+
+      setItems(prevItems => {
+        const updatedItems = [...prevItems];
+        updatedItems[2].working = true;
+        updatedItems[2].done = false;
+        return updatedItems;
+      });
+
+      const createPoolData = await allo.createPoolWithCustomStrategy(poolCreationData);
+      console.log(createPoolData)
+
+      const tx = await sendTransaction({
+        to: createPoolData.to as string,
+        data: createPoolData.data,
+        value: BigInt(createPoolData.value),
+        gas: BigInt(3000000)
+      });
+
+      const receipt =
+        await wagmiConfig.publicClient.waitForTransactionReceipt({
+          hash: tx.hash,
+          confirmations: 2,
+        });*/
     } catch (error) {
       setItems(prevItems => {
         const updatedItems = [...prevItems];
@@ -368,59 +463,6 @@ export default function CreatePool({ changeCreatePool }: any) {
       });
       console.log("Error creating pool: ", error)
     }
-
-    await delay(2500)
-
-    setItems(prevItems => {
-        const updatedItems = [...prevItems];
-        updatedItems[0].working = true;
-        return updatedItems;
-    });
-
-    await delay(2500)
-
-    setItems(prevItems => {
-        const updatedItems = [...prevItems];
-        updatedItems[0].working = false;
-        updatedItems[0].done = true;
-        return updatedItems;
-    });
-
-    await delay(2500)
-
-    setItems(prevItems => {
-        const updatedItems = [...prevItems];
-        updatedItems[1].working = true;
-        updatedItems[1].done = false;
-        return updatedItems;
-    });
-
-    await delay(2500)
-
-    setItems(prevItems => {
-        const updatedItems = [...prevItems];
-        updatedItems[1].working = false;
-        updatedItems[1].done = true;
-        return updatedItems;
-    });
-
-    await delay(2500)
-
-    setItems(prevItems => {
-        const updatedItems = [...prevItems];
-        updatedItems[2].working = true;
-        updatedItems[2].done = false;
-        return updatedItems;
-    });
-
-    await delay(2500)
-
-    setItems(prevItems => {
-        const updatedItems = [...prevItems];
-        updatedItems[2].working = false;
-        updatedItems[2].done = true;
-        return updatedItems;
-    });
   }
 
   const handleDelete = (memberName: string) => {
@@ -438,6 +480,7 @@ export default function CreatePool({ changeCreatePool }: any) {
           </Typography>
       );
   };
+
   return (
       <Box sx={{
           width: 'auto', gap: '24px', justifyContent: 'flex-start', alignItems: 'center',
@@ -463,7 +506,7 @@ export default function CreatePool({ changeCreatePool }: any) {
               color="secondary"
               value={strategyType}
               size="medium"
-              onChange={(e: any) => { setStrategyType(e.target.value) }}
+              //onChange={(e: any) => { setStrategyType(e.target.value) }}
               select
               sx={{ width: { xs: '100%', sm: '350px' } }}
               label="Strategy type"
@@ -471,7 +514,7 @@ export default function CreatePool({ changeCreatePool }: any) {
                   shrink: true
               }}
           >
-              <MenuItem key={'manual'} value="Manual">
+              <MenuItem key={'manual'} value="MicroGrantsv1">
                   Manual
               </MenuItem>
               <MenuItem key={'governance token'} value="Governance token" disabled>

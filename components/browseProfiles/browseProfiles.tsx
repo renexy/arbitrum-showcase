@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Button, Stack, Skeleton, Box, Tabs, Tab, TextField } from '@mui/material';
+import { Grid, Card, CardMedia, CardContent, Typography, Button, Stack, Skeleton, Box, Tabs, Tab, TextField, ToggleButtonGroup, ToggleButton, Tooltip, IconButton } from '@mui/material';
 import { green, red } from '@mui/material/colors';
 import GridModuleCss from '@/styles/Grid.module.css'
 import { TPoolData, TPoolMetadata } from "@/types/typesPool";
@@ -8,6 +8,9 @@ import { ethers } from 'ethers';
 import Link from 'next/link';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import { convertUnixTimestamp } from '@/global/functions';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PersonIcon from '@mui/icons-material/Person';
+import AnchorIcon from '@mui/icons-material/Anchor';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -53,13 +56,67 @@ const BrowseProfiles = () => {
             setFilteredPools(filteredPools ? filteredPools : [])
         }
     }, [search])
+    const [alignment, setAlignment] = React.useState<string | null>('');
+
+    const handleAlignment = (
+        event: React.MouseEvent<HTMLElement>,
+        newAlignment: string | null,
+    ) => {
+        setAlignment(newAlignment);
+    };
 
     useEffect(() => {
-        console.log(endedPools)
-    }, [filteredPools])
+        setSearch('')
+    }, [alignment])
 
     return (
         <>
+
+            {
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', alignSelf: 'flex-start', padding: '18px 0', flexWrap: 'wrap' }}>
+                    <TextField
+                        variant="outlined"
+                        color="secondary"
+                        size="small"
+                        placeholder='Allo starter kit'
+                        value={search}
+                        onChange={(e: any) => { setSearch(e.target.value) }}
+                        sx={{ width: { xs: '100%', sm: '350px' }, alignSelf: 'flex-start', margin: '12px 0' }}
+                        label="Search"
+                        InputLabelProps={{
+                            shrink: true
+                        }}
+                    >
+                    </TextField>
+                    <ToggleButtonGroup
+                        value={alignment}
+                        exclusive
+                        onChange={handleAlignment}
+                        aria-label="text alignment"
+                    >
+                        <ToggleButton value="name" aria-label="left aligned">
+                            <Tooltip title="Name">
+                                <IconButton>
+                                    <AccountCircleIcon sx={{ fill: alignment === 'name' ? '#607d8b' : '' }} />
+                                </IconButton>
+                            </Tooltip>
+                        </ToggleButton>
+                        <ToggleButton value="profileId" aria-label="left aligned">
+                            <Tooltip title="Profile ID">
+                                <IconButton>
+                                    <PersonIcon sx={{ fill: alignment === 'profileId' ? '#607d8b' : '' }} />
+                                </IconButton>
+                            </Tooltip>
+                        </ToggleButton>
+                        <ToggleButton value="anchor" aria-label="left aligned">
+                            <Tooltip title="Anchor">
+                                <IconButton>
+                                    <AnchorIcon sx={{ fill: alignment === 'anchor' ? '#607d8b' : '' }} />
+                                </IconButton>
+                            </Tooltip>
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                </div>}
             <Grid container spacing={2} sx={{ overflow: 'auto' }}>
                 {loading &&
                     Array.from({ length: 7 }, (_, index) => (

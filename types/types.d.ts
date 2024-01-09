@@ -88,3 +88,56 @@ type profileMembersReturn = {
   hasManagers: boolean;
   refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
 };
+
+type TokenMetadata = {
+  name: string | null;
+  symbol: string | null;
+  decimals: number | null;
+};
+
+type PoolData = {
+  strategy: string;
+  strategyName: string;
+  tokenMetadata: TokenMetadata;
+  token: string;
+  amount: string;
+  metadataPointer: string;
+  profile: {
+      name: string;
+      profileId: string;
+  };
+  metadata: {
+      base64Image: string;
+      description: string;
+      name: string;
+      profileId: string;
+      website: string;
+  };
+};
+
+type MicroGrantRecipient = {
+  blockTimestamp: string;
+  isUsingRegistryAnchor: boolean;
+  metadataPointer: string;
+  recipientAddress: string;
+  recipientId: string;
+  requestedAmount: string;
+  status: string;
+};
+
+type ApplicationData = {
+  poolId: string;
+  chainId: string;
+  strategy: string;
+  allocationStartTime: number;
+  allocationEndTime: number;
+  approvalThreshold: number;
+  blockTimestamp: string;
+  maxRequestedAmount: string;
+  distributeds: Array<any>;  // Adjust this according to the actual structure of 'distributeds'
+  microGrantRecipients: MicroGrantRecipient[];
+  pool: PoolData;
+  useRegistryAnchor: boolean;
+};
+
+type TotalApplications = ApplicationData[];

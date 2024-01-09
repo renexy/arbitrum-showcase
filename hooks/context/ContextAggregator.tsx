@@ -7,7 +7,8 @@ import { ethers } from 'ethers';
 import { fetchOwnedProfiles, fetchMemberProfiles, transformProfileData, fetchPoolManagers, extractAddresses } from '@/queries/userQueries';
 import { TPoolData, TPoolMetadata } from "@/types/typesPool";
 import { getIPFSClient } from "@/services/ipfs";
-import { getActiveMicroGrantsQuery, getEndedMicroGrantsQuery, getUpcomingMicroGrantsQuery, graphqlEndpoint } from "@/queries/poolQuery";
+import { getActiveMicroGrantsQuery, getEndedMicroGrantsQuery, getUpcomingMicroGrantsQuery, getMicroGrantRecipientQuery, graphqlEndpoint, getMicroGrantsRecipientsQuery } from "@/queries/poolQuery";
+import request from "graphql-request";
 
 enum TPoolType {
   UPCOMING = "upcoming",
@@ -42,6 +43,7 @@ interface GlobalContextState {
   poolManagersList: string[];
   hasPoolManagers: boolean;
   refetchPoolManagers: () => void;
+  totalPoolApplications: TotalApplications;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -70,6 +72,7 @@ const GlobalContext = createContext<GlobalContextState>({
   poolManagersList: [],
   hasPoolManagers: false,
   refetchPoolManagers: () => { },
+  totalPoolApplications: [],
 });
 
 interface GlobalProviderProps {
@@ -112,6 +115,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
   const [poolManagersList, setPoolManagersList] = useState<string[]>([]);
   const [hasPoolManagers, setHasPoolManagers] = useState<boolean>(false)
+
+  const [totalPoolApplications, setTotalPoolApplications] = useState<TotalApplications>([]);
 
   // Graphql
   const { loading: loadingOwnedProfiles, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
@@ -247,8 +252,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       return pools;
     }
 
-    console.log(graphqlQuery)
-
     try {
       const response = await fetchPools(graphqlQuery, 25, 0);
     
@@ -262,8 +265,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         pools = response.endedMicroGrants;
         console.log("endedMicroGrants", pools);
       }
-    
-      console.log("POOLS", pools);
     
       if (!pools) {
         console.log("Pools length is zero");
@@ -295,6 +296,51 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     return pools;
   }
 
+  useEffect(() => {
+    const fetchApplications = async () => {
+      if (!activePools || !endedPools || !chain?.id) {
+        console.log("No active/ended pools or chainId found")
+        return;
+      }
+
+      const allPools = [...activePools, ...endedPools];
+      const totalApplications: TotalApplications = [];
+  
+      for (const pool of allPools) {
+        try {
+          const response = await fetch('/api/applications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chainId: chain?.id.toString(),
+              poolId: pool.poolId,
+            }),
+          });
+  
+          if (!response.ok) {
+            throw new Error(`Network response was not ok for poolId ${pool.poolId}`);
+          }
+  
+          const data: ApplicationData = await response.json();
+          totalApplications.push(data);
+  
+        } catch (error) {
+          console.error("Error fetching applications:", error);
+        }
+      }
+  
+      return totalApplications;
+    };
+  
+    fetchApplications().then(totalApplications => {
+      setTotalPoolApplications(totalApplications || [])
+      console.log("Total Applications", totalApplications);
+      // Now you have all the applications data aggregated
+      // You can set it to state or use it as needed
+    });
+  
+  }, [activePools, endedPools, chain?.id]);  
+
   const fetchData = async () => {
     // const upcomingPools = await getPools(TPoolType.UPCOMING);
     const activePools = await getPools(TPoolType.ACTIVE);
@@ -308,6 +354,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     setActivePools(filteredActivePools);
     setEndedPools(filteredEndedPools);
     setLoading(false)
+
+    console.log("SHIET", filteredActivePools)
 
     //console.log("upcomingPools", upcomingPools)
     //console.log("activePools", activePools)
@@ -413,7 +461,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       activeProfilePools, endedProfilePools,
       isPoolAdmin,
       selectedPool, changeSelectedPool, refetchPools,
-      poolManagersList, hasPoolManagers, refetchPoolManagers
+      poolManagersList, hasPoolManagers, refetchPoolManagers,
+      totalPoolApplications,
     }}>
       {children}
     </GlobalContext.Provider>

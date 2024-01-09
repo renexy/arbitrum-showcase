@@ -56,7 +56,7 @@ const BrowseProfiles = () => {
             setFilteredPools(filteredPools ? filteredPools : [])
         }
     }, [search])
-    const [alignment, setAlignment] = React.useState<string | null>('');
+    const [alignment, setAlignment] = React.useState<string | null>('name');
 
     const handleAlignment = (
         event: React.MouseEvent<HTMLElement>,

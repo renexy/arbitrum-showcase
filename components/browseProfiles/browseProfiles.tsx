@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Button, Stack, Skeleton, Box, Tabs, Tab, TextField, ToggleButtonGroup, ToggleButton, Tooltip, IconButton } from '@mui/material';
+import { Grid, Card, CardMedia, CardContent, Typography, Button, Stack, Skeleton, Box, Tabs, Tab, TextField, ToggleButtonGroup, ToggleButton, Tooltip, IconButton, Pagination } from '@mui/material';
 import { green, red } from '@mui/material/colors';
 import GridModuleCss from '@/styles/Grid.module.css'
 import { TPoolData, TPoolMetadata } from "@/types/typesPool";
@@ -191,6 +191,7 @@ const BrowseProfiles = () => {
                     </Grid>
                 ))}
             </Grid >
+            <Pagination count={10} color="secondary" />
         </>
     );
 };

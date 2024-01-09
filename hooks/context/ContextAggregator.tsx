@@ -346,8 +346,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       const { data } = await refetchPoolManagers({ poolId: selectedPool?.poolId || '' });
       const addresses = extractAddresses(data);
   
-      console.log("refetchedMemberProfilesData", data);
-      console.log("transformedPoolManagers", addresses);
+      //console.log("refetchedMemberProfilesData", data);
+      //console.log("transformedPoolManagers", addresses);
   
       setPoolManagersList(addresses);
       setHasPoolManagers(addresses.length > 0);

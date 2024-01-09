@@ -331,12 +331,43 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   
       return totalApplications;
     };
-  
+
+    const appendMetadataToApplications = async (totalPoolApplicationsUpdated: TotalApplications) => {
+      for (const application of totalPoolApplicationsUpdated) {
+        for (const recipient of application.microGrantRecipients) {
+          try {
+            const response = await fetch('/api/applicationMetadata', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chainId: application.chainId,
+                poolId: application.poolId,
+                applicationId: recipient.recipientId,
+              }),
+            });
+    
+            if (!response.ok) {
+              throw new Error(`Network response was not ok for recipientId ${recipient.recipientId}`);
+            }
+    
+            const metadata = await response.json();
+            // Append the metadata to the recipient
+            recipient.metadata = metadata;
+          } catch (error) {
+            console.error("Error fetching additional metadata:", error);
+          }
+        }
+      }
+      return totalPoolApplicationsUpdated;
+    }
+
     fetchApplications().then(totalApplications => {
-      setTotalPoolApplications(totalApplications || [])
-      console.log("Total Applications", totalApplications);
-      // Now you have all the applications data aggregated
-      // You can set it to state or use it as needed
+      appendMetadataToApplications(totalApplications || []).then(totalPoolApplicationsUpdated => {
+        setTotalPoolApplications(totalApplications || [])
+        console.log("Total Applications", totalApplications);
+
+      });
+   
     });
   
   }, [activePools, endedPools, chain?.id]);  
@@ -354,8 +385,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     setActivePools(filteredActivePools);
     setEndedPools(filteredEndedPools);
     setLoading(false)
-
-    console.log("SHIET", filteredActivePools)
 
     //console.log("upcomingPools", upcomingPools)
     //console.log("activePools", activePools)

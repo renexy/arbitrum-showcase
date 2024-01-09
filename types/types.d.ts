@@ -58,6 +58,13 @@ type memberProfilesReturn = {
   refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
 };
 
+type generalProfilesReturn = {
+  loading: boolean;
+  error?: ApolloError;
+  profiles?: TransformedProfile[];
+  refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
+};
+
 interface Role {
   id: string;
   __typename: string;

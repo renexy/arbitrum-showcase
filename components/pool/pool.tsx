@@ -260,7 +260,7 @@ export default function Pool() {
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}
       {
         isPoolAdmin && <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-end' }}>
-          <Button color="secondary" onClick={() => { setPoolManagers(poolManagersList) }}>Reset</Button>
+          <Button color="secondary" onClick={() => { setPoolManagers(poolManagersList); setPoolManagersToAdd([]); setPoolManagersToRemove([]) }}>Reset</Button>
           <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
         </Box>
       }

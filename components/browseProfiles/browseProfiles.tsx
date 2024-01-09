@@ -74,25 +74,12 @@ const BrowseProfiles = () => {
 
             {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', alignSelf: 'flex-start', padding: '18px 0', flexWrap: 'wrap' }}>
-                    <TextField
-                        variant="outlined"
-                        color="secondary"
-                        size="small"
-                        placeholder='Allo starter kit'
-                        value={search}
-                        onChange={(e: any) => { setSearch(e.target.value) }}
-                        sx={{ width: { xs: '100%', sm: '350px' }, alignSelf: 'flex-start', margin: '12px 0' }}
-                        label="Search"
-                        InputLabelProps={{
-                            shrink: true
-                        }}
-                    >
-                    </TextField>
                     <ToggleButtonGroup
                         value={alignment}
                         exclusive
                         onChange={handleAlignment}
                         aria-label="text alignment"
+                        sx={{ alignSelf: 'center', height: '38px' }}
                     >
                         <ToggleButton value="name" aria-label="left aligned">
                             <Tooltip title="Name">
@@ -116,6 +103,20 @@ const BrowseProfiles = () => {
                             </Tooltip>
                         </ToggleButton>
                     </ToggleButtonGroup>
+                    <TextField
+                        variant="outlined"
+                        color="secondary"
+                        size="small"
+                        placeholder='Allo starter kit'
+                        value={search}
+                        onChange={(e: any) => { setSearch(e.target.value) }}
+                        sx={{ width: { xs: '100%', sm: '350px' }, alignSelf: 'flex-start', margin: '12px 0' }}
+                        label="Search"
+                        InputLabelProps={{
+                            shrink: true
+                        }}
+                    >
+                    </TextField>
                 </div>}
             <Grid container spacing={2} sx={{ overflow: 'auto' }}>
                 {loading &&
@@ -133,7 +134,7 @@ const BrowseProfiles = () => {
                     ))
                 }
                 {!loading && value === 0 && (search.length > 0 ? filteredPools : activePools ? activePools : []).map((item) => (
-                    <Grid key={'active' + item.poolId} item xs={12} sm={6} md={4} lg={3}>
+                    <Grid key={'active' + item.poolId} item sx={{ padding: '32px 0'}} xs={12} sm={6} md={4} lg={3}>
                         <Link href={'/pool/' + item?.poolId}>
                             <Card sx={{ cursor: 'pointer' }}>
                                 <CardMedia

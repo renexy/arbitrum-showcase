@@ -42,6 +42,7 @@ export default function PoolDetails() {
 
 
     const findApplications = () => {
+        console.log("totalapplicationstotalapplications", totalPoolApplications)
         if (totalPoolApplications && totalPoolApplications.length > 0) {
             var foundApplications = totalPoolApplications.filter(x => x.poolId === selectedPool?.poolId)
             console.log(totalPoolApplications, "lol")
@@ -52,8 +53,13 @@ export default function PoolDetails() {
     }
 
     useEffect(() => {
-        if (selectedPool)
+        console.log("totalPoolApplications", totalPoolApplications)
+        if (selectedPool) {
+            console.log("adhgahaha")
             findApplications()
+        } else {
+            console.log("LADGNAIKDGNAGopn")
+        }
     }, [selectedPool])
 
     React.useEffect(() => {

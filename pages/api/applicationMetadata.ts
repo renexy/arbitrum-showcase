@@ -24,7 +24,7 @@ export default async function handler(
     );
     
     const application = response.microGrantRecipient;
-
+ 
     const ipfsClient = getIPFSClient();
     const metadata: TApplicationMetadata = await ipfsClient.fetchJson(
       application.metadataPointer,
@@ -32,12 +32,8 @@ export default async function handler(
 
     if (!metadata.name) metadata.name = `Pool ${application.microGrant.poolId}`;
 
-    try {
-      const bannerImage = await ipfsClient.fetchJson(metadata.base64Image);
-      banner = bannerImage!.data ? bannerImage.data : "";
-    } catch (error) {
-      console.error("unable to load banner");
-    }
+    const bannerImage = await ipfsClient.fetchJson(metadata.base64Image);
+    banner = bannerImage!.data ? bannerImage.data : "";
 
     const finalMetadata = {
       application: application,

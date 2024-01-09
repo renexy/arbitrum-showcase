@@ -20,10 +20,13 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { shortenEthAddress } from '@/global/functions';
 import { useAccount } from 'wagmi';
+import BaseDialog from '../baseDialog/baseDialog';
 
 export default function Pool() {
   const [showCreatePool, setShowCreatePool] = useState(false)
   const [value, setValue] = React.useState('one');
+  const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
+    useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
   const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool, isPoolAdmin } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [poolManagers, setPoolManagers] = useState<string[]>([])
@@ -34,10 +37,16 @@ export default function Pool() {
   const { address, isConnected } = useAccount();
   const [showSnackbarManagerIsOwner, setShowSnackbarManagerIsOwner] = useState(false)
   const [showSnackbarMemberExists, setShowSnackbarMemberExists] = useState(false)
+  const [itemsChanged, setItemsChanged] = useState(false)
+  const [dialogOpenAdd, setDialogOpenAdd] = useState(false)
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-    setValue(newValue);
-  };
+  React.useEffect(() => {
+    if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0) {
+      setItemsChanged(true)
+    } else {
+      setItemsChanged(false)
+    }
+  }, [poolManagers])
 
   const handleAddManager = () => {
     if (singleManager === address) {
@@ -72,6 +81,14 @@ export default function Pool() {
       }
       setSingleManager('')
     }
+  }
+
+  const handleUpdate = (args: any) => {
+    if (args && args === 'restore') {
+      setCreateProfileTransactionStatus('confirm')
+      return;
+    }
+    setCreateProfileTransactionStatus('signature');
   }
 
   const handleRemoveManager = (manager: string) => {
@@ -180,9 +197,10 @@ export default function Pool() {
                     {poolManagers.map((member, index) => (
                       <ListItem key={index}>
                         <ListItemText primary={shortenEthAddress(member)} />
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveManager(member)}>
+                        {isPoolAdmin && <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveManager(member)}>
                           <DeleteIcon />
                         </IconButton>
+                        }
                       </ListItem>
                     ))}
                   </List>
@@ -198,10 +216,12 @@ export default function Pool() {
                   sx={{ 'fieldSet': { border: '1px solid grey' } }}
                   InputLabelProps={{
                     style: {
-                      color: 'rgba(0, 0, 0, 0.38)'
+                      color: !isPoolAdmin ? 'rgba(0, 0, 0, 0.38)' : 'unset'
                     }
                   }}
                   InputProps={{
+                    readOnly: !isPoolAdmin,
+                    disabled: !isPoolAdmin,
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton onClick={() => { handleAddManager() }} edge="end">
@@ -221,9 +241,28 @@ export default function Pool() {
                   Manager already exists!
                 </Alert>
               </Snackbar>
+              <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                open={showSnackbarManagerIsOwner}
+                color="secondary"
+              >
+                <Alert severity="warning" sx={{ width: '100%' }}>
+                  Owner can&apos;t be member!
+                </Alert>
+              </Snackbar>
+
+              <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
+                dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
+                message={'Are you sure you want to manage members?'}></BaseDialog>
             </Box>}
         </>}
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}
+      {
+        isPoolAdmin && <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-end' }}>
+          <Button color="secondary" onClick={() => { setPoolManagers(poolManagersList) }}>Reset</Button>
+          <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
+        </Box>
+      }
     </Box>
   );
 }

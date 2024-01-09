@@ -59,11 +59,6 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>{active ? 'ACTIVE' : 'INACTIVE'}</Typography>
             </Button>
         </div>
-        <img src={selectedPool?.pool?.metadata.base64Image || fallbackImageURL} style={{
-            width: '40%',
-            borderRadius: '9px',
-            height: '200px', border: `1px solid ${blueGrey[500]}`
-        }}></img>
         <TextField
             id="standard-read-only-input"
             color='secondary'

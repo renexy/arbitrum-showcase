@@ -86,6 +86,7 @@ function StepperDialog(props: StepperDialogProps) {
     const { onClose, selectedValue, open, status, message, callbackFn, steps } = props;
     const [activeStep, setActiveStep] = useState(0);
     const [showCloseButton, setShowCloseButton] = useState(false)
+    const [allStepsSuccess, setAllStepsSuccess] = useState(false)
 
     const handleClose = () => {
         return
@@ -93,6 +94,9 @@ function StepperDialog(props: StepperDialogProps) {
 
     const closeButton = () => {
         onClose(selectedValue)
+        if (allStepsSuccess) {
+            window.location.reload()
+        }
     }
 
     useEffect(() => {
@@ -106,6 +110,7 @@ function StepperDialog(props: StepperDialogProps) {
         const allStepsDone = steps.every(x => x.done === true);
         if (allStepsDone) {
             setShowCloseButton(true)
+            setAllStepsSuccess(true)
             return
         } else {
             setShowCloseButton(false)

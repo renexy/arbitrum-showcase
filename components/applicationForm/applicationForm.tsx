@@ -280,7 +280,7 @@ export default function ApplicationForm() {
         <>
             {selectedPool && <>
                 <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', margin: '18px 0' }}>
-                    Apply for pool with <span style={{ fontWeight: 700}}>&nbsp;"{selectedProfileName}"</span>
+                    Apply for pool with <span style={{ fontWeight: 700}}>&nbsp;&apos;{selectedProfileName}&apos;</span>
                 </Typography>
                 <Stepper nonLinear activeStep={activeStep} sx={{ width: '100%' }}>
                     {steps.map((label, index) => (

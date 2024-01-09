@@ -3,11 +3,14 @@ import { Alert, Autocomplete, Button, InputAdornment, Snackbar, TextField, Typog
 import Head from 'next/head'
 import AddIcon from '@mui/icons-material/Add';
 import React, { useState } from 'react';
-import { green, red } from '@mui/material/colors';
+import { blueGrey, green, red } from '@mui/material/colors';
 import { TPoolData } from '@/types/typesPool';
 import { ethers } from 'ethers';
 import { convertUnixTimestamp } from '@/global/functions';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import Image from "next/image"
+
+const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
 const weiToEth = (weiValue: any) => {
     if (!weiValue) return "0.0 ETH";
@@ -56,6 +59,28 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>{active ? 'ACTIVE' : 'INACTIVE'}</Typography>
             </Button>
         </div>
+        <img src={selectedPool?.pool?.metadata.base64Image || fallbackImageURL} style={{
+            width: '40%',
+            borderRadius: '9px',
+            height: '200px', border: `1px solid ${blueGrey[500]}`
+        }}></img>
+        <TextField
+            id="standard-read-only-input"
+            color='secondary'
+            label='Description'
+            sx={{ textAlign: 'left', border: 'none' }}
+            value={selectedPool?.pool.metadata?.description}
+            InputProps={{
+                readOnly: true,
+                disabled: true,
+                sx: {
+                    fontSize: '1.5rem',
+                    color: 'rgba(0, 0, 0, 0.6)'
+                }
+            }}
+            InputLabelProps={{ shrink: true }}
+            variant="standard"
+        />
         <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', width: '100%' }}>
             <TextField
                 id="standard-read-only-input"

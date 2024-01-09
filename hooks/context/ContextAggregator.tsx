@@ -41,6 +41,7 @@ interface GlobalContextState {
   changeSelectedPool: (pool: TPoolData | undefined) => void;
   poolManagersList: string[];
   hasPoolManagers: boolean;
+  refetchPoolManagers: () => void;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -68,6 +69,7 @@ const GlobalContext = createContext<GlobalContextState>({
   changeSelectedPool: (pool: TPoolData | undefined) => { },
   poolManagersList: [],
   hasPoolManagers: false,
+  refetchPoolManagers: () => { },
 });
 
 interface GlobalProviderProps {
@@ -411,7 +413,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       activeProfilePools, endedProfilePools,
       isPoolAdmin,
       selectedPool, changeSelectedPool, refetchPools,
-      poolManagersList, hasPoolManagers
+      poolManagersList, hasPoolManagers, refetchPoolManagers
     }}>
       {children}
     </GlobalContext.Provider>

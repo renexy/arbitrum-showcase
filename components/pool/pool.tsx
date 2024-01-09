@@ -4,7 +4,6 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { Alert, Autocomplete, AutocompleteRenderOptionState, Button, Fab, FormControlLabel, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Snackbar, Step, StepButton, Stepper, Switch, TextField, ToggleButton, Typography } from '@mui/material';
 import { CreatePoolArgs } from "@allo-team/allo-v2-sdk/dist/Allo/types";
-import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
 import { StrategyType } from "@allo-team/allo-v2-sdk/dist/strategies/MicroGrantsStrategy/types";
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,13 +20,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { shortenEthAddress } from '@/global/functions';
 import { useAccount } from 'wagmi';
 import BaseDialog from '../baseDialog/baseDialog';
+import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
 
 export default function Pool() {
   const [showCreatePool, setShowCreatePool] = useState(false)
   const [value, setValue] = React.useState('one');
   const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
     useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
-  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool, isPoolAdmin } = React.useContext(GlobalContext);
+  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool, isPoolAdmin, signer, allo, refetchPoolManagers } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [poolManagers, setPoolManagers] = useState<string[]>([])
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
@@ -39,6 +39,7 @@ export default function Pool() {
   const [showSnackbarMemberExists, setShowSnackbarMemberExists] = useState(false)
   const [itemsChanged, setItemsChanged] = useState(false)
   const [dialogOpenAdd, setDialogOpenAdd] = useState(false)
+  const [showSnackbarAllo, setShowsnackbarAllo] = useState(false)
 
   React.useEffect(() => {
     if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0) {
@@ -48,7 +49,7 @@ export default function Pool() {
     }
   }, [poolManagers])
 
-  const handleAddManager = () => {
+  const handleAddManager = async () => {
     if (singleManager === address) {
       setShowSnackbarManagerIsOwner(true)
       setTimeout(() => {
@@ -81,14 +82,6 @@ export default function Pool() {
       }
       setSingleManager('')
     }
-  }
-
-  const handleUpdate = (args: any) => {
-    if (args && args === 'restore') {
-      setCreateProfileTransactionStatus('confirm')
-      return;
-    }
-    setCreateProfileTransactionStatus('signature');
   }
 
   const handleRemoveManager = (manager: string) => {
@@ -132,6 +125,107 @@ export default function Pool() {
     setPoolManagers(poolManagersList)
     console.log("poolManagersList: ", poolManagersList);
   }, [poolManagersList])
+
+  const handleRemoveManagerFunc = async (allo: any, signer: any) => {
+    const poolId = selectedPool?.poolId;
+  
+    try {
+      setCreateProfileTransactionStatus('signature');
+  
+      for (const manager of poolManagersToRemove) {
+        const txData = allo.removePoolManager(poolId, manager);
+  
+        const hash = await signer.sendTransaction({
+          data: txData.data,
+          to: txData.to,
+          value: BigInt(txData.value),
+        });
+  
+        setCreateProfileTransactionStatus('transaction');
+  
+        try {
+          const receipt = await hash.wait();
+          if (receipt.status !== 1) {
+            setCreateProfileTransactionStatus('failed');
+            console.error("Transaction failed for manager:", manager);
+            break; // Stop if any transaction fails
+          }
+        } catch (error) {
+          console.error("Transaction error for manager:", manager, error);
+          setCreateProfileTransactionStatus('failed');
+          break; // Stop if any transaction fails
+        }
+      }
+  
+      setCreateProfileTransactionStatus('succeeded');
+  
+    } catch (error) {
+      console.error("user rejected or error occurred", error);
+      setCreateProfileTransactionStatus('failed');
+    }
+  }  
+
+  const handleAddManagerFunc = async (allo: any, signer: any) => {
+    const poolId = selectedPool?.poolId;
+  
+    try {
+      setCreateProfileTransactionStatus('signature');
+  
+      for (const manager of poolManagersToAdd) {
+        const txData = allo.addPoolManager(poolId, manager);
+  
+        const hash = await signer.sendTransaction({
+          data: txData.data,
+          to: txData.to,
+          value: BigInt(txData.value),
+        });
+  
+        setCreateProfileTransactionStatus('transaction');
+  
+        try {
+          const receipt = await hash.wait();
+          if (receipt.status !== 1) {
+            setCreateProfileTransactionStatus('failed');
+            console.error("Transaction failed for manager:", manager);
+            break; // Stop if any transaction fails
+          }
+        } catch (error) {
+          console.error("Transaction error for manager:", manager, error);
+          setCreateProfileTransactionStatus('failed');
+          break; // Stop if any transaction fails
+        }
+      }
+  
+      setCreateProfileTransactionStatus('succeeded');
+  
+    } catch (error) {
+      console.error("user rejected or error occurred", error);
+      setCreateProfileTransactionStatus('failed');
+    }
+  }
+  
+  const handleUpdate = async (args: any) => {
+    if (args && args === 'restore') {
+      setCreateProfileTransactionStatus('confirm')
+      return;
+    }
+
+    if (!allo || !signer) {
+      setShowsnackbarAllo(true)
+      setTimeout(() => {
+        setShowsnackbarAllo(false)
+      }, 5000)
+      return;
+    }
+
+    if (poolManagersToRemove.length > 0)
+      await handleRemoveManagerFunc(allo, signer)
+
+    if (poolManagersToAdd.length > 0)
+      await handleAddManagerFunc(allo, signer)
+
+    refetchPoolManagers();
+  }
 
   return (
     <Box sx={{
@@ -249,6 +343,15 @@ export default function Pool() {
               >
                 <Alert severity="warning" sx={{ width: '100%' }}>
                   Owner can&apos;t be member!
+                </Alert>
+              </Snackbar>
+              <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                open={showSnackbarAllo}
+                color="secondary"
+              >
+                <Alert severity="warning" sx={{ width: '100%' }}>
+                  Allo not initialized!
                 </Alert>
               </Snackbar>
 

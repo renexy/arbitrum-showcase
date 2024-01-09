@@ -135,7 +135,7 @@ export default function Pool() {
 
   return (
     <Box sx={{
-      width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
+      width: 'auto', minWidth: '100%', gap: '36px', justifyContent: 'flex-start',
       display: 'flex', flexDirection: 'column', flex: 1, padding: '12px', overflow: 'auto'
     }}>
       {!showCreatePool &&

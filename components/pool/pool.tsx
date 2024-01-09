@@ -2,7 +2,7 @@ import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import { Autocomplete, AutocompleteRenderOptionState, Button, Fab, FormControlLabel, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Step, StepButton, Stepper, Switch, TextField, ToggleButton, Typography } from '@mui/material';
+import { Alert, Autocomplete, AutocompleteRenderOptionState, Button, Fab, FormControlLabel, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Snackbar, Step, StepButton, Stepper, Switch, TextField, ToggleButton, Typography } from '@mui/material';
 import { CreatePoolArgs } from "@allo-team/allo-v2-sdk/dist/Allo/types";
 import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
 import { StrategyType } from "@allo-team/allo-v2-sdk/dist/strategies/MicroGrantsStrategy/types";
@@ -10,7 +10,7 @@ import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import AddIcon from '@mui/icons-material/Add';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CircleIcon from '@mui/icons-material/Circle';
-import { green, grey, red } from '@mui/material/colors';
+import { blueGrey, green, grey, red } from '@mui/material/colors';
 import { useState } from 'react';
 import CreatePool from '../createPool/createPool';
 import DisplayPoolInfo from '../displayPoolInfo/displayPoolInfo';
@@ -24,72 +24,76 @@ import { useAccount } from 'wagmi';
 export default function Pool() {
   const [showCreatePool, setShowCreatePool] = useState(false)
   const [value, setValue] = React.useState('one');
-  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, selectedPool, changeSelectedPool, isPoolAdmin } = React.useContext(GlobalContext);
+  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool, isPoolAdmin } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
+  const [poolManagers, setPoolManagers] = useState<string[]>([])
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
   const [singleManager, setSingleManager] = useState('')
+  const [poolManagersToAdd, setPoolManagersToAdd] = useState<string[]>([])
+  const [poolManagersToRemove, setPoolManagersToRemove] = useState<string[]>([])
   const { address, isConnected } = useAccount();
   const [showSnackbarManagerIsOwner, setShowSnackbarManagerIsOwner] = useState(false)
+  const [showSnackbarMemberExists, setShowSnackbarMemberExists] = useState(false)
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
   };
 
-  // const handleAddManager = () => {
-  //   if (singleManager === address) {
-  //     setShowSnackbarManagerIsOwner(true)
-  //     setTimeout(() => {
-  //       setShowSnackbarManagerIsOwner(false);
-  //     }, 3000);
-  //     return
-  //   }
-  //   if (singleManager.length > 0) {
-  //     if (selectedPool?.managers && selectedPool.managers.length > 0) {
-  //       if (!(selectedProfile.members.find(x => x.address === singleMember)) &&
-  //         !(membersToAdd.find(x => x.address === singleMember))) {
-  //         setMembersToAdd([...membersToAdd, { address: singleMember, id: '' }]);
-  //         setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }])
-  //       } else {
-  //         setShowSnackbarMemberExists(true)
-  //         setTimeout(() => {
-  //           setShowSnackbarMemberExists(false);
-  //         }, 3000);
-  //       }
-  //     } else {
-  //       if (!membersToAdd.find(x => x.address === singleMember)) {
-  //         setMembersToAdd([...membersToAdd, { address: singleMember, id: '' }]);
-  //         setNewProfileMembers([...newProfileMembers, { address: singleMember, id: '' }])
-  //       } else {
-  //         setShowSnackbarMemberExists(true)
-  //         setTimeout(() => {
-  //           setShowSnackbarMemberExists(false);
-  //         }, 3000);
-  //       }
-  //     }
-  //     setSingleMember('')
-  //   }
-  // }
+  const handleAddManager = () => {
+    if (singleManager === address) {
+      setShowSnackbarManagerIsOwner(true)
+      setTimeout(() => {
+        setShowSnackbarManagerIsOwner(false);
+      }, 3000);
+      return
+    }
+    if (singleManager.length > 0) {
+      if (poolManagers && poolManagers.length > 0) {
+        if (!(poolManagers.find(x => x === singleManager)) &&
+          !(poolManagersToAdd.find(x => x === singleManager))) {
+          setPoolManagersToAdd([...poolManagersToAdd, singleManager]);
+          setPoolManagers([...poolManagers, singleManager])
+        } else {
+          setShowSnackbarMemberExists(true)
+          setTimeout(() => {
+            setShowSnackbarMemberExists(false);
+          }, 3000);
+        }
+      } else {
+        if (!poolManagersToAdd.find(x => x === singleManager)) {
+          setPoolManagersToAdd([...poolManagersToAdd, singleManager]);
+          setPoolManagers([...poolManagers, singleManager])
+        } else {
+          setShowSnackbarMemberExists(true)
+          setTimeout(() => {
+            setShowSnackbarMemberExists(false);
+          }, 3000);
+        }
+      }
+      setSingleManager('')
+    }
+  }
 
-  // const handleRemoveMember = (member: Account) => {
-  //   var foundMember = selectedProfile?.members.find(x => x.address === member.address)
-  //   if (foundMember) {
-  //     var deleteMember = selectedProfile?.members.filter((x) => x.address !== member.address)
-  //     if (deleteMember) {
-  //       setMembersToRemove([...membersToRemove, { address: member.address, id: '' }])
-  //       var deleteDisplayedMembers = newProfileMembers.filter((x) => x.address !== member.address)
-  //       setNewProfileMembers(deleteDisplayedMembers)
-  //     }
-  //   }
-  //   var foundInTempList = membersToAdd?.find(x => x.address === member.address)
-  //   if (foundInTempList) {
-  //     var deleteMemberTemp = membersToAdd?.filter((x) => x.address !== member.address)
-  //     if (deleteMemberTemp) {
-  //       setMembersToAdd(deleteMemberTemp)
-  //       var deleteDisplayedMembers = newProfileMembers.filter((x) => x.address !== member.address)
-  //       setNewProfileMembers(deleteDisplayedMembers)
-  //     }
-  //   }
-  // }
+  const handleRemoveManager = (manager: string) => {
+    var foundManager = poolManagers.find(x => x === manager)
+    if (foundManager) {
+      var deleteManager = poolManagers.filter((x) => x !== manager)
+      if (deleteManager) {
+        setPoolManagersToRemove([...poolManagersToRemove, manager])
+        var deleteDisplayedManagers = poolManagers.filter((x) => x !== manager)
+        setPoolManagers(deleteDisplayedManagers)
+      }
+    }
+    var foundInTempList = poolManagersToAdd.find(x => x === manager)
+    if (foundInTempList) {
+      var deleteManagerTemp = poolManagersToAdd.filter((x) => x !== manager)
+      if (deleteManagerTemp) {
+        setPoolManagersToAdd(deleteManagerTemp)
+        var deleteDisplayedManagers = poolManagers.filter((x) => x !== manager)
+        setPoolManagers(deleteDisplayedManagers)
+      }
+    }
+  }
 
   React.useEffect(() => {
     if (showActiveOnly && activeProfilePools) {
@@ -106,6 +110,10 @@ export default function Pool() {
         changeSelectedPool(undefined);
     }
   }, [showActiveOnly, activeProfilePools, endedProfilePools]);
+
+  React.useEffect(() => {
+    setPoolManagers(poolManagersList)
+  }, [poolManagersList])
 
   return (
     <Box sx={{
@@ -156,7 +164,7 @@ export default function Pool() {
             </Button>
           </div>
           {selectedPool && <DisplayPoolInfo selectedPool={selectedPool} active={showActiveOnly} />}
-          {/* {selectedPool &&
+          {selectedPool &&
             <Box sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -167,46 +175,53 @@ export default function Pool() {
             }}>
               <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
                 <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing managers</Typography>
-                {newProfileMembers && newProfileMembers.length > 0 ? (
+                {poolManagers && poolManagers.length > 0 ? (
                   <List dense sx={{ border: '1px solid grey', borderRadius: '4px', height: '180px', overflow: 'auto' }}>
-                    {newProfileMembers.map((member, index) => (
+                    {poolManagers.map((member, index) => (
                       <ListItem key={index}>
-                        <ListItemText primary={member?.address && member.address.length > 9 ? shortenEthAddress(member.address) : member?.address} />
-                        {editMode && <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveMember(member)}>
+                        <ListItemText primary={shortenEthAddress(member)} />
+                        <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveManager(member)}>
                           <DeleteIcon />
-                        </IconButton>}
+                        </IconButton>
                       </ListItem>
                     ))}
                   </List>
-                ) : (<span style={{ textAlign: 'left' }}>No members</span>)}
+                ) : (<span style={{ textAlign: 'left' }}>No managers</span>)}
 
                 <TextField
                   id="outlined-adornment-password"
                   label="Add members"
                   variant="outlined"
-                  value={singleMember}
+                  value={singleManager}
                   color="secondary"
-                  onChange={(e) => { setSingleMember(e.target.value) }}
+                  onChange={(e) => { setSingleManager(e.target.value) }}
                   sx={{ 'fieldSet': { border: '1px solid grey' } }}
                   InputLabelProps={{
                     style: {
-                      color: !editMode ? 'rgba(0, 0, 0, 0.38)' : 'unset'
+                      color: 'rgba(0, 0, 0, 0.38)'
                     }
                   }}
                   InputProps={{
-                    readOnly: !editMode,
-                    disabled: !editMode,
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton onClick={() => { handleAddMember() }} edge="end">
-                          {editMode && <AddIcon sx={{ fill: blueGrey[500] }} />}
+                        <IconButton onClick={() => { handleAddManager() }} edge="end">
+                          <AddIcon sx={{ fill: blueGrey[500] }} />
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                 />
               </div>
-            </Box>} */}
+              <Snackbar
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                open={showSnackbarMemberExists}
+                color="secondary"
+              >
+                <Alert severity="warning" sx={{ width: '100%' }}>
+                  Manager already exists!
+                </Alert>
+              </Snackbar>
+            </Box>}
         </>}
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}
     </Box>

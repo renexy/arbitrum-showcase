@@ -9,6 +9,20 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { TPoolData } from '@/types/typesPool';
 import { useRouter } from 'next/router';
 import GlobalContext from '@/hooks/context/ContextAggregator';
+import { convertUnixTimestamp, formatDate } from '@/global/functions';
+import { ethers } from 'ethers';
+
+const weiToEth = (weiValue: any) => {
+    if (!weiValue) return "0.0 ETH";
+
+    const ethValue = ethers.utils.formatEther(weiValue);
+    if (ethValue && ethValue.length > 11) {
+
+        return ethValue.slice(0, 5);
+    }
+
+    return `${ethValue} ETH`;
+};
 
 export default function PoolDetails() {
     const [value, setValue] = React.useState(0);
@@ -18,12 +32,27 @@ export default function PoolDetails() {
     const router = useRouter()
     const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
     const [active, setActive] = useState(false)
+    const [applicationData, setApplicationData] = useState<ApplicationData[] | undefined>(undefined)
 
-    const { loading, activePools, endedPools } = React.useContext(GlobalContext);
+    const { loading, activePools, endedPools, totalPoolApplications } = React.useContext(GlobalContext);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
+
+
+    const findApplications = () => {
+        if (totalPoolApplications && totalPoolApplications.length > 0) {
+            var foundApplications = totalPoolApplications.filter(x => x.poolId === selectedPool?.poolId)
+            if (foundApplications) {
+                setApplicationData(foundApplications)
+            }
+        }
+    }
+
+    useEffect(() => {
+        console.log(applicationData, "Lol")
+    }, [applicationData])
 
     React.useEffect(() => {
         const { id } = router.query;
@@ -33,6 +62,7 @@ export default function PoolDetails() {
                 const foundActive = activePools.find(pool => pool.poolId === id);
                 if (foundActive) {
                     setSelectedPool(foundActive);
+                    findApplications()
                     setActive(true);
                     return; // Exit the function once the active pool is found
                 }
@@ -42,6 +72,7 @@ export default function PoolDetails() {
                 const foundEnded = endedPools.find(pool => pool.poolId === id);
                 if (foundEnded) {
                     setSelectedPool(foundEnded);
+                    findApplications()
                     setActive(false);
                     return; // Exit the function once the ended pool is found
                 }
@@ -51,7 +82,7 @@ export default function PoolDetails() {
             setSelectedPool(undefined);
             setActive(false);
         }
-    }, [router.query, activePools, endedPools]);
+    }, [router.query, activePools, endedPools, totalPoolApplications]);
 
 
     return (
@@ -70,47 +101,49 @@ export default function PoolDetails() {
                 textColor="secondary"
                 indicatorColor="secondary" value={value} onChange={handleChange} aria-label="basic tabs example">
                 <Tab color="secondary" label="Pool details" />
-                <Tab color="secondary" label="Applications" />
+                {applicationData && applicationData.length > 0 && <Tab color="secondary" label="Applications" />}
             </Tabs>
             }
             {value === 0 && !showApplyForm && selectedPool &&
                 <DisplayPoolInfo selectedPool={selectedPool} active={active} />}
 
-            {value === 1 && !showApplyForm && <Grid container spacing={2} sx={{ overflow: 'auto' }}>
-                {applications.map((item) => (
-                    <Grid key={item} item xs={12} sm={6} md={4} lg={3}>
-                        <Card sx={{ cursor: 'pointer' }}>
-                            <CardMedia
-                                component="img"
-                                height="125"
-                                image={fallbackImageURL}
-                                alt="Random"
-                                style={{ objectFit: 'cover' }}
-                            />
-                            <CardContent>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <div className={GridModuleCss.colBreak}>
-                                        <Typography sx={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
-                                            test</Typography>
+            {value === 1 && applicationData && applicationData[0] && applicationData[0].microGrantRecipients &&
+                applicationData[0].microGrantRecipients.length > 0
+                && !showApplyForm && <Grid container spacing={2} sx={{ overflow: 'auto' }}>
+                    {applicationData[0].microGrantRecipients.map((item, index) => (
+                        <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
+                            <Card sx={{ cursor: 'pointer' }}>
+                                <CardMedia
+                                    component="img"
+                                    height="125"
+                                    image={item?.metadata?.bannerImage || fallbackImageURL}
+                                    alt="Random"
+                                    style={{ objectFit: 'cover' }}
+                                />
+                                <CardContent>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <div className={GridModuleCss.colBreak}>
+                                            <Typography sx={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
+                                                {item?.metadata?.metadata?.name || "/"}</Typography>
+                                        </div>
+                                        <div className={GridModuleCss.colBreak}>
+                                            <Typography sx={{ fontWeight: 'bold' }}>Submitted on</Typography>
+                                            <Typography>{formatDate(item?.blockTimestamp) || '/'}</Typography>
+                                        </div>
+                                        <div className={GridModuleCss.colBreak}>
+                                            <Typography sx={{ fontWeight: 'bold' }}>Amount</Typography>
+                                            <Typography>{weiToEth(item?.metadata?.application?.requestedAmount)}</Typography>
+                                        </div>
+                                        <div className={GridModuleCss.colBreak}>
+                                            <Typography sx={{ fontWeight: 'bold' }}>Status</Typography>
+                                            <Typography>{item?.metadata?.status || 'Pending'}</Typography>
+                                        </div>
                                     </div>
-                                    <div className={GridModuleCss.colBreak}>
-                                        <Typography sx={{ fontWeight: 'bold' }}>Submitted on</Typography>
-                                        <Typography>1/4/2024</Typography>
-                                    </div>
-                                    <div className={GridModuleCss.colBreak}>
-                                        <Typography sx={{ fontWeight: 'bold' }}>Amount</Typography>
-                                        <Typography>0 ETH</Typography>
-                                    </div>
-                                    <div className={GridModuleCss.colBreak}>
-                                        <Typography sx={{ fontWeight: 'bold' }}>Status</Typography>
-                                        <Typography>pending</Typography>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
             }
             {showApplyForm && <ApplicationForm></ApplicationForm>}
             {value === 0 && active && !showApplyForm && selectedPool && <Button

@@ -137,7 +137,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
     //console.log("refetchedProfilesData", refetchedProfilesData)
     //console.log("refetchedMemberProfilesData", refetchedMemberProfilesData)
-  
+
     // Apply the transformations to the refetched data
     const transformedRefetchedProfiles = transformProfileData(refetchedProfilesData.profiles);
     const transformedRefetchedMemberProfiles = transformProfileData(refetchedMemberProfilesData.profiles);
@@ -254,7 +254,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
     try {
       const response = await fetchPools(graphqlQuery, 25, 0);
-    
+
       if (type === TPoolType.UPCOMING) {
         pools = response.upcomingMicroGrants;
         console.log("upcomingMicroGrants", pools);
@@ -265,12 +265,12 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         pools = response.endedMicroGrants;
         console.log("endedMicroGrants", pools);
       }
-    
+
       if (!pools) {
         console.log("Pools length is zero");
         return;
       }
-    
+
       for (const pool of pools) {
         let metadata: TPoolMetadata;
         try {
@@ -290,7 +290,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       }
     } catch (error) {
       console.log("Error fetching pools: ", error);
-    }    
+    }
 
     //console.log("SALGMAOSLGMAD", pools)
     return pools;
@@ -305,7 +305,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
       const allPools = [...activePools, ...endedPools];
       const totalApplications: TotalApplications = [];
-  
+
       for (const pool of allPools) {
         try {
           const response = await fetch('/api/applications', {
@@ -316,19 +316,19 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
               poolId: pool.poolId,
             }),
           });
-  
+
           if (!response.ok) {
             throw new Error(`Network response was not ok for poolId ${pool.poolId}`);
           }
-  
+
           const data: ApplicationData = await response.json();
           totalApplications.push(data);
-  
+
         } catch (error) {
           console.error("Error fetching applications:", error);
         }
       }
-  
+
       return totalApplications;
     };
 
@@ -345,11 +345,11 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
                 applicationId: recipient.recipientId,
               }),
             });
-    
+
             if (!response.ok) {
               throw new Error(`Network response was not ok for recipientId ${recipient.recipientId}`);
             }
-    
+
             const metadata = await response.json();
             // Append the metadata to the recipient
             recipient.metadata = metadata;
@@ -364,13 +364,11 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     fetchApplications().then(totalApplications => {
       appendMetadataToApplications(totalApplications || []).then(totalPoolApplicationsUpdated => {
         setTotalPoolApplications(totalApplications || [])
-        console.log("Total Applications", totalApplications);
-
       });
-   
+
     });
-  
-  }, [activePools, endedPools, chain?.id]);  
+
+  }, [activePools, endedPools, chain?.id]);
 
   const fetchData = async () => {
     // const upcomingPools = await getPools(TPoolType.UPCOMING);
@@ -395,7 +393,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   useEffect(() => {
     // Function to filter pools based on the selected profile
     const filterPools = (pools: TPoolData[] | undefined) => pools?.filter(pool => pool.pool.profile.profileId === selectedProfileHash);
-  
+
     console.log("filterPools(endedPools)", endedPools)
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
@@ -424,17 +422,17 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       // Refetching data and handling the result
       const { data } = await refetchPoolManagers({ poolId: selectedPool?.poolId || '' });
       const addresses = extractAddresses(data);
-  
+
       //console.log("refetchedMemberProfilesData", data);
       //console.log("transformedPoolManagers", addresses);
-  
+
       setPoolManagersList(addresses);
       setHasPoolManagers(addresses.length > 0);
     } catch (error) {
       console.error("Error during refetching:", error);
     }
   }
-  
+
   useEffect(() => {
     refetchManagers();
   }, [selectedPool]);

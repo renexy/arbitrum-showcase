@@ -120,6 +120,7 @@ type MicroGrantRecipient = {
   isUsingRegistryAnchor: boolean;
   metadataPointer: string;
   recipientAddress: string;
+  metadata: any;
   recipientId: string;
   requestedAmount: string;
   status: string;

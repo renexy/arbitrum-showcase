@@ -41,25 +41,20 @@ export default function PoolDetails() {
     };
 
 
-    const findApplications = () => {
+    const findApplications = (find: string) => {
         if (totalPoolApplications && totalPoolApplications.length > 0) {
-            var foundApplications = totalPoolApplications.filter(x => x.poolId === selectedPool?.poolId)
-            console.log(totalPoolApplications, "lol")
+            var foundApplications = totalPoolApplications.filter(x => x.poolId === find)
             if (foundApplications) {
                 setApplicationData(foundApplications)
             }
         }
     }
 
-    useEffect(() => {
-        if (selectedPool)
-            findApplications()
-    }, [selectedPool])
-
     React.useEffect(() => {
         const { id } = router.query;
 
         if (id) {
+            findApplications(id as string)
             if (activePools && activePools.length > 0) {
                 console.log('1')
                 const foundActive = activePools.find(pool => pool.poolId === id);

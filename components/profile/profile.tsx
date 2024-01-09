@@ -27,7 +27,7 @@ const copyToClipboard = (text: string) => {
 
 export default function Profile() {
     const [selectedProfile, setSelectedProfile] = useState<TransformedProfile | undefined>(undefined)
-    const { registry, signer, userProfiles, hasProfiles, selectedProfileHash, userMemberProfiles } = React.useContext(GlobalContext)
+    const { registry, signer, userProfiles, hasProfiles, selectedProfileHash, userMemberProfiles, totalPoolApplications } = React.useContext(GlobalContext)
     const [dialogOpenAdd, setDialogOpenAdd] = useState(false)
     const [dialogAcceptOwnership, setDialogAcceptOwnership] = useState(false)
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
@@ -496,6 +496,7 @@ export default function Profile() {
             width: 'auto', minWidth: '100%', gap: '18px', justifyContent: 'flex-start',
             display: 'flex', flexDirection: 'column', flex: 1, padding: '12px', overflow: 'auto'
         }}>
+            <button onClick={() => {console.log("totalPoolApplications", totalPoolApplications)}}>Nigga</button>
             {!selectedProfile && <Stack spacing={1}>
                 <Skeleton variant="rectangular" width={210} height={60} />
                 <Skeleton variant="rectangular" width={40} height={40} />

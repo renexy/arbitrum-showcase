@@ -296,79 +296,84 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     return pools;
   }
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      if (!activePools || !endedPools || !chain?.id) {
-        console.log("No active/ended pools or chainId found")
-        return;
+  const fetchApplications = async (allPools: TPoolData[]) => {
+    if (!activePools || !endedPools || !chain?.id) {
+      console.log("No active/ended pools or chainId found")
+      return;
+    }
+
+    const totalApplications: TotalApplications = [];
+    console.log("fetchApplicationsFunction")
+    console.log("allPools", allPools)
+
+    for (const pool of allPools) {
+      try {
+        const response = await fetch('/api/applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chainId: chain?.id.toString(),
+            poolId: pool.poolId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok for poolId ${pool.poolId}`);
+        }
+
+        const data: ApplicationData = await response.json();
+        totalApplications.push(data);
+
+      } catch (error) {
+        console.error("Error fetching applications:", error);
       }
+    }
 
-      const allPools = [...activePools, ...endedPools];
-      const totalApplications: TotalApplications = [];
+    console.log("totalApplications", totalApplications)
+    return totalApplications;
+  };
 
-      for (const pool of allPools) {
+  const appendMetadataToApplications = async (totalPoolApplicationsUpdated: TotalApplications) => {
+    for (const application of totalPoolApplicationsUpdated) {
+      for (const recipient of application.microGrantRecipients) {
         try {
-          const response = await fetch('/api/applications', {
+          const response = await fetch('/api/applicationMetadata', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              chainId: chain?.id.toString(),
-              poolId: pool.poolId,
+              chainId: application.chainId,
+              poolId: application.poolId,
+              applicationId: recipient.recipientId,
             }),
           });
 
           if (!response.ok) {
-            throw new Error(`Network response was not ok for poolId ${pool.poolId}`);
+            throw new Error(`Network response was not ok for recipientId ${recipient.recipientId}`);
           }
 
-          const data: ApplicationData = await response.json();
-          totalApplications.push(data);
-
+          const metadata = await response.json();
+          // Append the metadata to the recipient
+          recipient.metadata = metadata;
         } catch (error) {
-          console.error("Error fetching applications:", error);
+          console.error("Error fetching additional metadata:", error);
         }
       }
-
-      return totalApplications;
-    };
-
-    const appendMetadataToApplications = async (totalPoolApplicationsUpdated: TotalApplications) => {
-      for (const application of totalPoolApplicationsUpdated) {
-        for (const recipient of application.microGrantRecipients) {
-          try {
-            const response = await fetch('/api/applicationMetadata', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chainId: application.chainId,
-                poolId: application.poolId,
-                applicationId: recipient.recipientId,
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error(`Network response was not ok for recipientId ${recipient.recipientId}`);
-            }
-
-            const metadata = await response.json();
-            // Append the metadata to the recipient
-            recipient.metadata = metadata;
-          } catch (error) {
-            console.error("Error fetching additional metadata:", error);
-          }
-        }
-      }
-      return totalPoolApplicationsUpdated;
     }
 
-    fetchApplications().then(totalApplications => {
+    console.log("totalPoolApplicationsUpdated", totalPoolApplicationsUpdated)
+    return totalPoolApplicationsUpdated;
+  }
+
+  const fetchMetadata = async (allPools: TPoolData[]) => {
+    console.log("fired")
+
+    fetchApplications(allPools).then(totalApplications => {
       appendMetadataToApplications(totalApplications || []).then(totalPoolApplicationsUpdated => {
-        setTotalPoolApplications(totalApplications || [])
-      });
-
+        setTotalPoolApplications(totalPoolApplicationsUpdated || [])
+        console.log("totalPoolApplicationsUpdated", totalPoolApplicationsUpdated)
+        });
     });
-
-  }, [activePools, endedPools, chain?.id]);
+  }
 
   const fetchData = async () => {
     // const upcomingPools = await getPools(TPoolType.UPCOMING);
@@ -383,6 +388,9 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     setActivePools(filteredActivePools);
     setEndedPools(filteredEndedPools);
     setLoading(false)
+    console.log("fetching metadata")
+    const allPools = [...filteredActivePools || [], ...filteredEndedPools || []]
+    fetchMetadata(allPools);
 
     //console.log("upcomingPools", upcomingPools)
     //console.log("activePools", activePools)
@@ -489,7 +497,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       isPoolAdmin,
       selectedPool, changeSelectedPool, refetchPools,
       poolManagersList, hasPoolManagers, refetchPoolManagers,
-      totalPoolApplications,
+      totalPoolApplications
     }}>
       {children}
     </GlobalContext.Provider>

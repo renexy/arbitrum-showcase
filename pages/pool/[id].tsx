@@ -57,6 +57,8 @@ export default function PoolDetails() {
     React.useEffect(() => {
         const { id } = router.query;
 
+        console.log(totalPoolApplications, "Total pool applications")
+
         if (id) {
             if (activePools && activePools.length > 0) {
                 const foundActive = activePools.find(pool => pool.poolId === id);

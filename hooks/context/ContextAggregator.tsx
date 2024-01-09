@@ -341,25 +341,24 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   }, [selectedProfileHash, activePools, endedPools]); // Re-run when the selected profile or pools list changes
 
   const refetchManagers = async () => {
-      
-    const { poolManagers: refetchedMemberProfilesData, hasManagers: refetchedHasManagers } = await refetchPoolManagers();
-
-    const transformedPoolManagers = extractAddresses(refetchedMemberProfilesData)
-
-    if (refetchedHasManagers) {
-      setPoolManagersList(transformedPoolManagers)
-      setHasPoolManagers(refetchedHasManagers)
-      //console.log("poolManagers", transformedPoolManagers)
-    } else {
-      setPoolManagersList(transformedPoolManagers);
-      setHasPoolManagers(refetchedHasManagers);
-      //console.log("poolManagers", transformedPoolManagers)
+    try {
+      // Refetching data and handling the result
+      const { data } = await refetchPoolManagers({ poolId: selectedPool?.poolId || '' });
+      const addresses = extractAddresses(data);
+  
+      console.log("refetchedMemberProfilesData", data);
+      console.log("transformedPoolManagers", addresses);
+  
+      setPoolManagersList(addresses);
+      setHasPoolManagers(addresses.length > 0);
+    } catch (error) {
+      console.error("Error during refetching:", error);
     }
   }
-
+  
   useEffect(() => {
     refetchManagers();
-  }, [selectedPool])
+  }, [selectedPool]);
 
   useEffect(() => {
 

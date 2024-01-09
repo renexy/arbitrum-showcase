@@ -169,7 +169,7 @@ profiles ? profiles.map(profile => {
   };
 }) : [];
 
-// Fetches owned profiles given user address
+// Fetches selected pool managers
 export function fetchPoolManagers(poolId: string): profileMembersReturn {
   const { loading, error, data, refetch } = useQuery(GET_POOL_MANAGERS, {
     variables: { poolId },

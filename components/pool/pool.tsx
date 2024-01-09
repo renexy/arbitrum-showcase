@@ -130,6 +130,7 @@ export default function Pool() {
 
   React.useEffect(() => {
     setPoolManagers(poolManagersList)
+    console.log("poolManagersList: ", poolManagersList);
   }, [poolManagersList])
 
   return (

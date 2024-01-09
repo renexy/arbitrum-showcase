@@ -248,61 +248,26 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     console.log(graphqlQuery)
 
     try {
-      const response = await fetchPools(graphqlQuery, 10, 0)
-
+      const response = await fetchPools(graphqlQuery, 25, 0);
+    
       if (type === TPoolType.UPCOMING) {
         pools = response.upcomingMicroGrants;
-        console.log("activeMicroGrants", pools)
+        console.log("upcomingMicroGrants", pools);
       } else if (type === TPoolType.ACTIVE) {
         pools = response.activeMicroGrants;
-        console.log("activeMicroGrants", pools)
+        console.log("activeMicroGrants", pools);
       } else if (type === TPoolType.ENDED) {
         pools = response.endedMicroGrants;
-        console.log("endedMicroGrants", pools)
+        console.log("endedMicroGrants", pools);
       }
-
-      try {
-          const response = await fetchPools(graphqlQuery, 10, 0)
-
-          if (type === TPoolType.UPCOMING) {
-              pools = response.upcomingMicroGrants;
-              console.log("activeMicroGrants", pools)
-          } else if (type === TPoolType.ACTIVE) {
-              pools = response.activeMicroGrants;
-              console.log("activeMicroGrants", pools)
-          } else if (type === TPoolType.ENDED) {
-              pools = response.endedMicroGrants;
-              console.log("endedMicroGrants", pools)
-          }
-
-          console.log("POOxzxbLS", pools)
-
-          if (!pools) {
-              console.log("Pools length is zero")
-              return;
-          }
-
-          for (const pool of pools) {
-              let metadata: TPoolMetadata;
-              try {
-                  const pointer = pool.pool.metadataPointer.toString();
-                  metadata = await ipfsClient.fetchJson(pointer);
-                  pool.pool.metadata = metadata;
-                  if (metadata.base64Image) {
-                      let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
-                      pool.pool.poolBanner = poolBanner.data;
-                  }
-                  if (!metadata.name) {
-                      metadata.name = `Pool ${pool.poolId}`;
-                  }
-              } catch (error) {
-                  console.log("IPFS", "Unable to fetch metadata", error);
-              }
-          }
-      } catch (error) {
-          console.log("Error fetching pools: ", error);
+    
+      console.log("POOLS", pools);
+    
+      if (!pools) {
+        console.log("Pools length is zero");
+        return;
       }
-
+    
       for (const pool of pools) {
         let metadata: TPoolMetadata;
         try {
@@ -322,7 +287,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       }
     } catch (error) {
       console.log("Error fetching pools: ", error);
-    }
+    }    
+
     //console.log("SALGMAOSLGMAD", pools)
     return pools;
   }
@@ -351,6 +317,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     // Function to filter pools based on the selected profile
     const filterPools = (pools: TPoolData[] | undefined) => pools?.filter(pool => pool.pool.profile.profileId === selectedProfileHash);
   
+    console.log("filterPools(endedPools)", endedPools)
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
@@ -368,8 +335,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         console.log("isPoolAdmin", isPoolAdmin)
         setIsPoolAdmin(isPoolAdmin);
       }
-
-      console.log("test")
     };
 
     fetchPoolAdminStatus();
@@ -384,11 +349,11 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     if (refetchedHasManagers) {
       setPoolManagersList(transformedPoolManagers)
       setHasPoolManagers(refetchedHasManagers)
-      console.log("poolManagers", transformedPoolManagers)
+      //console.log("poolManagers", transformedPoolManagers)
     } else {
       setPoolManagersList(transformedPoolManagers);
       setHasPoolManagers(refetchedHasManagers);
-      console.log("poolManagers", transformedPoolManagers)
+      //console.log("poolManagers", transformedPoolManagers)
     }
   }
 

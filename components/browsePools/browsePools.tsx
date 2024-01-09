@@ -54,6 +54,10 @@ const BrowsePools = () => {
         }
     }, [search])
 
+    useEffect(() => {
+        console.log(endedPools)
+    }, [filteredPools])
+
     return (
         <>
             {!loading && <Box sx={{ alignSelf: 'flex-start', paddingBottom: { xs: '24px', sm: '8px' } }}>

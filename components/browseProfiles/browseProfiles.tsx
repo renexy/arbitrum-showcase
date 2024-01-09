@@ -11,6 +11,7 @@ import { convertUnixTimestamp } from '@/global/functions';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PersonIcon from '@mui/icons-material/Person';
 import AnchorIcon from '@mui/icons-material/Anchor';
+import HailIcon from '@mui/icons-material/Hail';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -71,7 +72,6 @@ const BrowseProfiles = () => {
 
     return (
         <>
-
             {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', alignSelf: 'flex-start', padding: '18px 0', flexWrap: 'wrap' }}>
                     <TextField
@@ -112,6 +112,13 @@ const BrowseProfiles = () => {
                             <Tooltip title="Anchor">
                                 <IconButton>
                                     <AnchorIcon sx={{ fill: alignment === 'anchor' ? '#607d8b' : '' }} />
+                                </IconButton>
+                            </Tooltip>
+                        </ToggleButton>
+                        <ToggleButton value="owner" aria-label="left aligned">
+                            <Tooltip title="Owner">
+                                <IconButton>
+                                    <HailIcon sx={{ fill: alignment === 'anchor' ? '#607d8b' : '' }} />
                                 </IconButton>
                             </Tooltip>
                         </ToggleButton>

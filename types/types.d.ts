@@ -119,8 +119,8 @@ type MicroGrantRecipient = {
   blockTimestamp: string;
   isUsingRegistryAnchor: boolean;
   metadataPointer: string;
-  recipientAddress: string;
   metadata: any;
+  recipientAddress: string;
   recipientId: string;
   requestedAmount: string;
   status: string;

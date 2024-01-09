@@ -76,7 +76,7 @@ export type TPoolMetadata = {
   name: string;
   website: string;
   description: string;
-  base64Image?: string;
+  base64Image?: any;
 };
 
 export type TMicroGrantRecipient = {

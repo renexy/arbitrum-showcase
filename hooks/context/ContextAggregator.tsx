@@ -203,7 +203,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = allo.contract.address;
     const contractAbi = allo.contract.abi;
-    console.log("contractAddress", contractAddress)
     const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
 
     const isPoolAdmin = await readOnlyContract.isPoolAdmin(poolId, address);
@@ -257,13 +256,10 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
       if (type === TPoolType.UPCOMING) {
         pools = response.upcomingMicroGrants;
-        console.log("upcomingMicroGrants", pools);
       } else if (type === TPoolType.ACTIVE) {
         pools = response.activeMicroGrants;
-        console.log("activeMicroGrants", pools);
       } else if (type === TPoolType.ENDED) {
         pools = response.endedMicroGrants;
-        console.log("endedMicroGrants", pools);
       }
 
       if (!pools) {
@@ -277,13 +273,21 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
           const pointer = pool.pool.metadataPointer.toString();
           metadata = await ipfsClient.fetchJson(pointer);
           pool.pool.metadata = metadata;
+
           if (metadata.base64Image) {
-            let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
-            pool.pool.poolBanner = poolBanner.data;
+            if (metadata.base64Image?.IpfsHash) {
+              let poolBanner = await ipfsClient.fetchJson(metadata.base64Image?.IpfsHash);
+              pool.pool.poolBanner = poolBanner.data;
+            } else {
+              let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
+              pool.pool.poolBanner = poolBanner.data;
+            }
           }
+
           if (!metadata.name) {
             metadata.name = `Pool ${pool.poolId}`;
           }
+
         } catch (error) {
           console.log("IPFS", "Unable to fetch metadata", error);
         }
@@ -303,8 +307,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     }
 
     const totalApplications: TotalApplications = [];
-    console.log("fetchApplicationsFunction")
-    console.log("allPools", allPools)
 
     for (const pool of allPools) {
       try {
@@ -329,7 +331,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       }
     }
 
-    console.log("totalApplications", totalApplications)
     return totalApplications;
   };
 
@@ -348,7 +349,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
           });
 
           if (!response.ok) {
-            throw new Error(`Network response was not ok for recipientId ${recipient.recipientId}`);
+            //throw new Error(`Network response was not ok for recipientId ${recipient.recipientId}`);
           }
 
           const metadata = await response.json();
@@ -360,19 +361,26 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       }
     }
 
-    console.log("totalPoolApplicationsUpdated", totalPoolApplicationsUpdated)
     return totalPoolApplicationsUpdated;
   }
 
   const fetchMetadata = async (allPools: TPoolData[]) => {
-    console.log("fired")
 
-    fetchApplications(allPools).then(totalApplications => {
-      appendMetadataToApplications(totalApplications || []).then(totalPoolApplicationsUpdated => {
-        setTotalPoolApplications(totalPoolApplicationsUpdated || [])
-        console.log("totalPoolApplicationsUpdated", totalPoolApplicationsUpdated)
-        });
-    });
+    const applications = await fetchApplications(allPools)
+
+    if (!applications) {
+      console.log("No applications found 1")
+      return;
+    }
+
+    const totalPoolApplicationsLatest = await appendMetadataToApplications(applications || [])
+
+    if (!totalPoolApplicationsLatest) {
+      console.log("No applications found 2")
+      return;
+    }
+
+    setTotalPoolApplications(totalPoolApplicationsLatest || [])
   }
 
   const fetchData = async () => {
@@ -388,7 +396,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     setActivePools(filteredActivePools);
     setEndedPools(filteredEndedPools);
     setLoading(false)
-    console.log("fetching metadata")
     const allPools = [...filteredActivePools || [], ...filteredEndedPools || []]
     fetchMetadata(allPools);
 
@@ -402,7 +409,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     // Function to filter pools based on the selected profile
     const filterPools = (pools: TPoolData[] | undefined) => pools?.filter(pool => pool.pool.profile.profileId === selectedProfileHash);
 
-    console.log("filterPools(endedPools)", endedPools)
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
@@ -411,7 +417,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
     const fetchPoolAdminStatus = async () => {
       if (!selectedPool) {
-        console.log("SelectedPool is undefined")
+        //console.log("SelectedPool is undefined")
         return;
       }
 

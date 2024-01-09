@@ -507,6 +507,7 @@ export default function Profile() {
                 <Skeleton variant="rounded" width={210} height={60} />
             </Stack>
             }
+            <button onClick={() => {console.log(totalPoolApplications)}}>testestse</button>
             {selectedProfile && <>
                 <Box sx={{
                     width: '100%', minWidth: '100%', display: 'flex', alignItems: 'center',

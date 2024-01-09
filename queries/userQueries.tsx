@@ -73,8 +73,8 @@ export const GET_POOL_MANAGERS = gql`
 export function fetchOwnedProfiles(userAddress: string): ownedProfilesReturn {
   const { loading, error, data, refetch } = useQuery(GET_PROFILES_BY_USER_ADDRESS, {
     variables: { userAddress },
-    onCompleted: (data: any) => console.log("Owned Profiles Query completed:", data),
-    onError: (error: ApolloError) => console.error("Owned Profiles Query error:", error),
+    onCompleted: (data: any) => console.log(/*"Owned Profiles Query completed:", data*/),
+    onError: (error: ApolloError) => console.error(/*"Owned Profiles Query error:", error*/),
   });
 
   // Determine if profiles are available
@@ -93,8 +93,8 @@ export function fetchOwnedProfiles(userAddress: string): ownedProfilesReturn {
 export function fetchRoleIds(userAddress: string): RoleIdsResponse {
   const { loading, error, data, refetch } = useQuery(GET_USER_ROLES_BY_USER_ADDRESS, {
     variables: { userAddress },
-    onCompleted: (data: any) => console.log("Role IDs Query completed:", data),
-    onError: (error: ApolloError) => console.error("Role IDs Query error:", error),
+    onCompleted: (data: any) => console.log(/*"Role IDs Query completed:", data*/),
+    onError: (error: ApolloError) => console.error(/*"Role IDs Query error:", error*/),
   });
 
   // Determine if profiles are available
@@ -131,8 +131,8 @@ export function fetchMemberProfiles(userAddress: string): memberProfilesReturn {
 
   const { loading, error, data, refetch } = useQuery(GET_MEMBER_PROFILES_BY_IDS, {
     variables: { ids },
-    onCompleted: (data: any) => console.log("Member Profiles Query completed:", data),
-    onError: (error: ApolloError) => console.error("Member Profiles Query error:", error),
+    onCompleted: (data: any) => console.log(/*"Member Profiles Query completed:", data*/),
+    onError: (error: ApolloError) => console.error(/*"Member Profiles Query error:", error*/),
   });
 
   // Determine if profiles are available
@@ -173,14 +173,12 @@ profiles ? profiles.map(profile => {
 export function fetchPoolManagers(poolId: string): profileMembersReturn {
   const { loading, error, data, refetch } = useQuery(GET_POOL_MANAGERS, {
     variables: { poolId },
-    onCompleted: (data: any) => console.log("Owned Profiles Query completed:", data),
-    onError: (error: ApolloError) => console.error("Owned Profiles Query error:", error),
+    onCompleted: (data: any) => console.log(/*"Owned Profiles Query completed:", data*/),
+    onError: (error: ApolloError) => console.error(/*"Owned Profiles Query error:", error*/),
   });
 
   // Extract addresses from the data
   const addresses = extractAddresses(data)
-
-  console.log("Extracted addresses", addresses);
 
   return {
     loading,

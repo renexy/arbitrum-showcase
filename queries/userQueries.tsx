@@ -57,25 +57,16 @@ const GET_MEMBER_PROFILES_BY_IDS = gql`
 `;
 
 export const GET_POOL_MANAGERS = gql`
-query GetProfilesByUserAddress($userAddress: ID!) {
-  profiles(where: { owner: $userAddress }) {
-    id
-    name
-    owner {
-      id
-    }
-    anchor
-    metadata {
-      protocol
-      pointer
-    }
-    memberRole {
-      accounts {
+  query getPoolManagers($poolId: ID!) {
+    pool (id: $poolId) {
+      managerRole {
         id
+        accounts{
+          id
+        }
       }
     }
   }
-}
 `;
 
 // Fetches owned profiles given user address
@@ -179,21 +170,30 @@ profiles ? profiles.map(profile => {
 }) : [];
 
 // Fetches owned profiles given user address
-export function fetchPoolManagers(userAddress: string): ownedProfilesReturn {
-  const { loading, error, data, refetch } = useQuery(GET_PROFILES_BY_USER_ADDRESS, {
-    variables: { userAddress },
+export function fetchPoolManagers(poolId: string): profileMembersReturn {
+  const { loading, error, data, refetch } = useQuery(GET_POOL_MANAGERS, {
+    variables: { poolId },
     onCompleted: (data: any) => console.log("Owned Profiles Query completed:", data),
     onError: (error: ApolloError) => console.error("Owned Profiles Query error:", error),
   });
 
-  // Determine if profiles are available
-  const hasProfiles = data?.profiles && data.profiles.length > 0;
+  // Extract addresses from the data
+  const addresses = extractAddresses(data)
+
+  console.log("Extracted addresses", addresses);
 
   return {
     loading,
     error,
-    profiles: data ? transformProfileData(data.profiles) : [],
-    hasProfiles, // Indicates if profiles are available
+    poolManagers: addresses,
+    hasManagers: addresses.length > 0,
     refetch,
   };
+}
+
+export const extractAddresses = (data: any): string[] => {
+  return data?.pool?.managerRole?.accounts?.map((account: any) => {
+    const idParts = account.id.split("-");
+    return idParts.length > 1 ? idParts[1] : null;
+  }).filter((address: string | null) => address !== null) || [];
 }

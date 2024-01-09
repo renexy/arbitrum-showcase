@@ -80,3 +80,11 @@ interface RoleIdsResponse {
   hasMemberProfiles?: boolean;
   refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
 }
+
+type profileMembersReturn = {
+  loading: boolean;
+  error?: ApolloError;
+  poolManagers: string[];
+  hasManagers: boolean;
+  refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
+};

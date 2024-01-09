@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { useAccount } from 'wagmi';
 import { useNetwork } from "wagmi";
 import { ethers } from 'ethers';
-import { fetchOwnedProfiles, fetchMemberProfiles, transformProfileData } from '@/queries/userQueries';
+import { fetchOwnedProfiles, fetchMemberProfiles, transformProfileData, fetchPoolManagers, extractAddresses } from '@/queries/userQueries';
 import { TPoolData, TPoolMetadata } from "@/types/typesPool";
 import { getIPFSClient } from "@/services/ipfs";
 import { getActiveMicroGrantsQuery, getEndedMicroGrantsQuery, getUpcomingMicroGrantsQuery, graphqlEndpoint } from "@/queries/poolQuery";
@@ -39,6 +39,8 @@ interface GlobalContextState {
   isPoolAdmin: boolean;
   selectedPool: TPoolData | undefined;
   changeSelectedPool: (pool: TPoolData | undefined) => void;
+  poolManagersList: string[];
+  hasPoolManagers: boolean;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -63,7 +65,9 @@ const GlobalContext = createContext<GlobalContextState>({
   endedProfilePools: [],
   isPoolAdmin: false,
   selectedPool: undefined,
-  changeSelectedPool: (pool: TPoolData | undefined) => { }
+  changeSelectedPool: (pool: TPoolData | undefined) => { },
+  poolManagersList: [],
+  hasPoolManagers: false,
 });
 
 interface GlobalProviderProps {
@@ -104,9 +108,13 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
   const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
 
+  const [poolManagersList, setPoolManagersList] = useState<string[]>([]);
+  const [hasPoolManagers, setHasPoolManagers] = useState<boolean>(false)
+
   // Graphql
   const { loading: loadingOwnedProfiles, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
   const { memberProfiles, hasMemberProfiles, refetch: refetchMember } = fetchMemberProfiles(address || '');
+  const { poolManagers, hasManagers, refetch: refetchPoolManagers } = fetchPoolManagers(selectedPool?.poolId || '');
 
   const changeSelectedProfileHash = (hash: string) => {
     setSelectedProfileHash(hash)
@@ -240,7 +248,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     console.log(graphqlQuery)
 
     try {
-      const response = await fetchPools(graphqlQuery, 25, 0)
+      const response = await fetchPools(graphqlQuery, 10, 0)
 
       if (type === TPoolType.UPCOMING) {
         pools = response.upcomingMicroGrants;
@@ -346,8 +354,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     // Update state for active and inactive pools based on the selected profile
     setActiveProfilePools(filterPools(activePools));
     setEndedProfilePools(filterPools(endedPools));
-    console.log("filterPools(activePools)", filterPools(activePools))
-    console.log("filterPools(endedPools)", filterPools(endedPools))
+    //console.log("filterPools(activePools)", filterPools(activePools))
+    //console.log("filterPools(endedPools)", filterPools(endedPools))
 
     const fetchPoolAdminStatus = async () => {
       if (!selectedPool) {
@@ -367,7 +375,29 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     fetchPoolAdminStatus();
   }, [selectedProfileHash, activePools, endedPools]); // Re-run when the selected profile or pools list changes
 
+  const refetchManagers = async () => {
+      
+    const { poolManagers: refetchedMemberProfilesData, hasManagers: refetchedHasManagers } = await refetchPoolManagers();
+
+    const transformedPoolManagers = extractAddresses(refetchedMemberProfilesData)
+
+    if (refetchedHasManagers) {
+      setPoolManagersList(transformedPoolManagers)
+      setHasPoolManagers(refetchedHasManagers)
+      console.log("poolManagers", transformedPoolManagers)
+    } else {
+      setPoolManagersList(transformedPoolManagers);
+      setHasPoolManagers(refetchedHasManagers);
+      console.log("poolManagers", transformedPoolManagers)
+    }
+  }
+
   useEffect(() => {
+    refetchManagers();
+  }, [selectedPool])
+
+  useEffect(() => {
+
     if (chainId) {
       setRegistry(new Registry({ chain: chainId, rpc: window.ethereum }));
       setAllo(new Allo({ chain: chainId, rpc: window.ethereum }));
@@ -409,8 +439,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
     fetchData();
   }, [chainId, chain, address, isConnected, hasProfiles, hasMemberProfiles]);
 
-
-
   return (
     <GlobalContext.Provider value={{
       registry, allo, microStrategy, provider, signer, userProfiles, hasProfiles,
@@ -419,6 +447,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       activeProfilePools, endedProfilePools,
       isPoolAdmin,
       selectedPool, changeSelectedPool, refetchPools,
+      poolManagersList, hasPoolManagers
     }}>
       {children}
     </GlobalContext.Provider>

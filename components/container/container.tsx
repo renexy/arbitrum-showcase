@@ -36,6 +36,8 @@ import CloudIcon from '@mui/icons-material/Cloud';
 import BrowsePools from '../browsePools/browsePools';
 import { useRouter } from 'next/router';
 import PoolDetails from '@/pages/pool/[id]';
+import BrowseProfiles from '../browseProfiles/browseProfiles';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const drawerWidth = 240;
 
@@ -219,18 +221,18 @@ export default function Container() {
                 </DrawerHeader>
                 <Divider />
                 <List>
-                    {['Profile', 'Pool', 'Browse pools'].map((text, index) => (
+                    {['Profile', 'Pool', 'Browse pools', 'Browse profiles'].map((text, index) => (
                         <ListItem key={text} disablePadding sx={{ display: 'block' }}
                             onClick={() => {
                                 if (selectedProfileHash) { router.replace('/'); setMenuSelected(text) }
                                 else {
-                                    if (!selectedProfileHash && text === 'Browse pools') {
+                                    if (!selectedProfileHash && (text === 'Browse pools' || text === 'Browse profiles')) {
                                         router.replace('/');
                                         setMenuSelected(text)
                                     }
                                 }
                             }}>
-                            <ListItemButton disabled={!selectedProfileHash && text !== 'Browse pools'}
+                            <ListItemButton disabled={!selectedProfileHash && (text !== 'Browse pools' && text !== 'Browse profiles')}
                                 sx={{
                                     minHeight: 48,
                                     justifyContent: open ? 'initial' : 'center',
@@ -245,8 +247,10 @@ export default function Container() {
                                     }}
                                 >
                                     {text === 'Profile' ? <AccountBoxIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> :
-                                        text === 'Browse pools' ? <CloudIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> :
-                                            <FolderIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} />}
+                                        text === 'Browse pools'
+                                            ? <CloudIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> :
+                                            text === 'Browse profiles' ? <AccountCircleIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} /> :
+                                                <FolderIcon sx={{ fill: menuSelected === text ? '#607d8b' : '' }} />}
                                 </ListItemIcon>
                                 <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} className={`${text === menuSelected ? 'selected' : ''}`} />
                             </ListItemButton>
@@ -283,7 +287,7 @@ export default function Container() {
 
             <Box component="main" sx={{
                 flexGrow: 1, flex: 1, p: 3, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: menuSelected === 'Browse pools' ? 'flex-start' : 'center',
+                alignItems: 'center', justifyContent: menuSelected === 'Browse pools' || menuSelected === 'Browse profiles' ? 'flex-start' : 'center',
                 textAlign: 'center'
             }}>
                 <DrawerHeader />
@@ -296,6 +300,7 @@ export default function Container() {
                 {menuSelected === 'Pool' && <Pool />}
                 {menuSelected === 'Create' && <CreateProfile></CreateProfile>}
                 {menuSelected === 'Browse pools' && <BrowsePools></BrowsePools>}
+                {menuSelected === 'Browse profiles' && <BrowseProfiles></BrowseProfiles>}
                 {router.pathname.includes('/pool/') && menuSelected === '' && <PoolDetails></PoolDetails>}
             </Box>
         </Box>

@@ -32,12 +32,12 @@ export default async function handler(
 
     if (!metadata.name) metadata.name = `Pool ${application.microGrant.poolId}`;
 
-    /*try {
+    try {
       const bannerImage = await ipfsClient.fetchJson(metadata.base64Image);
       banner = bannerImage!.data ? bannerImage.data : "";
     } catch (error) {
       console.error("unable to load banner");
-    }*/
+    }
 
     const finalMetadata = {
       application: application,

@@ -40,7 +40,7 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     const [amount, setAmount] = useState<number>(0);
-    
+
     const handleFundPool = (args?: any) => {
         if (args && args === 'restore') {
             setCreateProfileTransactionStatus('confirm')
@@ -217,10 +217,6 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 </Alert>
             </Snackbar>
         </div>
-
-        <Button variant="outlined" color="secondary" sx={{ width: '200px', alignSelf: 'flex-end' }} onClick={() => { setDialogOpen(true) }}>
-            <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>Fund pool</Typography>
-        </Button>
 
         <BaseDialog open={dialogOpen} amount={amount} changeAmount={(am: number) => setAmount(am)}
             onClose={() => { setDialogOpen(!dialogOpen) }} message='Fund pool'

@@ -165,3 +165,5 @@ interface Profile {
 }
 
 type ProfilesArray = Profile[];
+
+type ArrayProfilesArray = ProfilesArray[]

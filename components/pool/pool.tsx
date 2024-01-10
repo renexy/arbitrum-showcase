@@ -313,22 +313,22 @@ export default function Pool() {
     const contractAddress = selectedPool?.strategy || '';
     console.log("contractAddress", contractAddress);
     console.log("micro_abi", micro_abi);
-  
+
     // Attach the signer to the contract
     const microGrantStrategyContract = new ethers.Contract(contractAddress, micro_abi, signer);
-  
+
     try {
       setCreateProfileTransactionStatus('signature');
-  
+
       // Combine addresses and set flags accordingly
       const addresses = [...poolAllocatorsToAdd, ...poolAllocatorsToRemove];
       const flags = [...poolAllocatorsToAdd.map(() => true), ...poolAllocatorsToRemove.map(() => false)];
-  
+
       // Directly call the batchSetAllocator function on the contract
       const transactionResponse = await microGrantStrategyContract.batchSetAllocator(addresses, flags);
-  
+
       setCreateProfileTransactionStatus('transaction');
-  
+
       try {
         const receipt = await transactionResponse.wait();
         if (receipt.status === 1) {
@@ -341,12 +341,12 @@ export default function Pool() {
         console.error("Transaction error:", error);
         setCreateProfileTransactionStatus('failed');
       }
-  
+
     } catch (error) {
       console.error("user rejected or error occurred", error);
       setCreateProfileTransactionStatus('failed');
     }
-  };  
+  };
 
   const handleUpdate = async (args: any) => {
     if (args && args === 'restore') {
@@ -362,7 +362,7 @@ export default function Pool() {
       return;
     }
 
-    if (poolManagersToRemove.length > 0) 
+    if (poolManagersToRemove.length > 0)
       await handleRemoveManagerFunc(allo, signer)
 
     if (poolManagersToAdd.length > 0)
@@ -495,37 +495,6 @@ export default function Pool() {
                   }}
                 />
               </div>
-              <Snackbar
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                open={showSnackbarMemberExists}
-                color="secondary"
-              >
-                <Alert severity="warning" sx={{ width: '100%' }}>
-                  Manager already exists!
-                </Alert>
-              </Snackbar>
-              <Snackbar
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                open={showSnackbarManagerIsOwner}
-                color="secondary"
-              >
-                <Alert severity="warning" sx={{ width: '100%' }}>
-                  Owner can&apos;t be member!
-                </Alert>
-              </Snackbar>
-              <Snackbar
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                open={showSnackbarAllo}
-                color="secondary"
-              >
-                <Alert severity="warning" sx={{ width: '100%' }}>
-                  Allo not initialized!
-                </Alert>
-              </Snackbar>
-
-              <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
-                dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
-                message={'Are you sure you want to manage allocators?'}></BaseDialog>
             </Box>}
         </>}
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}
@@ -623,6 +592,38 @@ export default function Pool() {
           ))}
         </Grid>
       }
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        open={showSnackbarMemberExists}
+        color="secondary"
+      >
+        <Alert severity="warning" sx={{ width: '100%' }}>
+          Manager already exists!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        open={showSnackbarManagerIsOwner}
+        color="secondary"
+      >
+        <Alert severity="warning" sx={{ width: '100%' }}>
+          Owner can&apos;t be member!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        open={showSnackbarAllo}
+        color="secondary"
+      >
+        <Alert severity="warning" sx={{ width: '100%' }}>
+          Allo not initialized!
+        </Alert>
+      </Snackbar>
+
+      <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
+        dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
+        message={'Are you sure you want to manage allocators?'}></BaseDialog>
       <BaseDialog open={dialogVoteOpen} onClose={() => { setDialogVoteOpen(!dialogVoteOpen) }}
         dialogVariant={'transaction'} status={voteTransactionStatus} callback={(e) => { handleVote(e) }}
         message={'Are you sure you want to vote?'}></BaseDialog>

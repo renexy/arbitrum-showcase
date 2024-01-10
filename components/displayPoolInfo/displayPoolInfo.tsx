@@ -40,11 +40,7 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     const [amount, setAmount] = useState<number>(0);
-
-    useEffect(() => {
-        console.log(amount)
-    }, [amount])
-
+    
     const handleFundPool = (args?: any) => {
         if (args && args === 'restore') {
             setCreateProfileTransactionStatus('confirm')

@@ -3,11 +3,13 @@ import { configureChains, createConfig } from "wagmi";
 import { publicProvider } from 'wagmi/providers/public';
 import {
   arbitrum,
+  arbitrumNova,
+  arbitrumSepolia,
   goerli,
 } from 'wagmi/chains';
 
 export const { chains, publicClient } = configureChains(
-  [arbitrum, goerli],
+  [arbitrum, arbitrumSepolia, goerli],
   [
     publicProvider()
   ]

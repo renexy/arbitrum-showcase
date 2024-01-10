@@ -161,7 +161,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   }
 
   const getPendingOwner = async (registry: any, profiles: TransformedProfile[], memberProfiles: TransformedProfile[]) => {
-    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const rpc = chain?.id === 5 ? 'https://rpc.goerli.eth.gateway.fm' : 'https://sepolia-rollup.arbitrum.io/rpc';
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = registry.contract.address;
     const contractAbi = registry.contract.abi;
@@ -197,7 +197,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   };
 
   const getIsPoolAdmin = async (allo: any, poolId: string, address: string) => {
-    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const rpc = chain?.id === 5 ? 'https://rpc.goerli.eth.gateway.fm' : 'https://sepolia-rollup.arbitrum.io/rpc';
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = allo.contract.address;
     const contractAbi = allo.contract.abi;
@@ -208,7 +208,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   }
 
   const getIsPoolManager = async (allo: any, poolId: string, address: string) => {
-    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const rpc = chain?.id === 5 ? 'https://rpc.goerli.eth.gateway.fm' : 'https://sepolia-rollup.arbitrum.io/rpc';
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = allo.contract.address;
     const contractAbi = allo.contract.abi;

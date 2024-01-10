@@ -315,7 +315,7 @@ export default function Pool() {
   }
 
   const handleAllocators = async (microStrategy: any, signer: any) => {
-    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const rpc = chain?.id === 5 ? 'https://rpc.goerli.eth.gateway.fm' : 'https://sepolia-rollup.arbitrum.io/rpc';
     const customProvider = new ethers.providers.JsonRpcProvider(rpc);
     const contractAddress = selectedPool?.strategy || '';
     console.log("contractAddress", contractAddress);

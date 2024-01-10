@@ -149,3 +149,19 @@ type ApplicationData = {
 };
 
 type TotalApplications = ApplicationData[];
+
+interface Profile {
+  anchor: string;
+  id: string;
+  metadata: {
+    pointer: string;
+    protocol: number;
+    __typename: string;
+  };
+  name: string;
+  owner: {
+    id: string;
+  };
+}
+
+type ProfilesArray = Profile[];

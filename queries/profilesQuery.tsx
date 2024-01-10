@@ -1,5 +1,5 @@
+import { toChecksumAddress } from '@/global/functions';
 import { useQuery, gql, ApolloError } from '@apollo/client';
-import { transformProfileData } from './userQueries';
 
 // Query profiles by pagination
 const GET_PROFILES_BY_PAGINATION = gql`
@@ -15,26 +15,23 @@ const GET_PROFILES_BY_PAGINATION = gql`
         protocol
         pointer
       }
-      memberRole {
-        accounts {
-          id
-        }
-      }
     }
   }
 `;
 
-export function fetchOwnedProfiles(first: number, skip: number): generalProfilesReturn {
+export function fetchProfilesByPagination(first: number, skip: number): generalProfilesReturn {
   const { loading, error, data, refetch } = useQuery(GET_PROFILES_BY_PAGINATION, {
     variables: { first, skip },
     onCompleted: (data) => console.log(/*"Query completed:", data*/),
     onError: (error) => console.error("Query error:", error),
   });
+
+  console.log("fetchProfilesByPagination", data)
   
   return {
     loading,
     error,
-    profiles: data ? transformProfileData(data.profiles) : [],
+    profiles: data,
     refetch,
   };
 }
@@ -64,10 +61,12 @@ export function fetchProfilesById(id: string) {
     onError: (error) => console.error("Query by ID error:", error),
   });
 
+  console.log("fetchProfilesById", data)
+
   return {
     loading,
     error,
-    profiles: data ? transformProfileData(data.profiles) : [],
+    profiles: data,
     refetch,
   };
 }
@@ -76,7 +75,7 @@ export function fetchProfilesById(id: string) {
 // Query profiles by owner
 const GET_PROFILES_BY_OWNER = gql`
   query GetProfilesByOwner($owner: String!) {
-    profiles(where: { owner: $owner }) {
+    profiles(where: { owner_contains: $owner }) {
       id
       name
       owner {
@@ -98,10 +97,12 @@ export function fetchProfilesByOwner(owner: string) {
     onError: (error) => console.error("Query by Owner error:", error),
   });
 
+  console.log("fetchProfilesByOwner", data)
+
   return {
     loading,
     error,
-    profiles: data ? transformProfileData(data.profiles) : [],
+    profiles: data,
     refetch,
   };
 }
@@ -110,7 +111,7 @@ export function fetchProfilesByOwner(owner: string) {
 // Query profiles by name
 const GET_PROFILES_BY_NAME = gql`
   query GetProfilesByName($name: String!) {
-    profiles(where: { name: $name }) {
+    profiles(where: { name_contains: $name }) {
       id
       name
       owner {
@@ -132,10 +133,12 @@ export function fetchProfilesByName(name: string) {
     onError: (error) => console.error("Query by Name error:", error),
   });
 
+  console.log("fetchProfilesByName", data)
+
   return {
     loading,
     error,
-    profiles: data ? transformProfileData(data.profiles) : [],
+    profiles: data,
     refetch,
   };
 }
@@ -144,7 +147,7 @@ export function fetchProfilesByName(name: string) {
 // Query profiles by anchor
 const GET_PROFILES_BY_ANCHOR = gql`
   query GetProfilesByAnchor($anchor: Bytes!) {
-    profiles(where: { anchor: $anchor }) {
+    profiles(where: { anchor_contains: $anchor }) {
       id
       name
       owner {
@@ -166,10 +169,28 @@ export function fetchProfilesByAnchor(anchor: string) {
     onError: (error) => console.error("Query by Anchor error:", error),
   });
 
+  console.log("fetchProfilesByAnchor", data)
+
   return {
     loading,
     error,
-    profiles: data ? transformProfileData(data.profiles) : [],
+    profiles: data,
     refetch,
   };
 }
+
+export const transformProfileData = (profiles: Profile[]): TransformedProfile[] =>
+profiles ? profiles.map(profile => {
+
+  // Transform the profile data
+  return {
+    anchor: profile.anchor,
+    id: profile.id,
+    protocol: profile.metadata.protocol === '1' ? "IPFS" : profile.metadata.protocol.toString(),
+    pointer: profile.metadata.pointer,
+    name: profile.name,
+    owner: toChecksumAddress(profile.owner.id) || profile.owner.id,
+    members: [],
+    pendingOwner: '',
+  };
+}) : [];

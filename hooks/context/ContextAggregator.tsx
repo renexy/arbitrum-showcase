@@ -276,31 +276,28 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         return;
       }
 
-      for (const pool of pools) {
-        let metadata: TPoolMetadata;
-        try {
-          const pointer = pool.pool.metadataPointer.toString();
-          metadata = await ipfsClient.fetchJson(pointer);
-          pool.pool.metadata = metadata;
+      // Collect all IPFS pointers
+      const ipfsPointers = pools.map(pool => pool.pool.metadataPointer.toString());
 
-          if (metadata.base64Image) {
-            if (metadata.base64Image?.IpfsHash) {
-              let poolBanner = await ipfsClient.fetchJson(metadata.base64Image?.IpfsHash);
-              pool.pool.poolBanner = poolBanner.data;
-            } else {
-              let poolBanner = await ipfsClient.fetchJson(metadata.base64Image);
-              pool.pool.poolBanner = poolBanner.data;
-            }
-          }
+      // Fetch metadata from the internal API
+      const metadataResponse = await fetch('/api/poolsMetadata', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ipfsPointers }),
+      });
 
-          if (!metadata.name) {
-            metadata.name = `Pool ${pool.poolId}`;
-          }
+      const metadataResults = await metadataResponse.json();
 
-        } catch (error) {
-          console.log("IPFS", "Unable to fetch metadata", error);
+      // Update pools with fetched metadata
+      pools.forEach((pool, index) => {
+        if (metadataResults[index]) {
+          pool.pool.metadata = metadataResults[index].metadata;
+          pool.pool.poolBanner = metadataResults[index].bannerImage;
         }
-      }
+      });
+
     } catch (error) {
       console.log("Error fetching pools: ", error);
     }

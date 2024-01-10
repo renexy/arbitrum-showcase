@@ -27,7 +27,10 @@ export default function Pool() {
   const [value, setValue] = React.useState('one');
   const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
     useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
-  const { loading, activeProfilePools, endedProfilePools, selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool, isPoolAdmin, signer, allo, refetchPoolManagers } = React.useContext(GlobalContext);
+  const { loading, activeProfilePools, endedProfilePools,
+    isPoolManager,
+    selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool,
+    isPoolAdmin, signer, allo, refetchPoolManagers } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [poolManagers, setPoolManagers] = useState<string[]>([])
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
@@ -41,6 +44,11 @@ export default function Pool() {
   const [dialogOpenAdd, setDialogOpenAdd] = useState(false)
   const [showSnackbarAllo, setShowsnackbarAllo] = useState(false)
 
+  const [poolAllocators, setPoolAllocators] = useState<string[]>([])
+  const [singleAllocator, setSingleAllocator] = useState('')
+  const [poolAllocatorsToAdd, setPoolAllocatorsToAdd] = useState<string[]>([])
+  const [poolAllocatorsToRemove, setPoolAllocatorsToRemove] = useState<string[]>([])
+
   React.useEffect(() => {
     if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0) {
       setItemsChanged(true)
@@ -48,6 +56,14 @@ export default function Pool() {
       setItemsChanged(false)
     }
   }, [poolManagers])
+
+  React.useEffect(() => {
+    if (poolAllocatorsToAdd.length > 0 || poolAllocatorsToRemove.length > 0) {
+      setItemsChanged(true)
+    } else {
+      setItemsChanged(false)
+    }
+  }, [poolAllocators])
 
   const handleAddManager = async () => {
     if (singleManager === address) {
@@ -105,6 +121,62 @@ export default function Pool() {
     }
   }
 
+  const handleAddAllocator = async () => {
+    if (singleAllocator === address) {
+      setShowSnackbarManagerIsOwner(true)
+      setTimeout(() => {
+        setShowSnackbarManagerIsOwner(false);
+      }, 3000);
+      return
+    }
+    if (singleAllocator.length > 0) {
+      if (poolAllocators && poolAllocators.length > 0) {
+        if (!(poolAllocators.find(x => x === singleAllocator)) &&
+          !(poolAllocatorsToAdd.find(x => x === singleAllocator))) {
+          setPoolAllocatorsToAdd([...poolAllocatorsToAdd, singleAllocator]);
+          setPoolAllocators([...poolAllocators, singleAllocator])
+        } else {
+          setShowSnackbarMemberExists(true)
+          setTimeout(() => {
+            setShowSnackbarMemberExists(false);
+          }, 3000);
+        }
+      } else {
+        if (!poolAllocatorsToAdd.find(x => x === singleAllocator)) {
+          setPoolManagersToAdd([...poolAllocatorsToAdd, singleAllocator]);
+          setPoolManagers([...poolAllocators, singleAllocator])
+        } else {
+          setShowSnackbarMemberExists(true)
+          setTimeout(() => {
+            setShowSnackbarMemberExists(false);
+          }, 3000);
+        }
+      }
+      setSingleAllocator('')
+    }
+  }
+
+  const handleRemoveAllocator = (allocator: string) => {
+    var foundAllocator = poolAllocators.find(x => x === allocator)
+    if (foundAllocator) {
+      var deleteAllocator = poolAllocators.filter((x) => x !== allocator)
+      if (deleteAllocator) {
+        setPoolAllocatorsToRemove([...poolAllocatorsToRemove, allocator])
+        var deleteDisplayedAllocators = poolAllocators.filter((x) => x !== allocator)
+        setPoolAllocators(deleteDisplayedAllocators)
+      }
+    }
+    var foundInTempList = poolAllocatorsToAdd.find(x => x === allocator)
+    if (foundInTempList) {
+      var deleteAllocatorTemp = poolAllocatorsToAdd.filter((x) => x !== allocator)
+      if (deleteAllocatorTemp) {
+        setPoolAllocatorsToAdd(deleteAllocatorTemp)
+        var deleteDisplayedAllocators = poolAllocators.filter((x) => x !== allocator)
+        setPoolAllocators(deleteDisplayedAllocators)
+      }
+    }
+  }
+
   React.useEffect(() => {
     if (showActiveOnly && activeProfilePools) {
       setDropdownOptions(activeProfilePools || []);
@@ -123,8 +195,11 @@ export default function Pool() {
 
   React.useEffect(() => {
     setPoolManagers(poolManagersList)
-    console.log("poolManagersList: ", poolManagersList);
   }, [poolManagersList])
+
+  // React.useEffect(() => {
+  //   setPoolAllocators(poolAllocatorsList)
+  // }, [poolAllocatorsList])
 
   const handleRemoveManagerFunc = async (allo: any, signer: any) => {
     const poolId = selectedPool?.poolId;
@@ -367,6 +442,50 @@ export default function Pool() {
           <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
         </Box>
       }
+      {isPoolManager &&
+
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
+          <Typography variant="h6" sx={{ textAlign: 'left' }}>Existing allocators</Typography>
+          {poolAllocators && poolAllocators.length > 0 ? (
+            <List dense sx={{ border: '1px solid grey', borderRadius: '4px', height: '180px', overflow: 'auto' }}>
+              {poolAllocators.map((member, index) => (
+                <ListItem key={index}>
+                  <ListItemText primary={shortenEthAddress(member)} />
+                  {isPoolManager && <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveAllocator(member)}>
+                    <DeleteIcon />
+                  </IconButton>
+                  }
+                </ListItem>
+              ))}
+            </List>
+          ) : (<span style={{ textAlign: 'left' }}>No allocators</span>)}
+
+          <TextField
+            id="outlined-adornment-password"
+            label="Add members"
+            variant="outlined"
+            value={singleAllocator}
+            color="secondary"
+            onChange={(e) => { setSingleAllocator(e.target.value) }}
+            sx={{ 'fieldSet': { border: '1px solid grey' } }}
+            InputLabelProps={{
+              style: {
+                color: !isPoolManager ? 'rgba(0, 0, 0, 0.38)' : 'unset'
+              }
+            }}
+            InputProps={{
+              readOnly: !isPoolManager,
+              disabled: !isPoolManager,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => { handleAddAllocator() }} edge="end">
+                    <AddIcon sx={{ fill: blueGrey[500] }} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>}
     </Box>
   );
 }

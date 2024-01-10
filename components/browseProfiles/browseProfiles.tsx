@@ -216,8 +216,8 @@ const BrowseProfiles = () => {
                                     <div className={GridModuleCss.colBreak}>
                                         <Typography sx={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
                                             {item?.name
-                                                ? item.name.length > 11
-                                                    ? `${item.name.slice(0, 9)}...`
+                                                ? item.name.length > 15
+                                                    ? `${item.name.slice(0, 14)}...`
                                                     : item.name
                                                 : 'No name'}</Typography>
                                     </div>

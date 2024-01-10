@@ -2,7 +2,7 @@ import Container from '@/components/container/container';
 import { Alert, Autocomplete, Button, InputAdornment, Snackbar, TextField, Typography } from '@mui/material';
 import Head from 'next/head'
 import AddIcon from '@mui/icons-material/Add';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { blueGrey, green, red } from '@mui/material/colors';
 import { TPoolData } from '@/types/typesPool';
 import { ethers } from 'ethers';
@@ -39,7 +39,8 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
     const [dialogOpen, setDialogOpen] = useState(false)
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
-
+    const [amount, setAmount] = useState<number>(0);
+    
     const handleFundPool = (args?: any) => {
         if (args && args === 'restore') {
             setCreateProfileTransactionStatus('confirm')
@@ -221,7 +222,8 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
             <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>Fund pool</Typography>
         </Button>
 
-        <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }} message='Fund pool'
+        <BaseDialog open={dialogOpen} amount={amount} changeAmount={(am: number) => setAmount(am)}
+            onClose={() => { setDialogOpen(!dialogOpen) }} message='Fund pool'
             dialogVariant={'transactionAmount'} status={createProfileTransactionStatus} callback={(e) => { handleFundPool(e) }}></BaseDialog>
     </>
     )

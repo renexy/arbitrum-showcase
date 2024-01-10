@@ -135,8 +135,8 @@ export default function Pool() {
         }
       } else {
         if (!poolAllocatorsToAdd.find(x => x === singleAllocator)) {
-          setPoolManagersToAdd([...poolAllocatorsToAdd, singleAllocator]);
-          setPoolManagers([...poolAllocators, singleAllocator])
+          setPoolAllocatorsToAdd([...poolAllocatorsToAdd, singleAllocator]);
+          setPoolAllocators([...poolAllocators, singleAllocator])
         } else {
           setShowSnackbarMemberExists(true)
           setTimeout(() => {

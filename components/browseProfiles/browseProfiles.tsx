@@ -196,7 +196,7 @@ const BrowseProfiles = () => {
                     >
                     </TextField>
                 </div>}
-            <Grid container spacing={2} sx={{ overflow: 'auto' }}>
+            <Grid container spacing={1} sx={{ overflow: 'auto' }}>
                 {loading &&
                     Array.from({ length: 7 }, (_, index) => (
                         <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
@@ -237,6 +237,22 @@ const BrowseProfiles = () => {
                                             ? item.owner.id.length > 11
                                                 ? `${item.owner.id.slice(0, 9)}...`
                                                 : item.owner.id
+                                            : 'No ID'}</Typography>
+                                    </div>
+                                    <div className={GridModuleCss.colBreak}>
+                                        <Typography sx={{ fontWeight: 'bold' }}>Profile ID</Typography>
+                                        <Typography>                                            {item?.id
+                                            ? item.id.length > 11
+                                                ? `${item.id.slice(0, 9)}...`
+                                                : item.id
+                                            : 'No ID'}</Typography>
+                                    </div>
+                                    <div className={GridModuleCss.colBreak}>
+                                        <Typography sx={{ fontWeight: 'bold' }}>Metadata</Typography>
+                                        <Typography>                                            {item?.metadata
+                                            ? item.metadata?.pointer?.length > 11
+                                                ? `${item.metadata?.pointer?.slice(0, 9)}...`
+                                                : item.metadata?.pointer
                                             : 'No ID'}</Typography>
                                     </div>
                                 </div>

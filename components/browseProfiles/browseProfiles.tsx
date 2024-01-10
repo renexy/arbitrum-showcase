@@ -30,8 +30,9 @@ const BrowseProfiles = () => {
     const [value, setValue] = React.useState(0);
     const [search, setSearch] = useState('')
     const [filteredPools, setFilteredPools] = useState<TProfile[]>([])
+    const [isLoading, setIsLoading] = useState(true);
 
-    const { loading, activePools, endedPools } = React.useContext(GlobalContext);
+    const { activePools, endedPools } = React.useContext(GlobalContext);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [paginatedProfiles, setPaginatedProfiles] = useState<ArrayProfilesArray>([]);
@@ -51,6 +52,7 @@ const BrowseProfiles = () => {
     const { profiles: anchor, refetch: refetchByAnchor } = fetchProfilesByAnchor("0x10424e87de2c2c2bb55d5ed92d65b637d00ab53d")
 
     useEffect(() => {
+        setIsLoading(true);
         const pageSize = 10;
         const skip = (currentPage - 1) * pageSize;
 
@@ -70,7 +72,7 @@ const BrowseProfiles = () => {
                 console.log('fetchByPagination', response.data.profiles)
             }
         }
-        console.log("paginatedProfiles", paginatedProfiles)
+        setIsLoading(false);
         fetchByPaginationPromise()
     }, [currentPage, paginatedProfiles]);
 
@@ -196,7 +198,7 @@ const BrowseProfiles = () => {
                     </TextField>
                 </div>}
             <Grid container spacing={1} sx={{ overflow: 'auto' }}>
-                {loading &&
+                {isLoading &&
                     Array.from({ length: 7 }, (_, index) => (
                         <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
                             <Card sx={{ cursor: 'pointer' }}>

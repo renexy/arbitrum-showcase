@@ -19,12 +19,13 @@ import GridModuleCss from '@/styles/Grid.module.css'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { formatDate, shortenEthAddress } from '@/global/functions';
-import { useAccount } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import BaseDialog from '../baseDialog/baseDialog';
 import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
 import { ethers } from 'ethers';
 import { micro_abi } from '../../utils/microstrategy';
 import { Status } from '@allo-team/allo-v2-sdk/dist/strategies/types';
+import { MicroGrantsStrategy } from '@allo-team/allo-v2-sdk';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -77,6 +78,10 @@ export default function Pool() {
   const [selectedApplication, setSelectedApplication] = useState<any>()
 
   const [localApplications, setLocalApplications] = useState<ApplicationData[] | undefined>(undefined)
+
+  
+  const { chain } = useNetwork();
+  const chainId = chain?.id;
 
   React.useEffect(() => {
     if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0 || poolAllocatorsToAdd.length > 0 || poolAllocatorsToRemove.length > 0) {
@@ -382,7 +387,7 @@ export default function Pool() {
     }
   }
 
-  const handleVote = async (allo: any, signer: any, microStrategy: any, args?: any,) => {
+  const handleVote = async (allo: any, signer: any, args?: any,) => {
     if (args && args === 'restore') {
       setVoteTransactionStatus('confirm')
       return;
@@ -399,24 +404,36 @@ export default function Pool() {
     try {
       setVoteTransactionStatus('signature');
       
-      console.log("selectedApplication", selectedApplication)
-      const allocateParams = {
-        recipientId: '',
-        status: Status.Accepted,
-      }
+      const recipientId = selectedApplication.recipientAddress;
+      const status = Status.Accepted;
 
-      //const getAllocateParams = await microStrategy.getAllocationData(allocateParams)
+      const poolId = selectedApplication.metadata.application.microGrant.poolId;
+
+      const microStrategy = new MicroGrantsStrategy({ chain: chainId || 0, rpc: window.ethereum, poolId: poolId });
+
+      console.log("microStrategy", microStrategy)
+
+      const allocateInitParams: TransactionData = await microStrategy.getAllocationData(recipientId, status)
+
+      console.log("poolId", poolId);
+      console.log("allocateInitParams", allocateInitParams);
+
+      const hash = await signer.sendTransaction({
+        data: allocateInitParams.data,
+        to: allocateInitParams.to,
+        value: BigInt(allocateInitParams.value),
+      });
 
       setVoteTransactionStatus('transaction');
   
       try {
-        /*const receipt = await getAllocateParams.wait();
+        const receipt = await hash.wait();
         if (receipt.status === 1) {
           setVoteTransactionStatus('succeeded');
         } else {
           setVoteTransactionStatus('failed');
           console.error("Transaction failed:", receipt);
-        }*/
+        }
       } catch (error) {
         console.error("Transaction error:", error);
         setVoteTransactionStatus('failed');
@@ -658,7 +675,7 @@ export default function Pool() {
         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
         message={'Are you sure you want to manage allocators?'}></BaseDialog>
       <BaseDialog open={dialogVoteOpen} onClose={() => { setDialogVoteOpen(!dialogVoteOpen) }}
-        dialogVariant={'transaction'} status={voteTransactionStatus} callback={(e) => { handleVote(e, allo, signer, microStrategy) }}
+        dialogVariant={'transaction'} status={voteTransactionStatus} callback={(e) => { handleVote(allo, signer, e) }}
         message={'Are you sure you want to vote?'}></BaseDialog>
     </Box>
   );

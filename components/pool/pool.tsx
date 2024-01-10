@@ -454,7 +454,7 @@ export default function Pool() {
 
           <TextField
             id="outlined-adornment-password"
-            label="Add members"
+            label="Add allocators"
             variant="outlined"
             value={singleAllocator}
             color="secondary"

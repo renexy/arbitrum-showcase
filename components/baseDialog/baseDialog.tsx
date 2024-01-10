@@ -164,12 +164,12 @@ function TransactionFundPoolDialog(props: TransactionDialogProps) {
     return (
         <>
             {status === 'confirm' && <Dialog onClose={handleClose} open={open}>
-                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <DialogTitle>Confirm transaction</DialogTitle>
                     <Typography sx={{ textAlign: 'center', padding: '8px 0' }}>{message || 'Create profile'}</Typography>
                     <TextField
                         id="standard-read-only-input"
-                        label={'End date'}
+                        label={'Amount'}
                         color='secondary'
                         sx={{ flex: '1 0 auto', minWidth: '200px' }}
                         onChange={handleAmountChange}

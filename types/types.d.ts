@@ -96,6 +96,14 @@ type profileMembersReturn = {
   refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
 };
 
+type profileAllocatorsReturn = {
+  loading: boolean;
+  error?: ApolloError;
+  poolAllocators: string[];
+  hasAllocators: boolean;
+  refetch: (variables?: Partial<OperationVariables>) => Promise<ApolloQueryResult<any>>;
+};
+
 type TokenMetadata = {
   name: string | null;
   symbol: string | null;
@@ -167,3 +175,12 @@ interface Profile {
 type ProfilesArray = Profile[];
 
 type ArrayProfilesArray = ProfilesArray[]
+
+type Allocator = {
+  address: string;
+  flag: boolean;
+};
+
+type AllocatorsResponse = {
+  allocators: Allocator[];
+};

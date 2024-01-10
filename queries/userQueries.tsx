@@ -69,6 +69,16 @@ export const GET_POOL_MANAGERS = gql`
   }
 `;
 
+export const GET_ALLOCATORS = gql`
+  query getAllocators($strategy: Bytes!) {
+    allocators(where: {strategy: $strategy}) {
+      address
+      flag
+    }
+  }
+`;
+
+
 // Fetches owned profiles given user address
 export function fetchOwnedProfiles(userAddress: string): ownedProfilesReturn {
   const { loading, error, data, refetch } = useQuery(GET_PROFILES_BY_USER_ADDRESS, {
@@ -188,6 +198,40 @@ export function fetchPoolManagers(poolId: string): profileMembersReturn {
     refetch,
   };
 }
+
+// Fetches selected pool allocators
+export function fetchPoolAllocators(strategy: string): profileAllocatorsReturn {
+  const { loading, error, data, refetch } = useQuery<AllocatorsResponse>(GET_ALLOCATORS, {
+    variables: { strategy },
+    onCompleted: (data) => console.log("Query completed:", data),
+    onError: (error) => console.error("Query error:", error),
+  });
+
+  // Process the data with the helper function
+  const activeAllocatorAddresses = data ? extractActiveAllocators(data) : [];
+
+  return {
+    loading,
+    error,
+    poolAllocators: activeAllocatorAddresses,
+    hasAllocators: activeAllocatorAddresses.length > 0,
+    refetch,
+  };
+}
+
+// Helper function to extract allocator addresses with true flag
+export function extractActiveAllocators(data: AllocatorsResponse): string[] {
+  const activeAllocators: string[] = [];
+
+  data.allocators.forEach(allocator => {
+    if (allocator.flag) {
+      activeAllocators.push(allocator.address);
+    }
+  });
+
+  return activeAllocators;
+}
+
 
 export const extractAddresses = (data: any): string[] => {
   return data?.pool?.managerRole?.accounts?.map((account: any) => {

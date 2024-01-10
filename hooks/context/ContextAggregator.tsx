@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { useAccount } from 'wagmi';
 import { useNetwork } from "wagmi";
 import { ethers } from 'ethers';
-import { fetchOwnedProfiles, fetchMemberProfiles, transformProfileData, fetchPoolManagers, extractAddresses } from '@/queries/userQueries';
+import { fetchOwnedProfiles, fetchMemberProfiles, transformProfileData, fetchPoolManagers, extractAddresses, extractActiveAllocators, fetchPoolAllocators } from '@/queries/userQueries';
 import { TPoolData, TPoolMetadata } from "@/types/typesPool";
 import { getIPFSClient } from "@/services/ipfs";
 import { getActiveMicroGrantsQuery, getEndedMicroGrantsQuery, getUpcomingMicroGrantsQuery, getMicroGrantRecipientQuery, graphqlEndpoint, getMicroGrantsRecipientsQuery } from "@/queries/poolQuery";
@@ -45,6 +45,7 @@ interface GlobalContextState {
   refetchPoolManagers: () => void;
   totalPoolApplications: TotalApplications;
   isPoolManager: boolean;
+  poolAllocatorsList: any;
 }
 
 const GlobalContext = createContext<GlobalContextState>({
@@ -74,7 +75,8 @@ const GlobalContext = createContext<GlobalContextState>({
   hasPoolManagers: false,
   refetchPoolManagers: () => { },
   totalPoolApplications: [],
-  isPoolManager: true
+  isPoolManager: true,
+  poolAllocatorsList: [],
 });
 
 interface GlobalProviderProps {
@@ -99,32 +101,36 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
   const [provider, setProvider] = useState<ethers.providers.Web3Provider | undefined>();
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | undefined>();
 
-  const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([])
-  const [userMemberProfiles, setUserMemberProfiles] = useState<TransformedProfile[]>([])
-  const [selectedProfileHash, setSelectedProfileHash] = useState<string>()
-  const [nonce, setNonce] = useState<number>(0)
+  const [userProfiles, setUserProfiles] = useState<TransformedProfile[]>([]);
+  const [userMemberProfiles, setUserMemberProfiles] = useState<TransformedProfile[]>([]);
+  const [selectedProfileHash, setSelectedProfileHash] = useState<string>();
+  const [nonce, setNonce] = useState<number>(0);
 
   const [upcomingPools, setUpcomingPools] = useState<TPoolData[] | undefined>([]);
   const [activePools, setActivePools] = useState<TPoolData[] | undefined>([]);
   const [endedPools, setEndedPools] = useState<TPoolData[] | undefined>([]);
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(true);
 
   const [activeProfilePools, setActiveProfilePools] = useState<TPoolData[] | undefined>([]);
   const [endedProfilePools, setEndedProfilePools] = useState<TPoolData[] | undefined>([]);
   const [isPoolAdmin, setIsPoolAdmin] = useState<boolean>(false);
 
-  const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined)
+  const [selectedPool, setSelectedPool] = useState<TPoolData | undefined>(undefined);
 
   const [poolManagersList, setPoolManagersList] = useState<string[]>([]);
-  const [hasPoolManagers, setHasPoolManagers] = useState<boolean>(false)
-  const [isPoolManager, setIsPoolManager] = useState<boolean>(false)
+  const [hasPoolManagers, setHasPoolManagers] = useState<boolean>(false);
+  const [isPoolManager, setIsPoolManager] = useState<boolean>(false);
 
   const [totalPoolApplications, setTotalPoolApplications] = useState<TotalApplications>([]);
+
+  const [poolAllocatorsList, setPoolAllocatorsList] = useState<string[]>([]);
+  const [hasPoolAllocators, setHasPoolAllocators] = useState<boolean>(false);
 
   // Graphql
   const { loading: loadingOwnedProfiles, error, profiles, hasProfiles, refetch: refetchOwned } = fetchOwnedProfiles(address || '');
   const { memberProfiles, hasMemberProfiles, refetch: refetchMember } = fetchMemberProfiles(address || '');
   const { poolManagers, hasManagers, refetch: refetchPoolManagers } = fetchPoolManagers(selectedPool?.poolId || '');
+  const { poolAllocators, refetch: refetchPoolAllocators } = fetchPoolAllocators(selectedPool?.pool.strategy || '');
 
   const changeSelectedProfileHash = (hash: string) => {
     setSelectedProfileHash(hash)
@@ -197,6 +203,17 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
     const isPoolAdmin = await readOnlyContract.isPoolAdmin(poolId, address);
     return isPoolAdmin;
+  }
+
+  const getIsPoolManager = async (allo: any, poolId: string, address: string) => {
+    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const customProvider = new ethers.providers.JsonRpcProvider(rpc);
+    const contractAddress = allo.contract.address;
+    const contractAbi = allo.contract.abi;
+    const readOnlyContract = new ethers.Contract(contractAddress, contractAbi, customProvider);
+
+    const isPoolManager = await readOnlyContract.isPoolManager(poolId, address);
+    return isPoolManager;
   }
 
   const ipfsClient = getIPFSClient();
@@ -413,8 +430,10 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
       if (address) {
         const isPoolAdmin = await getIsPoolAdmin(allo, selectedPool?.poolId, address);
-        console.log("isPoolAdmin", isPoolAdmin)
+        //console.log("isPoolAdmin", isPoolAdmin)
         setIsPoolAdmin(isPoolAdmin);
+        const isPoolManager = await getIsPoolManager(allo, selectedPool?.poolId, address);
+        setIsPoolManager(isPoolManager);
       }
     };
 
@@ -432,6 +451,22 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
       setPoolManagersList(addresses);
       setHasPoolManagers(addresses.length > 0);
+    } catch (error) {
+      console.error("Error during refetching:", error);
+    }
+  }
+
+  const refetchAllocators = async () => {
+    try {
+      // Refetching data and handling the result
+      const { data } = await refetchPoolAllocators({ poolId: selectedPool?.poolId || '' });
+      const addresses = extractActiveAllocators(data);
+
+      //console.log("refetchedMemberProfilesData", data);
+      //console.log("transformedPoolManagers", addresses);
+
+      setPoolAllocatorsList(addresses);
+      setHasPoolAllocators(addresses.length > 0);
     } catch (error) {
       console.error("Error during refetching:", error);
     }
@@ -494,7 +529,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       selectedPool, changeSelectedPool, refetchPools,
       poolManagersList, hasPoolManagers, refetchPoolManagers,
       totalPoolApplications,
-      isPoolManager
+      isPoolManager,
+      poolAllocatorsList
     }}>
       {children}
     </GlobalContext.Provider>

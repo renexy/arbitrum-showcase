@@ -30,7 +30,8 @@ export default function Pool() {
   const { loading, activeProfilePools, endedProfilePools,
     isPoolManager,
     selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool,
-    isPoolAdmin, signer, allo, refetchPoolManagers } = React.useContext(GlobalContext);
+    isPoolAdmin, signer, allo, refetchPoolManagers,
+    poolAllocatorsList  } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [poolManagers, setPoolManagers] = useState<string[]>([])
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])

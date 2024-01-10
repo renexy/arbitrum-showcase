@@ -157,7 +157,7 @@ function TransactionFundPoolDialog(props: TransactionDialogProps) {
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseFloat(e.target.value);
-        if (!isNaN(value)) {
+        if (!isNaN(value) || e.target.value === '') {
             changeAmount!(value);
         }
     };
@@ -172,6 +172,7 @@ function TransactionFundPoolDialog(props: TransactionDialogProps) {
                         id="standard-read-only-input"
                         label={'Amount'}
                         color='secondary'
+                        type='number'
                         sx={{ flex: '1 0 auto', minWidth: '200px' }}
                         onChange={handleAmountChange}
                         value={amount}

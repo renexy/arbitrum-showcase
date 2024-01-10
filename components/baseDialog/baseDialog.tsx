@@ -18,6 +18,7 @@ import CircleIcon from '@mui/icons-material/Circle';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import { useEffect, useState } from 'react';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { ethToWeiBigInt } from '@/global/functions';
 
 export interface TransactionDialogProps {
     open: boolean;
@@ -146,7 +147,7 @@ function StepperDialog(props: StepperDialogProps) {
 
 function TransactionFundPoolDialog(props: TransactionDialogProps) {
     const { onClose, selectedValue, open, status, message, callbackFn } = props;
-    const [amount, setAmount] = useState<number>(0)
+    const [amount, setAmount] = useState<number>()
 
     const handleClose = () => {
         if (status === 'signature' || status === 'transaction') return

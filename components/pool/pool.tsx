@@ -380,7 +380,7 @@ export default function Pool() {
     }
   }
 
-  const handleVote = (args?: any) => {
+  const handleVote = (args?: any, allo: any, signer: any) => {
     if (args && args === 'restore') {
       setCreateProfileTransactionStatus('confirm')
       return;
@@ -392,6 +392,36 @@ export default function Pool() {
         setShowsnackbarAllo(false)
       }, 5000)
       return;
+    }
+  
+    try {
+      setCreateProfileTransactionStatus('signature');
+  
+      // Combine addresses and set flags accordingly
+      const addresses = [...poolAllocatorsToAdd, ...poolAllocatorsToRemove];
+      const flags = [...poolAllocatorsToAdd.map(() => true), ...poolAllocatorsToRemove.map(() => false)];
+  
+      // Directly call the batchSetAllocator function on the contract
+      const transactionResponse = await microGrantStrategyContract.batchSetAllocator(addresses, flags);
+  
+      setCreateProfileTransactionStatus('transaction');
+  
+      try {
+        const receipt = await transactionResponse.wait();
+        if (receipt.status === 1) {
+          setCreateProfileTransactionStatus('succeeded');
+        } else {
+          setCreateProfileTransactionStatus('failed');
+          console.error("Transaction failed:", receipt);
+        }
+      } catch (error) {
+        console.error("Transaction error:", error);
+        setCreateProfileTransactionStatus('failed');
+      }
+  
+    } catch (error) {
+      console.error("user rejected or error occurred", error);
+      setCreateProfileTransactionStatus('failed');
     }
   }
 

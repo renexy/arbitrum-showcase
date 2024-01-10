@@ -2,7 +2,7 @@ import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import { Alert, Autocomplete, AutocompleteRenderOptionState, Button, Fab, FormControlLabel, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Snackbar, Step, StepButton, Stepper, Switch, TextField, ToggleButton, Typography } from '@mui/material';
+import { Alert, Autocomplete, AutocompleteRenderOptionState, Button, Card, CardContent, CardMedia, Fab, FormControlLabel, Grid, IconButton, InputAdornment, List, ListItem, ListItemText, Paper, Snackbar, Step, StepButton, Stepper, Switch, TextField, ToggleButton, Typography } from '@mui/material';
 import { CreatePoolArgs } from "@allo-team/allo-v2-sdk/dist/Allo/types";
 import { StrategyType } from "@allo-team/allo-v2-sdk/dist/strategies/MicroGrantsStrategy/types";
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
@@ -15,17 +15,35 @@ import CreatePool from '../createPool/createPool';
 import DisplayPoolInfo from '../displayPoolInfo/displayPoolInfo';
 import GlobalContext from '@/hooks/context/ContextAggregator';
 import { TPoolData } from '@/types/typesPool';
+import GridModuleCss from '@/styles/Grid.module.css'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { shortenEthAddress } from '@/global/functions';
+import { formatDate, shortenEthAddress } from '@/global/functions';
 import { useAccount } from 'wagmi';
 import BaseDialog from '../baseDialog/baseDialog';
 import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
+import { ethers } from 'ethers';
+
+const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
+
+const weiToEth = (weiValue: any) => {
+  if (!weiValue) return "0.0 ETH";
+
+  const ethValue = ethers.utils.formatEther(weiValue);
+  if (ethValue && ethValue.length > 11) {
+
+    return ethValue.slice(0, 5);
+  }
+
+  return `${ethValue} ETH`;
+};
 
 export default function Pool() {
   const [showCreatePool, setShowCreatePool] = useState(false)
   const [value, setValue] = React.useState('one');
   const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
+    useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+  const [voteTransactionStatus, setVoteTransactionStatus] =
     useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
   const { loading, activeProfilePools, endedProfilePools,
     isPoolManager,
@@ -48,6 +66,7 @@ export default function Pool() {
   const [singleAllocator, setSingleAllocator] = useState('')
   const [poolAllocatorsToAdd, setPoolAllocatorsToAdd] = useState<string[]>([])
   const [poolAllocatorsToRemove, setPoolAllocatorsToRemove] = useState<string[]>([])
+  const [dialogVoteOpen, setDialogVoteOpen] = useState(false)
 
   React.useEffect(() => {
     if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0 || poolAllocatorsToAdd.length > 0 || poolAllocatorsToRemove.length > 0) {
@@ -294,6 +313,21 @@ export default function Pool() {
     refetchPoolManagers();
   }
 
+  const handleVote = (args?: any) => {
+    if (args && args === 'restore') {
+      setCreateProfileTransactionStatus('confirm')
+      return;
+    }
+
+    if (!allo || !signer) {
+      setShowsnackbarAllo(true)
+      setTimeout(() => {
+        setShowsnackbarAllo(false)
+      }, 5000)
+      return;
+    }
+  }
+
   return (
     <Box sx={{
       width: 'auto', minWidth: '100%', gap: '36px', justifyContent: 'flex-start',
@@ -478,6 +512,52 @@ export default function Pool() {
             }}
           />
         </div>}
+      {/* {isPoolApplicant && applicationData && applicationData[0] && applicationData[0].microGrantRecipients &&
+        applicationData[0].microGrantRecipients.length > 0 && <Grid container spacing={2} sx={{ overflow: 'auto' }}>
+          {applicationData[0].microGrantRecipients.map((item, index) => (
+            <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
+              <Card sx={{ cursor: 'pointer' }}>
+                <CardMedia
+                  component="img"
+                  height="125"
+                  image={item?.metadata?.bannerImage || fallbackImageURL}
+                  alt="Random"
+                  style={{ objectFit: 'cover' }}
+                />
+                <CardContent>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className={GridModuleCss.colBreak}>
+                      <Typography sx={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
+                        {item?.metadata?.metadata?.name || "/"}</Typography>
+                    </div>
+                    <div className={GridModuleCss.colBreak}>
+                      <Typography sx={{ fontWeight: 'bold' }}>Submitted on</Typography>
+                      <Typography>{formatDate(item?.blockTimestamp) || '/'}</Typography>
+                    </div>
+                    <div className={GridModuleCss.colBreak}>
+                      <Typography sx={{ fontWeight: 'bold' }}>Amount</Typography>
+                      <Typography>{weiToEth(item?.metadata?.application?.requestedAmount)}</Typography>
+                    </div>
+                    <div className={GridModuleCss.colBreak}>
+                      <Typography sx={{ fontWeight: 'bold' }}>Status</Typography>
+                      <Typography>{item?.metadata?.status || 'Pending'}</Typography>
+                    </div>
+                    <div className={GridModuleCss.colBreak}>
+                      <Button size="medium" sx={{ alignSelf: 'flex-start' }}
+                        onClick={() => { setDialogVoteOpen(true) }}>
+                        Vote
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      } */}
+      <BaseDialog open={dialogVoteOpen} onClose={() => { setDialogVoteOpen(!dialogVoteOpen) }}
+        dialogVariant={'transaction'} status={voteTransactionStatus} callback={(e) => { handleVote(e) }}
+        message={'Are you sure you want to vote?'}></BaseDialog>
     </Box>
   );
 }

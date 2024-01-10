@@ -128,60 +128,21 @@ export default function Pool() {
 
   const handleRemoveManagerFunc = async (allo: any, signer: any) => {
     const poolId = selectedPool?.poolId;
-  
+
     try {
       setCreateProfileTransactionStatus('signature');
-  
+
       for (const manager of poolManagersToRemove) {
         const txData = allo.removePoolManager(poolId, manager);
-  
-        const hash = await signer.sendTransaction({
-          data: txData.data,
-          to: txData.to,
-          value: BigInt(txData.value),
-        });
-  
-        setCreateProfileTransactionStatus('transaction');
-  
-        try {
-          const receipt = await hash.wait();
-          if (receipt.status !== 1) {
-            setCreateProfileTransactionStatus('failed');
-            console.error("Transaction failed for manager:", manager);
-            break; // Stop if any transaction fails
-          }
-        } catch (error) {
-          console.error("Transaction error for manager:", manager, error);
-          setCreateProfileTransactionStatus('failed');
-          break; // Stop if any transaction fails
-        }
-      }
-  
-      setCreateProfileTransactionStatus('succeeded');
-  
-    } catch (error) {
-      console.error("user rejected or error occurred", error);
-      setCreateProfileTransactionStatus('failed');
-    }
-  }  
 
-  const handleAddManagerFunc = async (allo: any, signer: any) => {
-    const poolId = selectedPool?.poolId;
-  
-    try {
-      setCreateProfileTransactionStatus('signature');
-  
-      for (const manager of poolManagersToAdd) {
-        const txData = allo.addPoolManager(poolId, manager);
-  
         const hash = await signer.sendTransaction({
           data: txData.data,
           to: txData.to,
           value: BigInt(txData.value),
         });
-  
+
         setCreateProfileTransactionStatus('transaction');
-  
+
         try {
           const receipt = await hash.wait();
           if (receipt.status !== 1) {
@@ -195,15 +156,54 @@ export default function Pool() {
           break; // Stop if any transaction fails
         }
       }
-  
+
       setCreateProfileTransactionStatus('succeeded');
-  
+
     } catch (error) {
       console.error("user rejected or error occurred", error);
       setCreateProfileTransactionStatus('failed');
     }
   }
-  
+
+  const handleAddManagerFunc = async (allo: any, signer: any) => {
+    const poolId = selectedPool?.poolId;
+
+    try {
+      setCreateProfileTransactionStatus('signature');
+
+      for (const manager of poolManagersToAdd) {
+        const txData = allo.addPoolManager(poolId, manager);
+
+        const hash = await signer.sendTransaction({
+          data: txData.data,
+          to: txData.to,
+          value: BigInt(txData.value),
+        });
+
+        setCreateProfileTransactionStatus('transaction');
+
+        try {
+          const receipt = await hash.wait();
+          if (receipt.status !== 1) {
+            setCreateProfileTransactionStatus('failed');
+            console.error("Transaction failed for manager:", manager);
+            break; // Stop if any transaction fails
+          }
+        } catch (error) {
+          console.error("Transaction error for manager:", manager, error);
+          setCreateProfileTransactionStatus('failed');
+          break; // Stop if any transaction fails
+        }
+      }
+
+      setCreateProfileTransactionStatus('succeeded');
+
+    } catch (error) {
+      console.error("user rejected or error occurred", error);
+      setCreateProfileTransactionStatus('failed');
+    }
+  }
+
   const handleUpdate = async (args: any) => {
     if (args && args === 'restore') {
       setCreateProfileTransactionStatus('confirm')

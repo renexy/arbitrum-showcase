@@ -24,6 +24,7 @@ import BaseDialog from '../baseDialog/baseDialog';
 import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
 import { ethers } from 'ethers';
 import { micro_abi } from '../../utils/microstrategy';
+import { Status } from '@allo-team/allo-v2-sdk/dist/strategies/types';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -73,6 +74,7 @@ export default function Pool() {
   const [poolAllocatorsToAdd, setPoolAllocatorsToAdd] = useState<string[]>([])
   const [poolAllocatorsToRemove, setPoolAllocatorsToRemove] = useState<string[]>([])
   const [dialogVoteOpen, setDialogVoteOpen] = useState(false)
+  const [selectedApplication, setSelectedApplication] = useState<any>()
 
   const [localApplications, setLocalApplications] = useState<ApplicationData[] | undefined>(undefined)
 
@@ -380,9 +382,9 @@ export default function Pool() {
     }
   }
 
-  const handleVote = (args?: any, allo: any, signer: any) => {
+  const handleVote = async (allo: any, signer: any, microStrategy: any, args?: any,) => {
     if (args && args === 'restore') {
-      setCreateProfileTransactionStatus('confirm')
+      setVoteTransactionStatus('confirm')
       return;
     }
 
@@ -395,33 +397,34 @@ export default function Pool() {
     }
   
     try {
-      setCreateProfileTransactionStatus('signature');
-  
-      // Combine addresses and set flags accordingly
-      const addresses = [...poolAllocatorsToAdd, ...poolAllocatorsToRemove];
-      const flags = [...poolAllocatorsToAdd.map(() => true), ...poolAllocatorsToRemove.map(() => false)];
-  
-      // Directly call the batchSetAllocator function on the contract
-      const transactionResponse = await microGrantStrategyContract.batchSetAllocator(addresses, flags);
-  
-      setCreateProfileTransactionStatus('transaction');
+      setVoteTransactionStatus('signature');
+      
+      console.log("selectedApplication", selectedApplication)
+      const allocateParams = {
+        recipientId: '',
+        status: Status.Accepted,
+      }
+
+      //const getAllocateParams = await microStrategy.getAllocationData(allocateParams)
+
+      setVoteTransactionStatus('transaction');
   
       try {
-        const receipt = await transactionResponse.wait();
+        /*const receipt = await getAllocateParams.wait();
         if (receipt.status === 1) {
-          setCreateProfileTransactionStatus('succeeded');
+          setVoteTransactionStatus('succeeded');
         } else {
-          setCreateProfileTransactionStatus('failed');
+          setVoteTransactionStatus('failed');
           console.error("Transaction failed:", receipt);
-        }
+        }*/
       } catch (error) {
         console.error("Transaction error:", error);
-        setCreateProfileTransactionStatus('failed');
+        setVoteTransactionStatus('failed');
       }
   
     } catch (error) {
       console.error("user rejected or error occurred", error);
-      setCreateProfileTransactionStatus('failed');
+      setVoteTransactionStatus('failed');
     }
   }
 
@@ -611,7 +614,7 @@ export default function Pool() {
                     </div>
                     <div className={GridModuleCss.colBreak}>
                       <Button size="medium" sx={{ alignSelf: 'flex-start' }}
-                        onClick={() => { setDialogVoteOpen(true) }}>
+                        onClick={() => { setDialogVoteOpen(true); setSelectedApplication(item) }}>
                         Vote
                       </Button>
                     </div>
@@ -655,7 +658,7 @@ export default function Pool() {
         dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
         message={'Are you sure you want to manage allocators?'}></BaseDialog>
       <BaseDialog open={dialogVoteOpen} onClose={() => { setDialogVoteOpen(!dialogVoteOpen) }}
-        dialogVariant={'transaction'} status={voteTransactionStatus} callback={(e) => { handleVote(e) }}
+        dialogVariant={'transaction'} status={voteTransactionStatus} callback={(e) => { handleVote(e, allo, signer, microStrategy) }}
         message={'Are you sure you want to vote?'}></BaseDialog>
     </Box>
   );

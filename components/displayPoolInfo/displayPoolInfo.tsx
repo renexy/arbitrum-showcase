@@ -79,7 +79,7 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 data: txData.data,
                 to: txData.to,
                 value: txData.value,
-              });
+            });
 
             setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
 

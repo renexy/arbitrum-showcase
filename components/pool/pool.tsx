@@ -50,20 +50,12 @@ export default function Pool() {
   const [poolAllocatorsToRemove, setPoolAllocatorsToRemove] = useState<string[]>([])
 
   React.useEffect(() => {
-    if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0) {
+    if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0 || poolAllocatorsToAdd.length > 0 || poolAllocatorsToRemove.length > 0) {
       setItemsChanged(true)
     } else {
       setItemsChanged(false)
     }
-  }, [poolManagers])
-
-  React.useEffect(() => {
-    if (poolAllocatorsToAdd.length > 0 || poolAllocatorsToRemove.length > 0) {
-      setItemsChanged(true)
-    } else {
-      setItemsChanged(false)
-    }
-  }, [poolAllocators])
+  }, [poolManagers, poolAllocators])
 
   const handleAddManager = async () => {
     if (singleManager === address) {

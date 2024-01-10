@@ -11,7 +11,7 @@ import Dialog from '@mui/material/Dialog';
 import PersonIcon from '@mui/icons-material/Person';
 import { blue, blueGrey, green, grey, red } from '@mui/material/colors';
 import AddIcon from '@mui/icons-material/Add';
-import { Backdrop, Badge, CircularProgress, Fab, Step, StepContent, StepLabel, Stepper, Typography } from '@mui/material';
+import { Backdrop, Badge, CircularProgress, Fab, Step, StepContent, StepLabel, Stepper, TextField, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { FiberManualRecordOutlined } from '@mui/icons-material';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -144,6 +144,74 @@ function StepperDialog(props: StepperDialogProps) {
     )
 }
 
+function TransactionFundPoolDialog(props: TransactionDialogProps) {
+    const { onClose, selectedValue, open, status, message, callbackFn } = props;
+    const [amount, setAmount] = useState<number>(0)
+
+    const handleClose = () => {
+        if (status === 'signature' || status === 'transaction') return
+        if (status === 'failed' || status === 'succeeded') callbackFn!('restore')
+        onClose(selectedValue);
+    };
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseFloat(e.target.value);
+        if (!isNaN(value)) {
+            setAmount(value);
+        }
+    };
+
+    return (
+        <>
+            {status === 'confirm' && <Dialog onClose={handleClose} open={open}>
+                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                    <DialogTitle>Confirm transaction</DialogTitle>
+                    <Typography sx={{ textAlign: 'center', padding: '8px 0' }}>{message || 'Create profile'}</Typography>
+                    <TextField
+                        id="standard-read-only-input"
+                        label={'End date'}
+                        color='secondary'
+                        sx={{ flex: '1 0 auto', minWidth: '200px' }}
+                        onChange={handleAmountChange}
+                        value={amount}
+                        InputLabelProps={{ shrink: true }}
+                        variant="standard"
+                    />
+                    <Button size="small" disabled={amount === 0} variant="contained" color="secondary" onClick={() => { callbackFn!() }}>Confirm</Button>
+                </div>
+            </Dialog>}
+            {status === 'signature' && <Backdrop
+                sx={{ color: '#fff', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={open}
+                onClick={handleClose}
+            >
+                <CircularProgress sx={{ color: '#f5f5f5' }} />
+                <Typography variant="h6" color={'#f5f5f5'}>Confirm Transaction</Typography>
+            </Backdrop>}
+            {status === 'transaction' && <Backdrop
+                sx={{ color: '#fff', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={open}
+                onClick={handleClose}
+            >
+                <CircularProgress sx={{ color: '#f5f5f5' }} />
+                <Typography variant="h6" color={'#f5f5f5'}>Transaction Sent</Typography>
+            </Backdrop>}
+            {status === 'succeeded' && <Dialog onClose={handleClose} open={open}>
+                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                    <DialogTitle>{status === 'succeeded' && "Profile updated sucessfully"}</DialogTitle>
+                    <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
+                </div>
+            </Dialog>}
+            {status === 'failed' && <Dialog onClose={handleClose} open={open}>
+                <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                    <DialogTitle>{status === 'failed' && "Failed to update profile"}</DialogTitle>
+                    <Button size="small" variant="contained" color="secondary" onClick={handleClose}>Confirm</Button>
+                </div>
+            </Dialog>}
+        </>
+    )
+}
+
 export default function BaseDialog({ open, onClose, dialogVariant, status, callback, message, steps }:
     { open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: (args?: any) => void, message?: string, steps?: any }) {
     const handleClose = (value: string) => {
@@ -160,15 +228,25 @@ export default function BaseDialog({ open, onClose, dialogVariant, status, callb
                 status={status}
                 callbackFn={(e) => callback!(e)}
                 message={message}
-            /> : <StepperDialog
-                selectedValue={''}
-                open={open}
-                onClose={handleClose}
-                status={status}
-                callbackFn={(e) => callback!(e)}
-                message={message}
-                steps={steps!}
-            />
+            /> :
+                dialogVariant === 'transactionAmount' ? <TransactionFundPoolDialog
+                    selectedValue={''}
+                    open={open}
+                    onClose={handleClose}
+                    status={status}
+                    callbackFn={(e) => callback!(e)}
+                    message={message}>
+                </TransactionFundPoolDialog>
+                    :
+                    <StepperDialog
+                        selectedValue={''}
+                        open={open}
+                        onClose={handleClose}
+                        status={status}
+                        callbackFn={(e) => callback!(e)}
+                        message={message}
+                        steps={steps!}
+                    />
             }
         </>
     );

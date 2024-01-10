@@ -273,10 +273,6 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
             </Snackbar>
         </div>
 
-        <Button variant="outlined" color="secondary" sx={{ width: '200px', alignSelf: 'flex-end' }} onClick={() => { setDialogOpen(true) }}>
-            <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>Fund pool</Typography>
-        </Button>
-
         <BaseDialog open={dialogOpen} amount={amount} changeAmount={(am: number) => setAmount(am)}
             onClose={() => { setDialogOpen(!dialogOpen) }} message='Fund pool'
             dialogVariant={'transactionAmount'} status={createProfileTransactionStatus} callback={(e) => { handleFundPool(e) }}></BaseDialog>

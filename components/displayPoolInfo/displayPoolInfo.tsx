@@ -222,7 +222,7 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
         </Button>
 
         <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }} message='Fund pool'
-            dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleFundPool(e) }}></BaseDialog>
+            dialogVariant={'transactionAmount'} status={createProfileTransactionStatus} callback={(e) => { handleFundPool(e) }}></BaseDialog>
     </>
     )
 }

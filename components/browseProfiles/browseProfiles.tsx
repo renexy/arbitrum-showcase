@@ -83,48 +83,47 @@ const BrowseProfiles = () => {
     }
 
     useEffect(() => {
-        const searchByName = async () => {
-            const response = await refetchByName({ name: search });
-            setCustomSearch(response.data.profiles)
-            console.log("FETCHED BY NAME", response.data.profiles)
-        }
+      const searchByName = async () => {
+        const response = await refetchByName({ name: search });
+        setCustomSearch(response.data.profiles)
+        //console.log("FETCHED BY NAME", response.data.profiles)
+      }
 
-        const searchByProfileId = async () => {
-            const response = await refetchById({ name: search });
-            setCustomSearch(response.data.profiles)
-            console.log("FETCHED BY ID", response.data.profiles)
-        }
+      const searchByProfileId = async () => {
+        const response = await refetchById({ name: search });
+        setCustomSearch(response.data.profiles)
+        //console.log("FETCHED BY ID", response.data.profiles)
+      }
 
-        const searchByAnchor = async () => {
-            const response = await refetchByAnchor({ name: search });
-            setCustomSearch(response.data.profiles)
-            console.log("FETCHED BY ANCHOR", response.data.profiles)
-        }
+      const searchByAnchor = async () => {
+        const response = await refetchByAnchor({ name: search });
+        setCustomSearch(response.data.profiles)
+        //console.log("FETCHED BY ANCHOR", response.data.profiles)
+      }
 
-        const searchByOwner = async () => {
-            const response = await refetchByOwner({ name: search });
-            setCustomSearch(response.data.profiles)
-            console.log("FETCHED BY OWNER", response.data.profiles)
-        }
+      const searchByOwner = async () => {
+        const response = await refetchByOwner({ name: search });
+        setCustomSearch(response.data.profiles)
+        //console.log("FETCHED BY OWNER", response.data.profiles)
+      }
 
-        if (search.length < 1) return
+      if (search.length < 1) return
 
-        if (alignment === "name") {
-            searchByName()
-        }
+      if (alignment === "name") {
+          searchByName()
+      }
 
-        if (alignment === "profileId") {
-            searchByProfileId()
-        }
+      if (alignment === "profileId") {
+          searchByProfileId()
+      }
 
-        if (alignment === "anchor") {
-            searchByAnchor()
-        }
+      if (alignment === "anchor") {
+          searchByAnchor()
+      }
 
-        if (alignment === "owner") {
-            searchByOwner()
-        }
-
+      if (alignment === "owner") {
+          searchByOwner()
+      }
     }, [search])
 
     // name | profileId | anchor | owner

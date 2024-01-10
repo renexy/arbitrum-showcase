@@ -165,11 +165,6 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         return { ...profile, pendingOwner };
       }));
 
-      //console.log("updatedProfiles", updatedProfiles)
-
-      //console.log("userProfiles", userProfiles)
-      //console.log("updatedProfiles", updatedProfiles)
-
       setUserProfiles(updatedProfiles);
 
       const updatedMemberProfiles = await Promise.all(memberProfiles.map(async profile => {
@@ -177,21 +172,13 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
         return { ...profile, pendingOwner };
       }));
 
-      //console.log("userMemberProfiles", userMemberProfiles)
-      //console.log("updatedMemberProfiles", updatedMemberProfiles)
-
-      //console.log("updatedMemberProfiles", updatedMemberProfiles)
-
       const newMemberProfiles = updatedMemberProfiles.filter(memberProfile =>
         !updatedProfiles.some(profile => profile.id === memberProfile.id)
       );
 
-      //console.log("newMemberProfiles", newMemberProfiles)
-
       // here we take only the profiles that don't appear in userProfiles, since
       // we don't want to show duplicates
       setUserMemberProfiles(newMemberProfiles);
-      //console.log("updatedMemberProfiles", updatedMemberProfiles)
 
     } catch (error) {
       console.error('Error in getPendingOwner:', error);

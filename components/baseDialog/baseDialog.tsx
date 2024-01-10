@@ -26,6 +26,8 @@ export interface TransactionDialogProps {
     onClose: (value: string) => void;
     status: 'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed';
     callbackFn?: (args?: any) => void;
+    amount?: number;
+    changeAmount?: (args: number) => void;
 }
 
 export interface StepperDialogProps extends TransactionDialogProps {
@@ -145,8 +147,7 @@ function StepperDialog(props: StepperDialogProps) {
 }
 
 function TransactionFundPoolDialog(props: TransactionDialogProps) {
-    const { onClose, selectedValue, open, status, message, callbackFn } = props;
-    const [amount, setAmount] = useState<number>(0)
+    const { onClose, selectedValue, open, status, message, callbackFn, amount, changeAmount } = props;
 
     const handleClose = () => {
         if (status === 'signature' || status === 'transaction') return
@@ -157,7 +158,7 @@ function TransactionFundPoolDialog(props: TransactionDialogProps) {
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseFloat(e.target.value);
         if (!isNaN(value)) {
-            setAmount(value);
+            changeAmount!(value);
         }
     };
 
@@ -212,8 +213,11 @@ function TransactionFundPoolDialog(props: TransactionDialogProps) {
     )
 }
 
-export default function BaseDialog({ open, onClose, dialogVariant, status, callback, message, steps }:
-    { open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: (args?: any) => void, message?: string, steps?: any }) {
+export default function BaseDialog({ open, onClose, dialogVariant, status, callback, message, steps, amount, changeAmount }:
+    {
+        open: boolean, onClose: () => void, dialogVariant: string, status?: any, callback?: (args?: any) => void,
+        message?: string, steps?: any, amount?: number, changeAmount?: (args: number) => void
+    }) {
     const handleClose = (value: string) => {
         onClose()
     };
@@ -232,6 +236,8 @@ export default function BaseDialog({ open, onClose, dialogVariant, status, callb
                 dialogVariant === 'transactionAmount' ? <TransactionFundPoolDialog
                     selectedValue={''}
                     open={open}
+                    amount={amount}
+                    changeAmount={(e) => changeAmount!(e)}
                     onClose={handleClose}
                     status={status}
                     callbackFn={(e) => callback!(e)}

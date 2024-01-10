@@ -23,6 +23,7 @@ import { useAccount } from 'wagmi';
 import BaseDialog from '../baseDialog/baseDialog';
 import { TransactionData } from "@allo-team/allo-v2-sdk/dist/Common/types";
 import { ethers } from 'ethers';
+import { micro_abi } from '../../utils/microstrategy';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -50,7 +51,10 @@ export default function Pool() {
     selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool,
     isPoolAdmin, signer, allo, refetchPoolManagers,
     poolAllocatorsList,
-    totalPoolApplications } = React.useContext(GlobalContext);
+    totalPoolApplications,
+    refetchAllocators,
+    microStrategy
+  } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [poolManagers, setPoolManagers] = useState<string[]>([])
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
@@ -303,6 +307,47 @@ export default function Pool() {
     }
   }
 
+  const handleAllocators = async (microStrategy: any, signer: any) => {
+    const rpc = 'https://rpc.goerli.eth.gateway.fm';
+    const customProvider = new ethers.providers.JsonRpcProvider(rpc);
+    const contractAddress = selectedPool?.strategy || '';
+    console.log("contractAddress", contractAddress);
+    console.log("micro_abi", micro_abi);
+  
+    // Attach the signer to the contract
+    const microGrantStrategyContract = new ethers.Contract(contractAddress, micro_abi, signer);
+  
+    try {
+      setCreateProfileTransactionStatus('signature');
+  
+      // Combine addresses and set flags accordingly
+      const addresses = [...poolAllocatorsToAdd, ...poolAllocatorsToRemove];
+      const flags = [...poolAllocatorsToAdd.map(() => true), ...poolAllocatorsToRemove.map(() => false)];
+  
+      // Directly call the batchSetAllocator function on the contract
+      const transactionResponse = await microGrantStrategyContract.batchSetAllocator(addresses, flags);
+  
+      setCreateProfileTransactionStatus('transaction');
+  
+      try {
+        const receipt = await transactionResponse.wait();
+        if (receipt.status === 1) {
+          setCreateProfileTransactionStatus('succeeded');
+        } else {
+          setCreateProfileTransactionStatus('failed');
+          console.error("Transaction failed:", receipt);
+        }
+      } catch (error) {
+        console.error("Transaction error:", error);
+        setCreateProfileTransactionStatus('failed');
+      }
+  
+    } catch (error) {
+      console.error("user rejected or error occurred", error);
+      setCreateProfileTransactionStatus('failed');
+    }
+  };  
+
   const handleUpdate = async (args: any) => {
     if (args && args === 'restore') {
       setCreateProfileTransactionStatus('confirm')
@@ -317,13 +362,22 @@ export default function Pool() {
       return;
     }
 
-    if (poolManagersToRemove.length > 0)
+    if (poolManagersToRemove.length > 0) 
       await handleRemoveManagerFunc(allo, signer)
 
     if (poolManagersToAdd.length > 0)
       await handleAddManagerFunc(allo, signer)
 
-    refetchPoolManagers();
+    if (poolAllocatorsToRemove.length > 0 || poolAllocatorsToAdd.length > 0)
+      await handleAllocators(microStrategy, signer)
+
+    if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0) {
+      refetchPoolManagers();
+    }
+
+    if (poolAllocatorsToAdd.length > 0 || poolAllocatorsToRemove.length > 0) {
+      refetchAllocators();
+    }
   }
 
   const handleVote = (args?: any) => {
@@ -471,7 +525,7 @@ export default function Pool() {
 
               <BaseDialog open={dialogOpenAdd} onClose={() => { setDialogOpenAdd(!dialogOpenAdd) }}
                 dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleUpdate(e) }}
-                message={'Are you sure you want to manage members?'}></BaseDialog>
+                message={'Are you sure you want to manage allocators?'}></BaseDialog>
             </Box>}
         </>}
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}

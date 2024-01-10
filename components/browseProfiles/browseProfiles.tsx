@@ -79,7 +79,7 @@ const BrowseProfiles = () => {
 
         const metadataFetch = await ipfsClient.fetchJson(pointer);
 
-        console.log("metadataFetch", metadataFetch)
+        //console.log("metadataFetch", metadataFetch)
     }
 
     useEffect(() => {

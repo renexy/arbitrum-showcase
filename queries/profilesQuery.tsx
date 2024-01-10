@@ -26,7 +26,7 @@ export function fetchProfilesByPagination(first: number, skip: number): generalP
     onError: (error) => console.error("Query error:", error),
   });
 
-  console.log("fetchProfilesByPagination", data)
+  //console.log("fetchProfilesByPagination", data)
   
   return {
     loading,
@@ -61,7 +61,7 @@ export function fetchProfilesById(id: string) {
     onError: (error) => console.error("Query by ID error:", error),
   });
 
-  console.log("fetchProfilesById", data)
+  //console.log("fetchProfilesById", data)
 
   return {
     loading,
@@ -97,7 +97,7 @@ export function fetchProfilesByOwner(owner: string) {
     onError: (error) => console.error("Query by Owner error:", error),
   });
 
-  console.log("fetchProfilesByOwner", data)
+  //console.log("fetchProfilesByOwner", data)
 
   return {
     loading,
@@ -133,7 +133,7 @@ export function fetchProfilesByName(name: string) {
     onError: (error) => console.error("Query by Name error:", error),
   });
 
-  console.log("fetchProfilesByName", data)
+  //console.log("fetchProfilesByName", data)
 
   return {
     loading,
@@ -169,7 +169,7 @@ export function fetchProfilesByAnchor(anchor: string) {
     onError: (error) => console.error("Query by Anchor error:", error),
   });
 
-  console.log("fetchProfilesByAnchor", data)
+  //console.log("fetchProfilesByAnchor", data)
 
   return {
     loading,

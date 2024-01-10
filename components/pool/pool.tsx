@@ -136,8 +136,8 @@ export default function Pool() {
         }
       } else {
         if (!poolAllocatorsToAdd.find(x => x === singleAllocator)) {
-          setPoolManagersToAdd([...poolAllocatorsToAdd, singleAllocator]);
-          setPoolManagers([...poolAllocators, singleAllocator])
+          setPoolAllocatorsToAdd([...poolAllocatorsToAdd, singleAllocator]);
+          setPoolAllocators([...poolAllocators, singleAllocator])
         } else {
           setShowSnackbarMemberExists(true)
           setTimeout(() => {
@@ -455,7 +455,7 @@ export default function Pool() {
 
           <TextField
             id="outlined-adornment-password"
-            label="Add members"
+            label="Add allocators"
             variant="outlined"
             value={singleAllocator}
             color="secondary"

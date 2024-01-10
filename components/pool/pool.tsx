@@ -50,7 +50,7 @@ export default function Pool() {
     selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool,
     isPoolAdmin, signer, allo, refetchPoolManagers,
     poolAllocatorsList,
-    totalPoolApplications  } = React.useContext(GlobalContext);
+    totalPoolApplications } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [poolManagers, setPoolManagers] = useState<string[]>([])
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
@@ -214,8 +214,8 @@ export default function Pool() {
     setPoolManagers(poolManagersList)
   }, [poolManagersList])
 
-   React.useEffect(() => {
-     setPoolAllocators(poolAllocatorsList)
+  React.useEffect(() => {
+    setPoolAllocators(poolAllocatorsList)
 
     if (totalPoolApplications && totalPoolApplications.length > 0) {
       var foundApplications = totalPoolApplications.filter(x => x.poolId === selectedPool?.poolId)
@@ -223,7 +223,7 @@ export default function Pool() {
         setLocalApplications(foundApplications)
       }
     }
-   }, [selectedPool])
+  }, [selectedPool])
 
   const handleRemoveManagerFunc = async (allo: any, signer: any) => {
     const poolId = selectedPool?.poolId;
@@ -526,8 +526,8 @@ export default function Pool() {
           <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
         </Box>
       }
-      { localApplications && localApplications[0] && localApplications[0].microGrantRecipients &&
-        localApplications[0].microGrantRecipients.length > 0 && <Grid container spacing={2} sx={{  }}>
+      {!showCreatePool && localApplications && localApplications[0] && localApplications[0].microGrantRecipients &&
+        localApplications[0].microGrantRecipients.length > 0 && <Grid container spacing={2} sx={{}}>
           {localApplications[0].microGrantRecipients.map((item, index) => (
             <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
               <Card sx={{ cursor: 'pointer' }}>

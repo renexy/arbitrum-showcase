@@ -13,6 +13,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AnchorIcon from '@mui/icons-material/Anchor';
 import HailIcon from '@mui/icons-material/Hail';
 import { fetchProfilesByAnchor, fetchProfilesById, fetchProfilesByName, fetchProfilesByOwner, fetchProfilesByPagination } from '@/queries/profilesQuery';
+import { getIPFSClient } from '@/services/ipfs';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -40,6 +41,8 @@ const BrowseProfiles = () => {
         setCurrentPage(value);
         // Here you can also fetch data based on the new page number if needed
     };
+    
+    const ipfsClient = getIPFSClient();
 
     const { profiles: pagination, refetch: refetchByPagination } = fetchProfilesByPagination(10, 0)
     const { profiles: id, refetch: refetchById } = fetchProfilesById("0x1220d16b98fef733a23216008c45073f554157bb90ef9e06253428b84173c707")
@@ -71,6 +74,13 @@ const BrowseProfiles = () => {
         fetchByPaginationPromise()
     }, [currentPage, paginatedProfiles]);
 
+    const test = async () => {
+      const pointer = "bafybeia4khbew3r2mkflyn7nzlvfzcb3qpfeftz5ivpzfwn77ollj47gqi";
+
+      const metadataFetch = await ipfsClient.fetchJson(pointer);
+
+      console.log("metadataFetch", metadataFetch)
+    }
 
     useEffect(() => {
         const searchByName = async () => {

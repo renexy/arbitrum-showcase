@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 import { convertUnixTimestamp } from '@/global/functions';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Image from "next/image"
+import BaseDialog from '../baseDialog/baseDialog';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -35,6 +36,16 @@ const convertToShorter = (text: string) => {
 }
 export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool: TPoolData, active: boolean }) {
     const [showSnackbarCopied, setShowsnackbarCopied] = useState(false)
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
+        useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
+
+    const handleFundPool = (args?: any) => {
+        if (args && args === 'restore') {
+            setCreateProfileTransactionStatus('confirm')
+            return;
+        }
+    }
     return (<>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             <TextField
@@ -86,6 +97,13 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 InputProps={{
                     readOnly: true,
                     disabled: true,
+                    endAdornment: (<InputAdornment position="end">
+                        <ContentCopyIcon sx={{ cursor: 'pointer', height: '12px' }}
+                            onClick={() => {
+                                copyToClipboard('Manual');
+                                setShowsnackbarCopied(true); setTimeout(() => { setShowsnackbarCopied(false) }, 3000)
+                            }} />
+                    </InputAdornment>)
                 }}
                 InputLabelProps={{ shrink: true }}
                 variant="standard"
@@ -141,7 +159,7 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 value={weiToEth(selectedPool?.pool?.amount)}
                 InputProps={{
                     readOnly: true,
-                    disabled: true,
+                    disabled: true
                 }}
                 InputLabelProps={{ shrink: true }}
                 variant="standard"
@@ -177,30 +195,6 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
         <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', width: '100%' }}>
             <TextField
                 id="standard-read-only-input"
-                label={'Applications'}
-                color='secondary'
-                sx={{ flex: '1 0 auto', minWidth: '200px' }}
-                InputProps={{
-                    readOnly: true,
-                    disabled: true,
-                }}
-                InputLabelProps={{ shrink: true }}
-                variant="standard"
-            />
-            <TextField
-                id="standard-read-only-input"
-                label={'Profile req.'}
-                color='secondary'
-                sx={{ flex: '1 0 auto', minWidth: '200px' }}
-                InputProps={{
-                    readOnly: true,
-                    disabled: true,
-                }}
-                InputLabelProps={{ shrink: true }}
-                variant="standard"
-            />
-            <TextField
-                id="standard-read-only-input"
                 label={'End date'}
                 color='secondary'
                 sx={{ flex: '1 0 auto', minWidth: '200px' }}
@@ -222,6 +216,13 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
                 </Alert>
             </Snackbar>
         </div>
+
+        <Button variant="outlined" color="secondary" sx={{ width: '200px', alignSelf: 'flex-end' }} onClick={() => { setDialogOpen(true) }}>
+            <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '1rem' }}>Fund pool</Typography>
+        </Button>
+
+        <BaseDialog open={dialogOpen} onClose={() => { setDialogOpen(!dialogOpen) }} message='Fund pool'
+            dialogVariant={'transaction'} status={createProfileTransactionStatus} callback={(e) => { handleFundPool(e) }}></BaseDialog>
     </>
     )
 }

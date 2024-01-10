@@ -14,7 +14,7 @@ export default async function handler(
   });
   
   // Assuming you send the query type as a parameter to the API route
-  const { queryType, queryJson, first, offset } = req.body;
+  const { queryJson, first, offset } = req.body;
 
   try {
     const data = await client.request(queryJson, { first, offset });

@@ -150,7 +150,7 @@ export default function ApplicationForm() {
               failed: false
           },
           {
-              label: 'Deploying contract',
+              label: 'Creating Application',
               working: false,
               done: false,
               failed: false

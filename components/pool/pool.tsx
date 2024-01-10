@@ -49,7 +49,8 @@ export default function Pool() {
     isPoolManager,
     selectedProfileHash, poolManagersList, selectedPool, changeSelectedPool,
     isPoolAdmin, signer, allo, refetchPoolManagers,
-    poolAllocatorsList  } = React.useContext(GlobalContext);
+    poolAllocatorsList,
+    totalPoolApplications  } = React.useContext(GlobalContext);
   const [showActiveOnly, setShowActiveOnly] = useState(true)
   const [poolManagers, setPoolManagers] = useState<string[]>([])
   const [dropdownOptions, setDropdownOptions] = useState<TPoolData[]>([])
@@ -68,6 +69,8 @@ export default function Pool() {
   const [poolAllocatorsToAdd, setPoolAllocatorsToAdd] = useState<string[]>([])
   const [poolAllocatorsToRemove, setPoolAllocatorsToRemove] = useState<string[]>([])
   const [dialogVoteOpen, setDialogVoteOpen] = useState(false)
+
+  const [localApplications, setLocalApplications] = useState<ApplicationData[] | undefined>(undefined)
 
   React.useEffect(() => {
     if (poolManagersToAdd.length > 0 || poolManagersToRemove.length > 0 || poolAllocatorsToAdd.length > 0 || poolAllocatorsToRemove.length > 0) {
@@ -141,6 +144,8 @@ export default function Pool() {
       }, 3000);
       return
     }
+
+    console.log("poolAllocators", poolAllocators)
     if (singleAllocator.length > 0) {
       if (poolAllocators && poolAllocators.length > 0) {
         if (!(poolAllocators.find(x => x === singleAllocator)) &&
@@ -209,9 +214,16 @@ export default function Pool() {
     setPoolManagers(poolManagersList)
   }, [poolManagersList])
 
-  // React.useEffect(() => {
-  //   setPoolAllocators(poolAllocatorsList)
-  // }, [poolAllocatorsList])
+   React.useEffect(() => {
+     setPoolAllocators(poolAllocatorsList)
+
+    if (totalPoolApplications && totalPoolApplications.length > 0) {
+      var foundApplications = totalPoolApplications.filter(x => x.poolId === selectedPool?.poolId)
+      if (foundApplications) {
+        setLocalApplications(foundApplications)
+      }
+    }
+   }, [selectedPool])
 
   const handleRemoveManagerFunc = async (allo: any, signer: any) => {
     const poolId = selectedPool?.poolId;
@@ -463,12 +475,6 @@ export default function Pool() {
             </Box>}
         </>}
       {showCreatePool && <CreatePool changeCreatePool={() => { setShowCreatePool(false) }}></CreatePool>}
-      {
-        isPoolAdmin && <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-end' }}>
-          <Button color="secondary" onClick={() => { setPoolManagers(poolManagersList); setPoolManagersToAdd([]); setPoolManagersToRemove([]) }}>Reset</Button>
-          <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
-        </Box>
-      }
       {isPoolManager &&
 
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '8px' }}>
@@ -512,10 +518,17 @@ export default function Pool() {
               ),
             }}
           />
-        </div>}
-      {/* {isPoolApplicant && applicationData && applicationData[0] && applicationData[0].microGrantRecipients &&
-        applicationData[0].microGrantRecipients.length > 0 && <Grid container spacing={2} sx={{ overflow: 'auto' }}>
-          {applicationData[0].microGrantRecipients.map((item, index) => (
+        </div>
+      }
+      {
+        isPoolAdmin || isPoolManager && <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-end', gap: '8px', justifyContent: 'flex-end' }}>
+          <Button color="secondary" onClick={() => { setPoolManagers(poolManagersList); setPoolManagersToAdd([]); setPoolManagersToRemove([]); setPoolAllocatorsToAdd([]); setPoolAllocatorsToRemove([]) }}>Reset</Button>
+          <Button disabled={!itemsChanged} color="secondary" onClick={() => { setDialogOpenAdd(true) }}>Save</Button>
+        </Box>
+      }
+      { localApplications && localApplications[0] && localApplications[0].microGrantRecipients &&
+        localApplications[0].microGrantRecipients.length > 0 && <Grid container spacing={2} sx={{  }}>
+          {localApplications[0].microGrantRecipients.map((item, index) => (
             <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
               <Card sx={{ cursor: 'pointer' }}>
                 <CardMedia
@@ -555,7 +568,7 @@ export default function Pool() {
             </Grid>
           ))}
         </Grid>
-      } */}
+      }
       <BaseDialog open={dialogVoteOpen} onClose={() => { setDialogVoteOpen(!dialogVoteOpen) }}
         dialogVariant={'transaction'} status={voteTransactionStatus} callback={(e) => { handleVote(e) }}
         message={'Are you sure you want to vote?'}></BaseDialog>

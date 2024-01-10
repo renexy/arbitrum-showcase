@@ -462,8 +462,8 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
       const { data } = await refetchPoolAllocators({ poolId: selectedPool?.poolId || '' });
       const addresses = extractActiveAllocators(data);
 
-      //console.log("refetchedMemberProfilesData", data);
-      //console.log("transformedPoolManagers", addresses);
+      //console.log("transformedPoolAllocatorsData", data);
+      //console.log("transformedPoolAllocators", addresses);
 
       setPoolAllocatorsList(addresses);
       setHasPoolAllocators(addresses.length > 0);
@@ -474,6 +474,7 @@ export const GlobalContextProvider: React.FC<GlobalProviderProps> = ({ children 
 
   useEffect(() => {
     refetchManagers();
+    refetchAllocators();
   }, [selectedPool]);
 
   useEffect(() => {

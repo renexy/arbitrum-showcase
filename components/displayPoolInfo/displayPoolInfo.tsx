@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { blueGrey, green, red } from '@mui/material/colors';
 import { TPoolData } from '@/types/typesPool';
 import { ethers } from 'ethers';
-import { convertUnixTimestamp } from '@/global/functions';
+import { convertUnixTimestamp, ethToWeiBigInt } from '@/global/functions';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Image from "next/image"
 import BaseDialog from '../baseDialog/baseDialog';
@@ -69,14 +69,16 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
         try {
             setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
 
-            const poolIdToFund = selectedPool.poolId;
+            const poolIdToFund = Number(selectedPool.poolId);
+            const txData: TransactionData = allo.fundPool(poolIdToFund, Number(ethToWeiBigInt(amount.toString())));
 
-            const txData: TransactionData = allo.fundPool(Number(poolIdToFund), amount);
+            console.log(+poolIdToFund, "+poolIdToFund")
+            console.log(amount, "amount")
     
             const hash = await signer.sendTransaction({
                 data: txData.data,
                 to: txData.to,
-                value: BigInt(txData.value),
+                value: txData.value,
               });
 
             setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing

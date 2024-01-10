@@ -10,6 +10,8 @@ import { convertUnixTimestamp } from '@/global/functions';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Image from "next/image"
 import BaseDialog from '../baseDialog/baseDialog';
+import GlobalContext from '@/hooks/context/ContextAggregator';
+import { TransactionData } from '@allo-team/allo-v2-sdk/dist/Common/types';
 
 const fallbackImageURL = 'https://d1xv5jidmf7h0f.cloudfront.net/circleone/images/products_gallery_images/Welcome-Banners_12301529202210.jpg';
 
@@ -40,13 +42,64 @@ export default function DisplayPoolInfo({ selectedPool, active }: { selectedPool
     const [createProfileTransactionStatus, setCreateProfileTransactionStatus] =
         useState<'confirm' | 'signature' | 'transaction' | 'succeeded' | 'failed'>('confirm')
     const [amount, setAmount] = useState<number>(0);
+
+    const { allo, signer } = React.useContext(GlobalContext);
     
-    const handleFundPool = (args?: any) => {
+    const handleFundPool = async (args?: any) => {
         if (args && args === 'restore') {
             setCreateProfileTransactionStatus('confirm')
             return;
         }
+
+        if (!allo) {
+            console.log("allo is undefined")
+            return;
+        }
+
+        if (!selectedPool) {
+            console.log("selectedPool is undefined")
+            return;
+        }
+
+        if (!signer) {
+            console.log("signer is undefined")
+            return;
+        }
+
+        try {
+            setCreateProfileTransactionStatus('signature'); // State set to 'signature' for user to sign
+
+            const poolIdToFund = selectedPool.poolId;
+
+            const txData: TransactionData = allo.fundPool(Number(poolIdToFund), amount);
+    
+            const hash = await signer.sendTransaction({
+                data: txData.data,
+                to: txData.to,
+                value: BigInt(txData.value),
+              });
+
+            setCreateProfileTransactionStatus('transaction'); // State set to 'transaction' after signing
+
+        // Listening to the transaction
+        try {
+            const receipt = await hash.wait(); // Assuming 'hash.wait()' waits for the transaction to complete
+            if (receipt.status === 1) {
+                setCreateProfileTransactionStatus('succeeded'); // Transaction succeeded
+            } else {
+                setCreateProfileTransactionStatus('failed'); // Transaction failed but no error was thrown
+            }
+        } catch (error) {
+            console.error(error);
+            setCreateProfileTransactionStatus('failed'); // Transaction failed with an error
+        }
+
+        } catch (error) {
+            console.log("user rejected", error); // User rejected the signature
+            setCreateProfileTransactionStatus('failed'); // Setting status to 'failed' as the process did not complete
+        }
     }
+
     return (<>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             <TextField

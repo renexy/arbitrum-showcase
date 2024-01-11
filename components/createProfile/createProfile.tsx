@@ -57,9 +57,9 @@ export default function CreateProfile() {
             return;
         }
 
-				console.log("nonce: ", nonce)
+		console.log("nonce: ", nonce)
         const createProfileArgs: CreateProfileArgs = {
-            nonce: nonce + 1,
+            nonce: nonce ,
             name: profileName,
             metadata: {
                 protocol: BigInt(protocol),

@@ -20,6 +20,10 @@ Welcome to the Allo V2 interface on the Arbitrum network. This platform offers a
 
 ![image](https://github.com/renexy/arbitrum-showcase/assets/129852498/1cb519d7-8a90-45d8-8848-451d781685a2)
 
+**Apply to Pools:** Apply to desired pools to receive funding.
+
+![image](https://github.com/renexy/arbitrum-showcase/assets/129852498/00437d30-ac54-4a28-9e3d-f205312f8032)
+
 **Exploration:** Engage with the platform by browsing active and ended pools, and exploring other user profiles.
 
 ![image](https://github.com/renexy/arbitrum-showcase/assets/129852498/cde7e2d7-4b18-44cd-869d-1961c078e950)
